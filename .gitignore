@@ -7,4 +7,8 @@ __pycache__/
 .DS_Store
 Thumbs.db
 
+# 平台标记与工作区记忆（非作品内容）
+.wbapp_*.genie
+.workbuddy/
+
 # 运行记录保留在仓库内（作为交付证据），不忽略 tools/*.json
