@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0a0910" />
+<title>三更灯 · 无相客栈｜AI 原生推理游戏</title>
+<meta name="description" content="《三更灯 · 无相客栈》—— 一夜三客，一人为「无相」。AI NPC 带着记忆与脾气自主决策，你只有六盏灯。" />
+<link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+<canvas id="bg-canvas" aria-hidden="true"></canvas>
+<div id="grain" aria-hidden="true"></div>
+
+<!-- ======================= 封面 ======================= -->
+<section id="screen-intro" class="screen active">
+  <div class="intro-wrap">
+    <div class="intro-badge">AI+∞ 开发者创作大赛 · 第三期「AI 造游戏」参赛作品</div>
+    <div class="intro-lantern" aria-hidden="true"><span></span></div>
+    <h1 class="game-title">三更灯</h1>
+    <div class="title-rule"><i></i><span>无 相 客 栈</span><i></i></div>
+    <p class="intro-lead">一夜三客，一人为<strong>「无相」</strong>。<br />灯不认人，只认破绽。</p>
+    <p class="intro-sub">你说一句话，他们会记住、会掂量、会翻脸，也可能转身就走。<br />三位客人由 AI 决策引擎驱动：量化状态、持久记忆、规则校验，全部在本地实时推演。</p>
+    <div class="intro-actions">
+      <button class="btn btn-primary" id="btn-start">点灯 · 开始守夜</button>
+      <button class="btn" id="btn-continue">续上昨夜</button>
+      <button class="btn btn-ghost" id="btn-autopilot">看影子掌柜试玩</button>
+    </div>
+    <div class="intro-links">
+      <button class="linkbtn" data-modal="howto">玩法说明</button>
+      <span>·</span>
+      <button class="linkbtn" data-modal="selftest">工程自检报告</button>
+      <span>·</span>
+      <button class="linkbtn" data-modal="about">关于与开源</button>
+    </div>
+    <div class="intro-foot">
+      <span>纯前端 · 离线可玩 · 零外部素材</span>
+      <span id="intro-seed"></span>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= 游戏主屏 ======================= -->
+<section id="screen-game" class="screen">
+  <header class="topbar">
+    <div class="tb-left">
+      <button class="icon-btn" id="btn-home" title="回到封面">⌂</button>
+      <div class="tb-title"><strong id="tb-night">第一夜</strong><span id="tb-phase">掌柜，客人都到齐了</span></div>
+    </div>
+    <div class="tb-center">
+      <div class="lamps" id="tb-lamps" aria-label="剩余灯数"></div>
+      <div class="tb-lamp-label"><span id="tb-lamp-text">6 / 6 盏</span></div>
+    </div>
+    <div class="tb-right">
+      <div class="tb-score">累计 <b id="tb-score">0</b></div>
+      <button class="icon-btn" id="btn-sound" title="音效开关">♪</button>
+      <button class="icon-btn" id="btn-ai-toggle" title="AI 决策面板">AI</button>
+      <button class="icon-btn" id="btn-help" title="玩法">?</button>
+    </div>
+  </header>
+
+  <div class="game-grid">
+    <!-- 左：物证 / 证词簿 -->
+    <aside class="col col-left">
+      <div class="panel">
+        <div class="panel-head"><h2>柜上物证</h2><span class="tag" id="clue-count">1 件</span></div>
+        <div id="clue-list" class="clue-list"></div>
+        <div class="solver-note" id="solver-note"></div>
+      </div>
+      <div class="panel grow">
+        <div class="panel-head"><h2>证词簿</h2><span class="tag" id="stmt-count">0 条</span></div>
+        <div id="statement-list" class="statement-list"></div>
+        <button class="mini-btn" id="btn-compare">摊开比对</button>
+      </div>
+    </aside>
+
+    <!-- 中：客人 / 对话 / 操作 -->
+    <main class="col col-center">
+      <div class="section-hint"><span id="guest-hint">先点一位客人，再点一张话头</span><span class="kbd-hint">1/2/3 选人 · Q W E R T 问话</span></div>
+      <div id="guest-row" class="guest-row"></div>
+
+      <div class="dialogue-wrap panel">
+        <div class="panel-head"><h2>灯下对话</h2><span class="tag" id="turn-tag">第 0 回</span></div>
+        <div id="dialogue" class="dialogue" aria-live="polite"></div>
+      </div>
+
+      <div class="action-dock panel">
+        <div class="dock-head">
+          <span class="dock-label">话头</span>
+          <div class="tone-group" id="tone-group"></div>
+        </div>
+        <div id="topic-row" class="topic-row"></div>
+        <div class="dock-foot">
+          <button class="btn btn-small" id="btn-listen">添茶 · 缓一口气 <em>耗 1 灯</em></button>
+          <button class="btn btn-small btn-danger" id="btn-accuse">点灯 · 指认无相</button>
+        </div>
+      </div>
+    </main>
+
+    <!-- 右：AI 决策透明面板 -->
+    <aside class="col col-right" id="col-right">
+      <div class="panel ai-panel">
+        <div class="panel-head"><h2>AI 决策轨迹</h2><span class="tag live">实时</span></div>
+        <div id="ai-panel" class="ai-panel-body"></div>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<!-- ======================= 单夜结算 ======================= -->
+<section id="screen-result" class="screen">
+  <div class="result-wrap">
+    <div class="result-ornament" id="result-ornament">◈</div>
+    <div class="result-eyebrow" id="result-eyebrow">第 一 夜 · 结 局</div>
+    <h2 class="result-title" id="result-title">破晓</h2>
+    <p class="result-desc" id="result-desc"></p>
+    <div class="result-score"><span>本夜得分</span><b id="result-score">0</b></div>
+    <div class="result-reveal" id="result-reveal"></div>
+    <div class="result-belief" id="result-belief"></div>
+    <div class="result-actions">
+      <button class="btn btn-primary" id="btn-next-night">接着守下一夜</button>
+      <button class="btn" id="btn-retry-night">重来这一夜</button>
+      <button class="btn btn-ghost" id="btn-copy-share">复制分享卡</button>
+    </div>
+    <div class="result-foot" id="result-foot"></div>
+  </div>
+</section>
+
+<!-- ======================= 三夜通关 ======================= -->
+<section id="screen-finale" class="screen">
+  <div class="result-wrap">
+    <div class="result-ornament">✦</div>
+    <div class="result-eyebrow">三 夜 已 尽</div>
+    <h2 class="result-title" id="finale-title">守夜人</h2>
+    <p class="result-desc" id="finale-desc"></p>
+    <div class="finale-table" id="finale-table"></div>
+    <div class="result-actions">
+      <button class="btn btn-primary" id="btn-new-run">换一批客人，再守三夜</button>
+      <button class="btn" id="btn-finale-agent">看影子掌柜复盘</button>
+      <button class="btn btn-ghost" id="btn-finale-copy">复制通关文案</button>
+    </div>
+    <div class="result-foot">感谢试玩 · 作品与完整源码见「关于与开源」</div>
+  </div>
+</section>
+
+<div id="modal-root"></div>
+<div id="toast" role="status"></div>
+
+<script src="js/core.js"></script>
+<script src="js/director.js"></script>
+<script src="js/npc.js"></script>
+<script src="js/game.js"></script>
+<script src="js/agent.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

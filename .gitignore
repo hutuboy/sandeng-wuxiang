@@ -1,0 +1,10 @@
+# 开发期工具与临时产物，不随作品发布
+.tooling/
+.demo-frames/
+node_modules/
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
+
+# 运行记录保留在仓库内（作为交付证据），不忽略 tools/*.json

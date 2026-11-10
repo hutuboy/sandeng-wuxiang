@@ -1,0 +1,9 @@
+{
+  "generatedAt": "2026-11-10T04:28:28.472Z",
+  "frames": 400,
+  "fps": 25,
+  "durationSec": 16,
+  "output": "docs/演示视频.mp4",
+  "bytes": 1777707,
+  "method": "CDP Page.startScreencast 真实渲染帧（按帧号驱动动作）+ ffmpeg/libx264"
+}

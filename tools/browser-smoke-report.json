@@ -1,0 +1,36 @@
+{
+  "generatedAt": "2026-11-10T04:36:25.637Z",
+  "url": "file:///D:/Projects/games/AI造游戏/index.html",
+  "browser": "Microsoft Edge (headless)",
+  "viewport": "1440x900 / 390x844",
+  "api": {
+    "hasState": true,
+    "stateSchema": "sandeng.state.v1",
+    "actionCount": 49,
+    "selftest": {
+      "total": 6,
+      "passed": 6,
+      "failed": 0,
+      "allPass": true
+    },
+    "trace": {
+      "seed": "API_TRACE",
+      "steps": 5,
+      "correct": true
+    },
+    "dispatchOk": true,
+    "version": "1.0.0"
+  },
+  "resultVisible": true,
+  "screenshots": [
+    "01-封面.png",
+    "02-开局.png",
+    "03-对局与AI决策面板.png",
+    "04-证据比对.png",
+    "05-工程自检.png",
+    "06-单夜结算.png",
+    "07-移动端对局.png"
+  ],
+  "errors": [],
+  "logs": []
+}
