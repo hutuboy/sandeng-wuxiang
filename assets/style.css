@@ -361,6 +361,83 @@ h1,h2,h3,p{margin:0}
   .guest-card{min-height:142px}
   .portrait{height:58px}
 }
+/* ================= 新用户操作指引（v1.1 追加段，不修改上方任何既有规则） ================= */
+:root{
+  --guide-z:20; --guide-scrim:rgba(5,4,9,.72); --guide-hole-pad:8px;
+  --guide-radius:4px; --guide-gap:12px; --guide-tap:44px;
+}
+#guide-layer{position:fixed;inset:0;z-index:var(--guide-z);pointer-events:none}
+.guide-mask{position:fixed;inset:0;z-index:0;pointer-events:none}
+.guide-scrim{position:fixed;inset:0;z-index:2;pointer-events:auto;background:transparent;touch-action:none;overscroll-behavior:contain;animation:guide-fade .2s ease both}
+#guide-holes-box{position:fixed;inset:0;z-index:1;pointer-events:none}
+.guide-hole{
+  position:fixed;box-sizing:border-box;pointer-events:none;
+  border:1px solid var(--amber);border-radius:var(--guide-radius);
+  box-shadow:0 0 0 1px rgba(232,164,92,.35),0 0 18px 4px rgba(232,164,92,.22),inset 0 0 12px rgba(232,164,92,.06);
+  animation:guide-breathe 2.4s ease-in-out infinite;
+}
+/* 5.4-5：无 #btn-help 捕获层 —— 全屏唯一命中层为 .guide-scrim，点击由引导层按 3.2 映射 */
+.guide-bubble{
+  position:fixed;z-index:3;pointer-events:auto;overflow:visible;
+  width:min(92vw,340px);max-width:min(92vw,340px);
+  max-height:min(60vh,420px);
+  background:var(--panel);border:1px solid var(--line-2);border-radius:var(--guide-radius);
+  backdrop-filter:blur(10px);box-shadow:0 12px 32px rgba(0,0,0,.5);
+  padding:16px 18px;animation:guide-pop .2s ease both;will-change:transform,opacity;
+}
+.guide-bubble:focus:not(:focus-visible){outline:none}
+.guide-bubble:focus-visible{outline:2px solid var(--amber-lt);outline-offset:2px}
+.guide-bubble::before{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:linear-gradient(90deg,transparent,var(--amber),transparent)}
+.guide-bubble__arrow{position:absolute;width:10px;height:10px;background:var(--panel);border-right:1px solid var(--line-2);border-bottom:1px solid var(--line-2)}
+.guide-bubble__arrow.is-top{top:-6px;transform:rotate(225deg)}
+.guide-bubble__arrow.is-bottom{bottom:-6px;transform:rotate(45deg)}
+.guide-label{font-size:11.5px;letter-spacing:.08em;color:var(--muted);margin-bottom:6px}
+.guide-bubble__title{margin:0;font-family:var(--serif);font-size:17px;font-weight:600;letter-spacing:.04em;color:var(--amber-lt)}
+.guide-bubble__body{margin:8px 0 0;font-size:14px;line-height:1.7;color:var(--ink);overflow-y:auto;max-height:min(40vh,300px)}
+.guide-progress{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.guide-dot{display:inline-block;width:8px;height:8px;border-radius:50%;border:1px solid var(--line-2);background:transparent;flex:0 0 auto}
+.guide-dot.is-done{background:var(--amber);border-color:var(--amber)}
+.guide-dot.is-active{width:10px;height:10px;background:var(--amber-lt);border-color:var(--amber-lt);box-shadow:0 0 8px rgba(255,201,135,.5)}
+.guide-progress__text{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;margin-left:auto}
+.guide-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.guide-actions #btn-guide-next{margin-left:auto}
+.guide-actions__skip{border-color:transparent!important;color:var(--muted)!important}
+.guide-actions__skip:hover{color:var(--ink)!important;background:rgba(200,170,120,.06)}
+.guide-actions .btn:focus-visible{outline:2px solid var(--amber-lt);outline-offset:2px}
+.guide-actions .btn.is-last{min-width:150px}
+/* 引导中顶栏「?」：描边态提示「当前＝跳过」；点击由唯一命中层 .guide-scrim 的矩形命中判定承接 */
+/* 设计案 5.4-5：不设 z-index:21（子级翻不过 body 级 z-20）；仅描边态提示「当前＝跳过」 */
+body.is-guiding #btn-help{border-color:var(--amber);color:var(--amber-lt)}
+/* 结束态：话头区呼吸描边 2s，纯装饰、不拦截、不耗灯 */
+.guide-afterglow{animation:guide-afterglow 2s ease-out 1}
+@keyframes guide-fade{from{opacity:0}to{opacity:1}}
+@keyframes guide-pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes guide-breathe{
+  0%{box-shadow:0 0 0 1px rgba(232,164,92,.35),0 0 18px 4px rgba(232,164,92,.22),inset 0 0 12px rgba(232,164,92,.06)}
+  50%{box-shadow:0 0 0 1px rgba(232,164,92,.45),0 0 26px 6px rgba(232,164,92,.34),inset 0 0 12px rgba(232,164,92,.08)}
+  100%{box-shadow:0 0 0 1px rgba(232,164,92,.35),0 0 18px 4px rgba(232,164,92,.22),inset 0 0 12px rgba(232,164,92,.06)}
+}
+@keyframes guide-afterglow{
+  0%{box-shadow:0 0 0 1px rgba(232,164,92,.7),0 0 20px 4px rgba(232,164,92,.4)}
+  100%{box-shadow:0 0 0 1px rgba(232,164,92,0),0 0 0 0 rgba(232,164,92,0)}
+}
+@media (max-width:760px){
+  .guide-bubble{width:min(92vw,340px);max-width:min(92vw,340px);padding:14px}
+  .guide-bubble__title{font-size:16px}
+  .guide-bubble__body{font-size:13px}
+  .guide-progress{gap:6px}
+  .guide-actions .btn{flex:1 1 auto;min-height:var(--guide-tap);min-width:var(--guide-tap)}
+  .guide-actions__skip{flex:0 0 auto}
+}
+@media (max-width:400px){
+  .guide-progress{gap:4px}
+  .guide-dot{width:6px;height:6px}
+  .guide-dot.is-active{width:8px;height:8px}
+}
+@media (prefers-reduced-motion:reduce){
+  .guide-hole{animation:none;box-shadow:0 0 0 1px rgba(232,164,92,.45),0 0 18px 4px rgba(232,164,92,.28),inset 0 0 12px rgba(232,164,92,.06)}
+  .guide-bubble,.guide-scrim,.guide-afterglow{animation:none}
+}
 @media (prefers-reduced-motion:reduce){
   *{animation-duration:.01ms !important;transition-duration:.01ms !important}
 }

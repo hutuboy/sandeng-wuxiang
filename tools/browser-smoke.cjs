@@ -10,7 +10,8 @@ const OUT = path.join(ROOT, 'docs', 'screenshots');
 fs.mkdirSync(OUT, { recursive: true });
 
 const EDGE = 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe';
-const URL = 'file:///' + path.join(ROOT, 'index.html').replace(/\\/g, '/');
+/* ?guide=0 抑制首次新用户引导，避免自动化截图被引导层拦截 */
+const URL = 'file:///' + path.join(ROOT, 'index.html').replace(/\\/g, '/') + '?guide=0';
 
 (async () => {
   const browser = await chromium.launch({

@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-11-10T04:36:25.637Z",
-  "url": "file:///D:/Projects/games/AI造游戏/index.html",
+  "generatedAt": "2026-11-10T08:13:52.620Z",
+  "url": "file:///D:/Projects/games/AI造游戏/index.html?guide=0",
   "browser": "Microsoft Edge (headless)",
   "viewport": "1440x900 / 390x844",
   "api": {
@@ -29,7 +29,27 @@
     "04-证据比对.png",
     "05-工程自检.png",
     "06-单夜结算.png",
-    "07-移动端对局.png"
+    "07-移动端对局.png",
+    "guide-01-G1.png",
+    "guide-02-G2.png",
+    "guide-03-G3.png",
+    "guide-04-G4.png",
+    "guide-05-G5.png",
+    "guide-06-G6.png",
+    "guide-after-end.png",
+    "guide-cold-start.png",
+    "guide-human-path-01-cover.png",
+    "guide-human-path-02-G1.png",
+    "guide-human-path-03-G2.png",
+    "guide-mobile-after-end.png",
+    "guide-mobile-G1.png",
+    "guide-mobile-G4.png",
+    "guide-mobile-G5.png",
+    "guide-replay-active.png",
+    "guide-replay-after-end.png",
+    "guide-replay-menu.png",
+    "guide-replay.png",
+    "guide-skip.png"
   ],
   "errors": [],
   "logs": []

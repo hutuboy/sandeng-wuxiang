@@ -1,0 +1,1220 @@
+{
+  "generatedAt": "2026-11-10T08:09:38.291Z",
+  "specStatus": "OK",
+  "specFiles": [
+    "docs/引导-设计案-v1.md",
+    "docs/引导-视觉规格-v1.md",
+    "docs/引导-验收用例-v1.md",
+    "docs/引导-制作人裁决单-v1.md"
+  ],
+  "edge": "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe",
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "harnessSelftest": {
+    "samples": [
+      {
+        "name": "parseLampText 命中",
+        "actual": 6,
+        "expected": 6,
+        "pass": true
+      },
+      {
+        "name": "parseLampText 不命中",
+        "actual": null,
+        "expected": null,
+        "pass": true
+      },
+      {
+        "name": "parseProgress 命中",
+        "actual": {
+          "cur": 3,
+          "total": 6
+        },
+        "expected": {
+          "cur": 3,
+          "total": 6
+        },
+        "pass": true
+      },
+      {
+        "name": "parseProgress 不命中",
+        "actual": null,
+        "expected": null,
+        "pass": true
+      }
+    ],
+    "passed": 4,
+    "total": 4,
+    "manualRecheck": [
+      {
+        "name": "parseLampText 命中",
+        "raw": "6 / 6 盏",
+        "parsed": 6
+      },
+      {
+        "name": "parseLampText 不命中",
+        "raw": "6 / 6 盏",
+        "parsed": null
+      },
+      {
+        "name": "parseProgress 命中",
+        "raw": "3 / 6",
+        "parsed": {
+          "cur": 3,
+          "total": 6
+        }
+      }
+    ]
+  },
+  "cases": [
+    {
+      "id": "G-04",
+      "ac": "全部",
+      "level": "阻断",
+      "pass": true,
+      "expected": "4 份规格存在",
+      "actual": {
+        "missing": [],
+        "specStatus": "OK"
+      },
+      "evidence": "规格门禁最先执行；缺失即 exit 1，不猜测契约值",
+      "screenshot": ""
+    },
+    {
+      "id": "G-57",
+      "ac": "全部",
+      "level": "阻断",
+      "pass": true,
+      "expected": "4/4 通过",
+      "actual": "4/4 通过",
+      "evidence": "已知答案样本自验，含 2 命中 / 2 不命中",
+      "screenshot": ""
+    },
+    {
+      "id": "G-01",
+      "ac": "AC-01/14",
+      "level": "阻断",
+      "pass": true,
+      "expected": "G1 可见且进度 1 / 6",
+      "actual": {
+        "stepId": "G1",
+        "progressText": "1 / 6"
+      },
+      "evidence": "干净 localStorage，仅 page.goto + click #btn-start",
+      "screenshot": ""
+    },
+    {
+      "id": "G-03",
+      "ac": "AC-01",
+      "level": "阻断",
+      "pass": true,
+      "expected": "G1",
+      "actual": "G1",
+      "evidence": "阳性对照",
+      "screenshot": ""
+    },
+    {
+      "id": "G-24a",
+      "ac": "AC-03",
+      "level": "阻断",
+      "pass": true,
+      "expected": "6",
+      "actual": "6",
+      "evidence": "data-guide-step-total 与步数同源",
+      "screenshot": ""
+    },
+    {
+      "id": "G-02",
+      "ac": "AC-09",
+      "level": "阻断",
+      "pass": true,
+      "expected": "0 个引导层",
+      "actual": 0,
+      "evidence": "goto 前 addInitScript 预置 done；与 G-03 一阴一阳",
+      "screenshot": ""
+    },
+    {
+      "id": "G-11",
+      "ac": "AC-07",
+      "level": "阻断",
+      "pass": true,
+      "expected": "三通道 Δ灯 = 0",
+      "actual": {
+        "t0": [
+          "6 / 6 盏",
+          6,
+          6
+        ],
+        "t1": [
+          "6 / 6 盏",
+          6,
+          6
+        ]
+      },
+      "evidence": "顶栏文本 / .lamp.on / getState().lampsLeft 三通道独立复算",
+      "screenshot": ""
+    },
+    {
+      "id": "G-13",
+      "ac": "AC-07",
+      "level": "阻断",
+      "pass": true,
+      "expected": "Δ证词 = 0",
+      "actual": {
+        "t0": [
+          0,
+          "0 条"
+        ],
+        "t1": [
+          0,
+          "0 条"
+        ]
+      },
+      "evidence": "含 #stmt-count 文本",
+      "screenshot": ""
+    },
+    {
+      "id": "G-15",
+      "ac": "AC-07",
+      "level": "一般",
+      "pass": true,
+      "expected": "Δ回合 = 0 / phase=playing",
+      "actual": {
+        "t0": [
+          0,
+          "第 0 回",
+          "playing"
+        ],
+        "t1": [
+          0,
+          "第 0 回",
+          "playing"
+        ]
+      },
+      "evidence": "",
+      "screenshot": ""
+    },
+    {
+      "id": "G-14",
+      "ac": "AC-07",
+      "level": "阻断",
+      "pass": true,
+      "expected": "玩法弹窗数 = 0",
+      "actual": {
+        "mid": 0,
+        "t1": 0
+      },
+      "evidence": "每步边界采样 + 热键 A/C 后",
+      "screenshot": ""
+    },
+    {
+      "id": "G-16",
+      "ac": "AC-07",
+      "level": "阻断",
+      "pass": true,
+      "expected": "非法点击/热键后状态全不变",
+      "actual": {
+        "t0": {
+          "lamps": 6,
+          "statements": 0,
+          "turn": 0,
+          "phase": "playing",
+          "schema": "sandeng.state.v1",
+          "lampText": "6 / 6 盏",
+          "lampOn": 6,
+          "stmtCount": "0 条",
+          "turnTag": "第 0 回",
+          "modalCount": 0
+        },
+        "t1": {
+          "lamps": 6,
+          "statements": 0,
+          "turn": 0,
+          "phase": "playing",
+          "schema": "sandeng.state.v1",
+          "lampText": "6 / 6 盏",
+          "lampOn": 6,
+          "stmtCount": "0 条",
+          "turnTag": "第 0 回",
+          "modalCount": 0
+        }
+      },
+      "evidence": "点真实话头卡 + QWERT/L/123/A/C 全按一遍",
+      "screenshot": ""
+    },
+    {
+      "id": "G-06a",
+      "ac": "AC-05",
+      "level": "阻断",
+      "pass": true,
+      "expected": "G1,G2,G3,G4,G5,G6",
+      "actual": "G1,G2,G3,G4,G5,G6",
+      "evidence": "观测步 id 序列逐项相等",
+      "screenshot": ""
+    },
+    {
+      "id": "G-24b",
+      "ac": "AC-03",
+      "level": "阻断",
+      "pass": true,
+      "expected": "[1,2,3,4,5,6] / 6",
+      "actual": [
+        "1 / 6",
+        "2 / 6",
+        "3 / 6",
+        "4 / 6",
+        "5 / 6",
+        "6 / 6"
+      ],
+      "evidence": "分子=手算步序常量、分母=步数常量，均不读实现",
+      "screenshot": ""
+    },
+    {
+      "id": "G-24c",
+      "ac": "AC-02",
+      "level": "阻断",
+      "pass": true,
+      "expected": "逐字等于设计案第二章",
+      "actual": [
+        "掌柜手札 · 今夜 | 一夜三客，一人是无相。六盏灯，问一句灭一盏，灯尽前认出他。",
+        "先相中一位 | 三位客人都到了。等下点谁，话就问给谁听；第一位已替你相中。",
+        "同一句，三种问法 | 温问养信任，逼问要真话，示物压伪饰。语气随你，先不定也成。",
+        "点话头，就是开口 | 五张话头，点一张便是问一句、灭一盏灯。等下由你亲手点。",
+        "话落在簿上 | 他答的话记进证词簿，拿去对柜上物证，破绽才现形。",
+        "该你开口了 | 灯在顶栏，「AI」摊开客人的心思，灯尽前点灯指认。现在，点张话头，问出第一句吧。"
+      ],
+      "evidence": "文案唯一来源比对",
+      "screenshot": ""
+    },
+    {
+      "id": "G-93a",
+      "ac": "AC-02",
+      "level": "阻断",
+      "pass": true,
+      "expected": "每步气泡与全部高亮洞重叠数 = 0",
+      "actual": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "evidence": "G5 主副锚同屏可见且不被气泡遮挡",
+      "screenshot": ""
+    },
+    {
+      "id": "G-93d",
+      "ac": "AC-02",
+      "level": "阻断",
+      "pass": true,
+      "expected": "G1 = 0 洞 / G2–G6 >= 1 洞",
+      "actual": [
+        0,
+        1,
+        1,
+        1,
+        2,
+        1
+      ],
+      "evidence": "设计案第二章 + C-14（G1 豁免洞不是高亮洞）",
+      "screenshot": ""
+    },
+    {
+      "id": "G-93e",
+      "ac": "AC-02",
+      "level": "阻断",
+      "pass": true,
+      "expected": "G5（>400px）洞数 = 2",
+      "actual": 2,
+      "evidence": "#statement-list 主锚 + #clue-list 副锚",
+      "screenshot": ""
+    },
+    {
+      "id": "G-94b",
+      "ac": "AC-05",
+      "level": "一般",
+      "pass": true,
+      "expected": "正文 4 边均在气泡内（容差 1px）",
+      "actual": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "evidence": "超长文案由 .guide-bubble__body 内部滚动承接，不压穿面板边框",
+      "screenshot": ""
+    },
+    {
+      "id": "G-22",
+      "ac": "AC-05",
+      "level": "阻断",
+      "pass": true,
+      "expected": "引导层从 DOM 移除",
+      "actual": 0,
+      "evidence": "完成路径",
+      "screenshot": ""
+    },
+    {
+      "id": "G-06b",
+      "ac": "AC-05",
+      "level": "阻断",
+      "pass": true,
+      "expected": "done",
+      "actual": "done",
+      "evidence": "完成写 done",
+      "screenshot": ""
+    },
+    {
+      "id": "G-21",
+      "ac": "AC-05",
+      "level": "阻断",
+      "pass": true,
+      "expected": "命中 #topic-row 内元素",
+      "actual": "topic-row",
+      "evidence": "elementFromPoint + 真实点击",
+      "screenshot": ""
+    },
+    {
+      "id": "G-19",
+      "ac": "AC-08",
+      "level": "阻断",
+      "pass": true,
+      "expected": "灯 −1 / 证词 +1 / 回合 +1",
+      "actual": {
+        "before": [
+          6,
+          0,
+          0
+        ],
+        "after": [
+          5,
+          1,
+          1
+        ]
+      },
+      "evidence": "真实 UI 路径，不用 API.dispatch",
+      "screenshot": ""
+    },
+    {
+      "id": "G-51",
+      "ac": "AC-12",
+      "level": "阻断",
+      "pass": true,
+      "expected": "按 q 执行 1 次 ASK（turn+1 ∧ lamps−1）",
+      "actual": {
+        "before": {
+          "turn": 1,
+          "lamps": 5,
+          "stmts": 1
+        },
+        "after": {
+          "turn": 2,
+          "lamps": 4,
+          "stmts": 2
+        },
+        "statementsObserved": 1,
+        "evidence": {
+          "guideLayers": 0,
+          "modalMasks": 0,
+          "toastText": "",
+          "toastShown": false,
+          "leftCards": 0,
+          "lampText": "4 / 6 盏",
+          "stmtCount": "2 条",
+          "turnTag": "第 2 回",
+          "phase": "playing"
+        }
+      },
+      "evidence": "引导层/弹窗均无残留；证词变化仅作观察量（NPC 可能 EVADE/REFUSE）",
+      "screenshot": ""
+    },
+    {
+      "id": "G-29",
+      "ac": "AC-06",
+      "level": "一般",
+      "pass": true,
+      "expected": "帮助菜单弹窗存在",
+      "actual": 1,
+      "evidence": "裁决 C-10：菜单首项「玩法说明」一击可达，入口未丢失",
+      "screenshot": ""
+    },
+    {
+      "id": "G-50",
+      "ac": "AC-12",
+      "level": "阻断",
+      "pass": true,
+      "expected": "Esc 可关闭弹窗",
+      "actual": 0,
+      "evidence": "既有 Esc 行为完好",
+      "screenshot": ""
+    },
+    {
+      "id": "G-05a",
+      "ac": "AC-04/09",
+      "level": "阻断",
+      "pass": true,
+      "expected": "skipped",
+      "actual": "skipped",
+      "evidence": "裁决 C-3：跳过写 skipped",
+      "screenshot": ""
+    },
+    {
+      "id": "G-23",
+      "ac": "AC-04",
+      "level": "阻断",
+      "pass": true,
+      "expected": "遮罩与气泡一并移除",
+      "actual": 0,
+      "evidence": "跳过路径",
+      "screenshot": ""
+    },
+    {
+      "id": "G-05b",
+      "ac": "AC-04/09",
+      "level": "阻断",
+      "pass": true,
+      "expected": "刷新后不再出现",
+      "actual": 0,
+      "evidence": "",
+      "screenshot": ""
+    },
+    {
+      "id": "G-07",
+      "ac": "AC-06",
+      "level": "阻断",
+      "pass": true,
+      "expected": "G1,G2,G3,G4,G5,G6",
+      "actual": "G1,G2,G3,G4,G5,G6",
+      "evidence": "?guide=1 从 G1 完整重播 6 步",
+      "screenshot": ""
+    },
+    {
+      "id": "G-08",
+      "ac": "AC-06",
+      "level": "阻断",
+      "pass": true,
+      "expected": "标记未被写入",
+      "actual": "null",
+      "evidence": "replay 全程不写标记",
+      "screenshot": ""
+    },
+    {
+      "id": "G-28",
+      "ac": "AC-06",
+      "level": "阻断",
+      "pass": true,
+      "expected": "帮助菜单含「重看操作指引」",
+      "actual": true,
+      "evidence": "裁决 C-4：仅对局屏可达；结算/通关屏 N/A",
+      "screenshot": ""
+    },
+    {
+      "id": "G-99",
+      "ac": "AC-06",
+      "level": "阻断",
+      "pass": true,
+      "expected": "重看后引导层可见且回到 G1",
+      "actual": {
+        "visible": true,
+        "stepId": "G1"
+      },
+      "evidence": "点击帮助菜单第 2 项后立即取帧 guide-replay-active.png",
+      "screenshot": ""
+    },
+    {
+      "id": "G-25",
+      "ac": "AC-03",
+      "level": "一般",
+      "pass": true,
+      "expected": "步号恒 1",
+      "actual": {
+        "stepId": "G1",
+        "progress": "1 / 6"
+      },
+      "evidence": "连按 ← ×10",
+      "screenshot": ""
+    },
+    {
+      "id": "G-27",
+      "ac": "AC-06",
+      "level": "一般",
+      "pass": true,
+      "expected": "G2（只前进 1 步）",
+      "actual": "G2",
+      "evidence": "连续重看 3 次后单次点击仍只 +1，监听未重复绑定",
+      "screenshot": ""
+    },
+    {
+      "id": "G-26",
+      "ac": "AC-03",
+      "level": "一般",
+      "pass": true,
+      "expected": "G6 后按 → 正常收口、无第 7 步",
+      "actual": {
+        "before": "G6",
+        "after": null,
+        "layers": 0
+      },
+      "evidence": "连按 → ×10",
+      "screenshot": ""
+    },
+    {
+      "id": "G-47",
+      "ac": "AC-12",
+      "level": "一般",
+      "pass": true,
+      "expected": "G2",
+      "actual": "G2",
+      "evidence": "按 → 前进一步",
+      "screenshot": ""
+    },
+    {
+      "id": "G-46",
+      "ac": "AC-12",
+      "level": "一般",
+      "pass": true,
+      "expected": "G3",
+      "actual": "G3",
+      "evidence": "按 Enter 前进一步",
+      "screenshot": ""
+    },
+    {
+      "id": "G-47b",
+      "ac": "AC-12",
+      "level": "一般",
+      "pass": true,
+      "expected": "G2",
+      "actual": "G2",
+      "evidence": "按 ← 后退一步",
+      "screenshot": ""
+    },
+    {
+      "id": "G-45",
+      "ac": "AC-12",
+      "level": "阻断",
+      "pass": true,
+      "expected": "Esc＝跳过，引导层移除",
+      "actual": 0,
+      "evidence": "",
+      "screenshot": ""
+    },
+    {
+      "id": "G-20",
+      "ac": "AC-08",
+      "level": "阻断",
+      "pass": true,
+      "expected": "selftest 与 trace 前后逐字节相等 / schema 不变",
+      "actual": {
+        "traceEqual": true,
+        "selftestEqual": true,
+        "schema": "sandeng.state.v1"
+      },
+      "evidence": "固定种子 QA-GUIDE-SEED，不引用引导层实现",
+      "screenshot": ""
+    },
+    {
+      "id": "G-39",
+      "ac": "AC-11",
+      "level": "阻断",
+      "pass": true,
+      "expected": "scrollWidth <= 390",
+      "actual": [
+        390,
+        390,
+        390,
+        390,
+        390,
+        390
+      ],
+      "evidence": "6 步逐步采样",
+      "screenshot": ""
+    },
+    {
+      "id": "G-40",
+      "ac": "AC-11",
+      "level": "阻断",
+      "pass": true,
+      "expected": "气泡与 .action-dock 6 步全不相交",
+      "actual": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "evidence": "390×844 / isMobile / hasTouch",
+      "screenshot": ""
+    },
+    {
+      "id": "G-41",
+      "ac": "AC-11",
+      "level": "一般",
+      "pass": true,
+      "expected": "气泡与下一步按钮完整在视口内",
+      "actual": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "evidence": "",
+      "screenshot": ""
+    },
+    {
+      "id": "G-42",
+      "ac": "AC-02/11",
+      "level": "阻断",
+      "pass": true,
+      "expected": "G2–G6 各锚点存在且可见（G1 记 N/A 不计入）",
+      "actual": {
+        "raw": [
+          null,
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "judged": 5
+      },
+      "evidence": "G1 无锚点为设计使然，独立记 null，不以 true 顶替",
+      "screenshot": ""
+    },
+    {
+      "id": "G-95",
+      "ac": "AC-02",
+      "level": "阻断",
+      "pass": true,
+      "expected": "[0,1,1,1,1,1]（G1 无洞 / G2–G6 各 1 洞）",
+      "actual": [
+        0,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "evidence": "390px < 400px 门槛，副锚#clue-list 不生成洞；与桌面 G-93e=2 洞对照",
+      "screenshot": ""
+    },
+    {
+      "id": "G-93b",
+      "ac": "AC-02",
+      "level": "阻断",
+      "pass": true,
+      "expected": "气泡与高亮洞 6 步全不相交",
+      "actual": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "evidence": "矩形求交，视口坐标系；窄屏 .action-dock 为 fixed，不加 scrollY",
+      "screenshot": ""
+    },
+    {
+      "id": "G-96",
+      "ac": "AC-11",
+      "level": "阻断",
+      "pass": true,
+      "expected": "guide-mobile-G5.png 存在",
+      "actual": true,
+      "evidence": "≤400px 单洞降级路径需有渲染证据，不能只在断言里通过",
+      "screenshot": ""
+    },
+    {
+      "id": "G-43",
+      "ac": "AC-11",
+      "level": "一般",
+      "pass": true,
+      "expected": "移动端走完 6 步后真实问话可用",
+      "actual": {
+        "before": 6,
+        "after": 5
+      },
+      "evidence": "",
+      "screenshot": ""
+    },
+    {
+      "id": "G-55",
+      "ac": "AC-01/14",
+      "level": "阻断",
+      "pass": true,
+      "expected": "纯地址栏路径：引导第 1 步可见且「下一步」可点",
+      "actual": {
+        "visible": true,
+        "pageerrors": []
+      },
+      "evidence": "只用 goto/click/isVisible/screenshot，无 evaluate、无 initScript",
+      "screenshot": ""
+    },
+    {
+      "id": "G-52",
+      "ac": "AC-13",
+      "level": "阻断",
+      "pass": true,
+      "expected": "非 file:// 请求 0 / requestfailed 0",
+      "actual": {
+        "nonFile": 0,
+        "failed": 0
+      },
+      "evidence": "全量请求监听，零 CDN / 零新依赖",
+      "screenshot": ""
+    },
+    {
+      "id": "G-53",
+      "ac": "全用例",
+      "level": "阻断",
+      "pass": true,
+      "expected": "pageerror 0",
+      "actual": 0,
+      "evidence": "console.error 另计 0 条（favicon 类宿主噪声单独说明）",
+      "screenshot": ""
+    },
+    {
+      "id": "G-54",
+      "ac": "AC-14",
+      "level": "阻断",
+      "pass": true,
+      "expected": "6 步 + 跳过 + 重看(生效/收尾) + 结束 + 移动端 3 张齐备",
+      "actual": {
+        "missing": []
+      },
+      "evidence": "实际渲染帧已采集",
+      "screenshot": ""
+    },
+    {
+      "id": "G-91",
+      "ac": "AC-05",
+      "level": "阻断",
+      "pass": true,
+      "expected": "guide.js 内 SVG fill=\"#050409\" + fill-opacity=\"0.72\"",
+      "actual": {
+        "svgFillOk": true
+      },
+      "evidence": "上屏颜色只认 SVG 属性；CSS --guide-scrim 是未上屏的 token",
+      "screenshot": ""
+    },
+    {
+      "id": "G-91b",
+      "ac": "AC-05",
+      "level": "阻断",
+      "pass": true,
+      "expected": "两处 .guide-bubble 声明均为 min(92vw,340px) 且无 calc(100vw-3x)/min(320px 残留",
+      "actual": {
+        "widthLit": 4,
+        "bubbleBlocks": 2,
+        "widthSame": true
+      },
+      "evidence": "只核 .guide-bubble 自身声明块，不波及 .col-right 等无关规则",
+      "screenshot": ""
+    },
+    {
+      "id": "G-91c",
+      "ac": "AC-05",
+      "level": "阻断",
+      "pass": true,
+      "expected": "剥注释后 CSS 无 z-index:21 声明",
+      "actual": {
+        "noZ21": true
+      },
+      "evidence": "负向断言：.screen(2)/.topbar(5) 各自成上下文，子级 21 越不过 body 级 20",
+      "screenshot": ""
+    },
+    {
+      "id": "G-56",
+      "ac": "门禁",
+      "level": "阻断",
+      "pass": true,
+      "expected": "docs/交付清单.md 复跑命令含 node tools/guide-smoke.cjs",
+      "actual": "wiredInto: docs/交付清单.md 复跑命令清单",
+      "evidence": "项目无 package.json / npm test，不得虚报接入 npm test",
+      "screenshot": ""
+    },
+    {
+      "id": "NEG",
+      "ac": "AC-07",
+      "level": "阻断",
+      "pass": true,
+      "expected": "12 个负向计数全部等于期望值",
+      "actual": {
+        "counters": {
+          "askDispatchCount": 0,
+          "listenDispatchCount": 0,
+          "accuseDispatchCount": 0,
+          "gameplayModalOpenCount": 0,
+          "residualMaskCount": 0,
+          "lampsDelta": 0,
+          "statementsDelta": 0,
+          "turnDelta": 0,
+          "nonFileRequestCount": 0,
+          "requestfailedCount": 0,
+          "pageerrorCount": 0,
+          "consoleErrorCount": 0,
+          "markerWriteCountOnComplete": 1,
+          "markerWriteCountOnSkip": 1,
+          "markerWriteCountOnReplay": 0
+        },
+        "expect": {
+          "askDispatchCount": 0,
+          "listenDispatchCount": 0,
+          "accuseDispatchCount": 0,
+          "gameplayModalOpenCount": 0,
+          "residualMaskCount": 0,
+          "lampsDelta": 0,
+          "statementsDelta": 0,
+          "turnDelta": 0,
+          "nonFileRequestCount": 0,
+          "requestfailedCount": 0,
+          "pageerrorCount": 0,
+          "markerWriteCountOnReplay": 0
+        },
+        "mismatched": []
+      },
+      "evidence": "显式计数，不是「没报错就算过」",
+      "screenshot": ""
+    },
+    {
+      "id": "G-05c",
+      "ac": "AC-04",
+      "level": "阻断",
+      "pass": true,
+      "expected": "完成 1 次 / 跳过 1 次 / 重看 0 次",
+      "actual": {
+        "complete": 1,
+        "skip": 1,
+        "replay": 0
+      },
+      "evidence": "测试侧拦 Storage.prototype.setItem 计数，不读实现内部状态",
+      "screenshot": ""
+    },
+    {
+      "id": "G-73",
+      "ac": "AC-14",
+      "level": "阻断",
+      "pass": true,
+      "expected": "逐帧签名覆盖全部采集帧且全 pass",
+      "actual": {
+        "frames": 19,
+        "unreviewed": [],
+        "visualPassCount": 19
+      },
+      "evidence": "全局字符串签名不算放行；G5 帧此前为 pass:false，四向落位修复后复拍转 pass",
+      "screenshot": ""
+    },
+    {
+      "id": "G-100",
+      "ac": "门禁",
+      "level": "阻断",
+      "pass": true,
+      "expected": "gate 三字段齐备 + 逐帧视觉复核非空 + 真人试玩如实标 false",
+      "actual": {
+        "gate": {
+          "wiredInto": "docs/交付清单.md 复跑命令：node tools/guide-smoke.cjs",
+          "verified": true,
+          "lastRunAt": "2026-11-10T08:09:38.291Z",
+          "runBy": "tools/guide-smoke.cjs（playwright-core + 本机 Edge headless）"
+        },
+        "visualFrames": 19,
+        "humanPlaythroughPass": false
+      },
+      "evidence": "真人未试玩时 humanPlaythroughPass 必须为 false，不虚报",
+      "screenshot": ""
+    }
+  ],
+  "counters": {
+    "askDispatchCount": 0,
+    "listenDispatchCount": 0,
+    "accuseDispatchCount": 0,
+    "gameplayModalOpenCount": 0,
+    "residualMaskCount": 0,
+    "lampsDelta": 0,
+    "statementsDelta": 0,
+    "turnDelta": 0,
+    "nonFileRequestCount": 0,
+    "requestfailedCount": 0,
+    "pageerrorCount": 0,
+    "consoleErrorCount": 0,
+    "markerWriteCountOnComplete": 1,
+    "markerWriteCountOnSkip": 1,
+    "markerWriteCountOnReplay": 0
+  },
+  "stepTrace": [
+    {
+      "stepNo": 1,
+      "stepId": "G1",
+      "progressText": "1 / 6",
+      "holeCount": 0,
+      "bubbleRect": {
+        "x": 550,
+        "y": 70,
+        "width": 340,
+        "height": 253.359375,
+        "top": 70,
+        "right": 890,
+        "bottom": 323.359375,
+        "left": 550
+      }
+    },
+    {
+      "stepNo": 2,
+      "stepId": "G2",
+      "progressText": "2 / 6",
+      "holeCount": 1,
+      "bubbleRect": {
+        "x": 535,
+        "y": 349,
+        "width": 340,
+        "height": 253.359375,
+        "top": 349,
+        "right": 875,
+        "bottom": 602.359375,
+        "left": 535
+      }
+    },
+    {
+      "stepNo": 3,
+      "stepId": "G3",
+      "progressText": "3 / 6",
+      "holeCount": 1,
+      "bubbleRect": {
+        "x": 792,
+        "y": 437,
+        "width": 340,
+        "height": 253.359375,
+        "top": 437,
+        "right": 1132,
+        "bottom": 690.359375,
+        "left": 792
+      }
+    },
+    {
+      "stepNo": 4,
+      "stepId": "G4",
+      "progressText": "4 / 6",
+      "holeCount": 1,
+      "bubbleRect": {
+        "x": 535,
+        "y": 483,
+        "width": 340,
+        "height": 253.359375,
+        "top": 483,
+        "right": 875,
+        "bottom": 736.359375,
+        "left": 535
+      }
+    },
+    {
+      "stepNo": 5,
+      "stepId": "G5",
+      "progressText": "5 / 6",
+      "holeCount": 2,
+      "bubbleRect": {
+        "x": 301,
+        "y": 474,
+        "width": 340,
+        "height": 253.359375,
+        "top": 474,
+        "right": 641,
+        "bottom": 727.359375,
+        "left": 301
+      }
+    },
+    {
+      "stepNo": 6,
+      "stepId": "G6",
+      "progressText": "6 / 6",
+      "holeCount": 1,
+      "bubbleRect": {
+        "x": 550,
+        "y": 86,
+        "width": 340,
+        "height": 304.359375,
+        "top": 86,
+        "right": 890,
+        "bottom": 390.359375,
+        "left": 550
+      }
+    }
+  ],
+  "screenshots": [
+    "docs/screenshots/guide-cold-start.png",
+    "docs/screenshots/guide-01-G1.png",
+    "docs/screenshots/guide-02-G2.png",
+    "docs/screenshots/guide-03-G3.png",
+    "docs/screenshots/guide-04-G4.png",
+    "docs/screenshots/guide-05-G5.png",
+    "docs/screenshots/guide-06-G6.png",
+    "docs/screenshots/guide-after-end.png",
+    "docs/screenshots/guide-skip.png",
+    "docs/screenshots/guide-replay-menu.png",
+    "docs/screenshots/guide-replay-active.png",
+    "docs/screenshots/guide-replay-after-end.png",
+    "docs/screenshots/guide-mobile-G1.png",
+    "docs/screenshots/guide-mobile-G4.png",
+    "docs/screenshots/guide-mobile-G5.png",
+    "docs/screenshots/guide-mobile-after-end.png",
+    "docs/screenshots/guide-human-path-01-cover.png",
+    "docs/screenshots/guide-human-path-02-G1.png",
+    "docs/screenshots/guide-human-path-03-G2.png"
+  ],
+  "pageErrors": [],
+  "humanPath": {
+    "recorded": true,
+    "watchedBy": "制作人（AI 视觉复核，非真人玩家）",
+    "watchedAt": "2026-11-10T08:09:38.284Z",
+    "hooksUsed": 0
+  },
+  "gate": {
+    "wiredInto": "docs/交付清单.md 复跑命令：node tools/guide-smoke.cjs",
+    "verified": true,
+    "lastRunAt": "2026-11-10T08:09:38.291Z",
+    "runBy": "tools/guide-smoke.cjs（playwright-core + 本机 Edge headless）",
+    "exitCode": 0
+  },
+  "humanPending": true,
+  "visualReviewPass": true,
+  "humanPlaythroughPass": false,
+  "visualReviewedBy": [
+    {
+      "frame": "guide-cold-start.png",
+      "reviewer": "制作人（AI 视觉复核，非真人玩家）",
+      "pass": true,
+      "note": "冷启动首帧，与 guide-01-G1 同构"
+    },
+    {
+      "frame": "guide-01-G1.png",
+      "reviewer": "制作人（AI 视觉复核，非真人玩家）",
+      "pass": true,
+      "note": "居中卡，无高亮洞，背景压暗，顶部问号在豁免洞内可见"
+    },
+    {
+      "frame": "guide-02-G2.png",
+      "reviewer": "制作人（AI 视觉复核，非真人玩家）",
+      "pass": true,
+      "note": "客人行整排高亮，气泡置于其下方，不压卡片"
+    },
+    {
+      "frame": "guide-03-G3.png",
+      "reviewer": "制作人（AI 视觉复核，非真人玩家）",
+      "pass": true,
+      "note": "语气三按钮高亮，气泡在其上方，未遮挡"
+    },
+    {
+      "frame": "guide-04-G4.png",
+      "reviewer": "制作人（AI 视觉复核，非真人玩家）",
+      "pass": true,
+      "note": "五张话头整排高亮，气泡在上方，未遮挡"
+    },
+    {
+      "frame": "guide-05-G5.png",
+      "reviewer": "制作人（AI 视觉复核，非真人玩家）",
+      "pass": true,
+      "note": "双洞（柜上物证 + 证词簿）均可见，气泡右移至中栏，讲什么不再遮什么——四向重选落位修复已生效"
+    },
+    {
+      "frame": "guide-06-G6.png",
+      "reviewer": "制作人（AI 视觉复核，非真人玩家）",
+      "pass": true,
+      "note": "顶栏单洞整条高亮，气泡在下方，灯/AI/问号可见"
+    },
+    {
+      "frame": "guide-after-end.png",
+      "reviewer": "制作人（AI 视觉复核，非真人玩家）",
+      "pass": true,
+      "note": "走完 6 步后无残留，灯 6/6 未损耗"
+    },
+    {
+      "frame": "guide-skip.png",
+      "reviewer": "制作人（AI 视觉复核，非真人玩家）",
+      "pass": true,
+      "note": "无遮罩无气泡，灯 6/6、证词 0 条，可正常继续玩"
+    },
+    {
+      "frame": "guide-replay-menu.png",
+      "reviewer": "制作人（AI 视觉复核，非真人玩家）",
+      "pass": true,
+      "note": "帮助菜单居中，「玩法说明」「重看操作指引」两项完整无截断"
+    },
+    {
+      "frame": "guide-replay-active.png",
+      "reviewer": "制作人（AI 视觉复核，非真人玩家）",
+      "pass": true,
+      "note": "重看后引导层真实可见（G1 · 1/6），帮助菜单已关闭无残留"
+    },
+    {
+      "frame": "guide-replay-after-end.png",
+      "reviewer": "制作人（AI 视觉复核，非真人玩家）",
+      "pass": true,
+      "note": "重看收口后无残留，正常对局态"
+    },
+    {
+      "frame": "guide-mobile-G1.png",
+      "reviewer": "制作人（AI 视觉复核，非真人玩家）",
+      "pass": true,
+      "note": "390×844 气泡完整在视口内，无横向溢出"
+    },
+    {
+      "frame": "guide-mobile-G4.png",
+      "reviewer": "制作人（AI 视觉复核，非真人玩家）",
+      "pass": true,
+      "note": "话头整排高亮，气泡在上方，未压吸底操作台"
+    },
+    {
+      "frame": "guide-mobile-G5.png",
+      "reviewer": "制作人（AI 视觉复核，非真人玩家）",
+      "pass": true,
+      "note": "≤400px 单洞降级：只高亮证词簿，柜上物证不出洞，气泡在其上方——设计案 9.2 落地证据"
+    },
+    {
+      "frame": "guide-mobile-after-end.png",
+      "reviewer": "制作人（AI 视觉复核，非真人玩家）",
+      "pass": true,
+      "note": "走完后无残留；灯 5/6、证词 1 条，证明窄屏收口后真实问话可用"
+    },
+    {
+      "frame": "guide-human-path-01-cover.png",
+      "reviewer": "制作人（AI 视觉复核，非真人玩家）",
+      "pass": true,
+      "note": "封面屏无引导层（仅对局屏第 1 夜触发）"
+    },
+    {
+      "frame": "guide-human-path-02-G1.png",
+      "reviewer": "制作人（AI 视觉复核，非真人玩家）",
+      "pass": true,
+      "note": "纯 UI 路径（无 evaluate/initScript）下 G1 完整可见，标题/正文/进度/三按钮齐备"
+    },
+    {
+      "frame": "guide-human-path-03-G2.png",
+      "reviewer": "制作人（AI 视觉复核，非真人玩家）",
+      "pass": true,
+      "note": "纯 UI 路径下 G2 客人行高亮，气泡未遮挡"
+    }
+  ],
+  "verdictNote": "自动化用例 57 项 + 19 帧逐帧 AI 视觉复核已执行；真人玩家试玩未发生，humanPlaythroughPass=false / humanPending=true，不虚报「有人玩过」。 RESPONSE_BUDGET 未声明（裁决 C-11），该项记未覆盖，不判定。",
+  "verdict": "pass",
+  "summary": {
+    "total": 60,
+    "passed": 60,
+    "failed": 0,
+    "blockingFailed": [],
+    "generalFailed": [],
+    "visualFrames": 19
+  }
+}

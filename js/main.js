@@ -74,6 +74,8 @@
     UI.audio.startAmbient();
     save();
     if (!fresh) UI.toast('续上第 ' + night + ' 夜');
+    /* 新用户引导：仅「首次点灯」的第 1 夜全新局触发；其余守卫在 Guide 内 */
+    if (fresh && night === 1 && SD.Guide) SD.Guide.maybeAutoStart(App);
   }
   function continueRun() {
     var s = load();
@@ -126,6 +128,7 @@
     afterDispatch(Game.dispatch(App.game, { type: 'ACCUSE', guestId: guestId }));
   }
   function endNight() {
+    if (SD.Guide) SD.Guide.forceCleanup();   /* 引导层不得跨屏残留 */
     App.ended = true;
     var r = App.game.result;
     App.session.totalScore += (r.score || 0);
@@ -140,6 +143,7 @@
     startNight(App.game.night + 1, false);
   }
   function showFinale() {
+    if (SD.Guide) SD.Guide.forceCleanup();   /* 引导层不得跨屏残留 */
     var ns = App.session.nights, correct = ns.filter(function (n) { return n.correct; }).length;
     var title = correct === 3 ? '守夜人' : correct === 2 ? '掌灯人' : correct === 1 ? '值夜人' : '夜行人';
     q('finale-title').textContent = title;
@@ -199,6 +203,16 @@
   }
 
   /* ---------------- 弹窗内容 ---------------- */
+  /* 顶栏「?」→ 帮助菜单：两项顺序固定（设计案 3.3）。
+     玩法说明沿用 modalHowto()，内容一字不改；第二项为主动重看引导。 */
+  function modalHelpMenu() {
+    UI.openModal('帮助 · 掌柜手札',
+      '<p>要重温规则，还是再看一遍上手指引？</p>' +
+      '<div class="help-menu">' +
+      '<button class="btn" data-modal="howto" style="display:block;width:100%;margin:8px 0">玩法说明</button>' +
+      '<button class="btn btn-primary" data-action="guide-replay" style="display:block;width:100%;margin:8px 0">重看操作指引</button>' +
+      '</div>');
+  }
   function modalHowto() {
     UI.openModal('玩法说明 · 掌柜手札',
       '<h4>你要做的事</h4>' +
@@ -346,6 +360,12 @@
         if (a === 'set-tone') { App.tone = el.getAttribute('data-tone'); UI.audio.sfx('click'); UI.paint(App); save(); return; }
         if (a === 'ask') { doAsk(el.getAttribute('data-topic')); return; }
         if (a === 'close-modal') { UI.closeModal(); return; }
+        if (a === 'guide-replay') {
+          /* 设计案 3.3：先关菜单，下一帧再从 G1 起播，禁止两层遮罩并存 */
+          UI.closeModal();
+          requestAnimationFrame(function () { if (SD.Guide) SD.Guide.start({ replay: true }); });
+          return;
+        }
         if (a === 'accuse') { doAccuse(el.getAttribute('data-guest')); return; }
         if (a === 'redecide') { modalRedecide(); return; }
         if (a === 'copy-decision') { copy(JSON.stringify(App.lastDecision, null, 2)); return; }
@@ -368,7 +388,7 @@
         case 'btn-autopilot': UI.audio.startAmbient(); startAutopilot(); break;
         case 'btn-home': UI.showScreen('screen-intro'); App.screen = 'intro'; break;
         case 'btn-sound': App.soundOn = UI.audio.toggle(); q('btn-sound').classList.toggle('on', !App.soundOn); q('btn-sound').textContent = App.soundOn ? '♪' : '♪̸'; break;
-        case 'btn-help': modalHowto(); break;
+        case 'btn-help': modalHelpMenu(); break;
         case 'btn-ai-toggle': App.aiShown = !App.aiShown; applyAIVis(); break;
         case 'btn-listen': doListen(); break;
         case 'btn-accuse': modalAccuse(); break;
@@ -436,6 +456,13 @@
     refreshContinue();
     if (p.autopilot === '1') { setTimeout(startAutopilot, 260); }
     else if (p.seed && p.night) { newRun(p.seed, parseInt(p.night, 10) || 1); }
+    /* 可复跑验收入口：?guide=1 强制进入第 1 夜并从 G1 起播，全程不改写标记 */
+    if (p.guide === '1' && p.autopilot !== '1') {
+      setTimeout(function () {
+        if (!App.game) newRun(defaultSeed, 1);
+        if (SD.Guide) SD.Guide.start({ replay: true });
+      }, 300);
+    }
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();

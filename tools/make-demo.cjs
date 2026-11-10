@@ -11,7 +11,8 @@ const ROOT = path.join(__dirname, '..');
 const FRAMES = path.join(ROOT, '.demo-frames');
 const OUT = path.join(ROOT, 'docs', '演示视频.mp4');
 const EDGE = 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe';
-const URL = 'file:///' + path.join(ROOT, 'index.html').replace(/\\/g, '/');
+/* ?guide=0 抑制首次新用户引导，避免演示视频时间轴被引导层打断 */
+const URL = 'file:///' + path.join(ROOT, 'index.html').replace(/\\/g, '/') + '?guide=0';
 const FPS = 25, TOTAL = 400; // 400 帧 / 25fps = 16 秒
 
 fs.rmSync(FRAMES, { recursive: true, force: true });
