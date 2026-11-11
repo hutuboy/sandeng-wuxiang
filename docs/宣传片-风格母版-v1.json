@@ -1,0 +1,49 @@
+{
+  "name": "三更灯·无相客栈 社媒竖版宣传片 风格母版",
+  "version": "v1",
+  "date": "2026-11-11",
+  "canvas": { "w": 1080, "h": 1920, "aspect": "9:16", "fps": 25, "pix_fmt": "yuv420p" },
+  "palette": {
+    "ink": "#0d0b0a",
+    "gold": "#f0b429",
+    "gold_hi": "#ffe9b0",
+    "cinnabar": "#b23a2e",
+    "moon": "#5c7a8a",
+    "card_frame": "#6b4f2a",
+    "label": "#c4ced8"
+  },
+  "typography": {
+    "font": ".tooling/simhei.ttf",
+    "scale_px": [92, 68, 48, 46, 44, 36, 34],
+    "note": "全片单一黑体；标题暖金、正文白、标签冷灰；统一描边阴影"
+  },
+  "grade": {
+    "bg": { "boxblur": "10:2", "brightness": 0.05, "contrast": 1.06, "saturation": 1.25 },
+    "hook": { "contrast": 1.06, "saturation": 1.18, "dim_overlay": "black@0.16" },
+    "cta": { "contrast": 1.05, "saturation": 1.12, "dim_overlay": "black@0.34" }
+  },
+  "motion": {
+    "kenburns_zoom_max": 1.09,
+    "kenburns_step_per_frame": 0.0008,
+    "fade_in_sec": 0.3,
+    "fade_out_sec": 0.35,
+    "transitions": "逐段 fade（0.3s 入 / 0.35s 出），保证音画严格对齐"
+  },
+  "card": { "width": 1040, "frame_pad_px": 12, "frame_color": "#6b4f2a", "y_offset_px": -60 },
+  "audio": {
+    "voice": "zh-CN-YunxiNeural",
+    "sample_rate": 44100,
+    "channels": 1,
+    "codec": "aac",
+    "target_peak_dbfs": -1,
+    "measured_peak_dbfs": -4.2,
+    "measured_mean_dbfs": -25.4
+  },
+  "structure": ["hook 5.0s", "teach 4.6s", "teach 5.0s", "teach 5.0s", "teach 4.6s", "cta 5.0s"],
+  "total_duration_sec": 29.2,
+  "sources": {
+    "ai_frames": "OiiOii HunYuan Image 3.5 (9:16, 1k) — 4 张，5 分/张，共 20 分",
+    "game_capture": "playwright-core + Edge headless，当前版本实机新捕获 4 张（1440x900）",
+    "voiceover": "edge-tts zh-CN-YunxiNeural（本地免费）"
+  }
+}
