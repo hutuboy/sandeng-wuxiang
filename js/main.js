@@ -123,7 +123,25 @@
     UI.audio.sfx(res.decision && res.decision.revealed ? 'reveal' : 'lantern');
     UI.paint(App);
     save();
+    l2Polish(res);
     if (App.game.phase === 'ended' && !App.ended) endNight();
+  }
+  /* L2 云端兜底：可选、默认关、超时静默回退；只润色台词，不改决策与存档 */
+  function l2Polish(res) {
+    try {
+      if (!window.SANDENG_LLM || !window.SANDENG_LLM.enabled || !window.SANDENG_LLM.enabled()) return;
+      if (!res.decision || !res.decision.text) return;
+      if (App.game.phase === 'ended') return;
+      var log = App.game.log, entry = null;
+      for (var i = log.length - 1; i >= 0; i--) {
+        if (log[i] && log[i].text === res.decision.text) { entry = log[i]; break; }
+      }
+      if (!entry) return;
+      var gst = Game.guest(App.game, App.selected);
+      window.SANDENG_LLM.polishLog(entry, {
+        persona: gst ? gst.name : '', state: gst ? gst.state : null, action: res.decision.chosen
+      }, function () { UI.paint(App); });
+    } catch (e) { /* 云端兜底任何异常都不得影响游戏 */ }
   }
   function doAsk(topic) {
     if (App.autopilot) { UI.toast('影子掌柜正在试玩，稍等一下'); return; }

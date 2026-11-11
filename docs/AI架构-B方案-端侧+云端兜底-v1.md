@@ -34,7 +34,8 @@
 
 ## 3. 云端兜底契约（L2）
 
-- **开关**：URL `?llm=1` 或 `window.SANDENG_LLM = { endpoint, key? }`；**默认关闭**，不配置即纯端侧。
+- **开关**：在页面注入 `window.SANDENG_LLM = { endpoint, key?, timeout? }` 即启用；**不注入即关闭（默认纯端侧）**。实现见 `js/llm.js`，挂钩于 `js/main.js` 的 `afterDispatch` 单点，**不触碰 `game.js` 状态机**。
+- **实测**：关闭态 `enabled()=false`、`polish()` 原样返回原文；启用态可正确取回 `{text}`；端点不响应时约 1.5s 静默回退原文。
 - **请求**：`POST {endpoint}`，body：
   ```json
   { "persona": "...", "state": {...}, "action": "...", "baseText": "..." }
@@ -72,11 +73,11 @@
 ## 6. 落地清单（本方案配套）
 
 - [x] 决策锁定：B 方案 / 冲金奖 / 评分口径（本文）
-- [ ] 创作手记 §3 改为 B 方案口径（端侧为主、云端可选、DGX 待批仅离线演示）
-- [ ] 交付清单 §六 冲金奖策略同步
-- [ ] 代码：`js/llm.js` 可选适配器（默认关、1.5s 超时、静默回退）+ `js/npc.js` 单点挂钩
-- [ ] 验收：L2 关闭下重跑 `selftest` + `difficulty-smoke`，确认 44/44 与 6/6 不回退
-- [ ] 部署：魔搭创空间选**免费 CPU**，README 写清"LLM 可选、默认关"
+- [x] 创作手记 §3 改为 B 方案口径（端侧为主、云端可选、DGX 待批仅离线演示）
+- [x] 交付清单 §六 冲金奖策略同步
+- [x] 代码：`js/llm.js` 可选适配器（默认关、1.5s 超时、静默回退）+ `js/main.js` `afterDispatch` 单点挂钩（未改 `game.js`）
+- [x] 验收：L2 关闭下重跑 `selftest` **6/6**、`difficulty-smoke` **44/44**、`browser-smoke errors=[]`，负向计数全 0，`nonFileRequestCount=0`
+- [ ] 部署（待用户操作）：魔搭创空间选**免费 CPU**，README 写清"LLM 可选、默认关"
 
 ---
 
