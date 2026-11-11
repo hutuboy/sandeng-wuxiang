@@ -189,8 +189,9 @@
 
     // 语气先改变状态
     if (tone === 'warm') { s.affinity += 6; s.tension -= 3; s.trust += 2; }
-    if (tone === 'press') { s.tension += 9; s.trust -= 3; }
-    if (tone === 'show') { s.tension += 5; s.suspicion += 6 * sg; s.trust -= 1; }
+    // 逼问也会累积疑心：追问太急，无相会察觉自己已被盯上（原实现只有「示物」加疑心 → 遁走路径过窄）
+    if (tone === 'press') { s.tension += 9; s.trust -= 3; s.suspicion += 14 * sg; }
+    if (tone === 'show') { s.tension += 5; s.suspicion += 16 * sg; s.trust -= 1; }
 
     switch (decision.chosen) {
       case 'ANSWER_TRUE':
@@ -204,11 +205,11 @@
         decision.effects.push('证词入簿（伪）：' + C.topic(act.topic).label + ' = ' + q.alibi[act.topic]);
         break;
       case 'EVADE':
-        s.tension += 4; s.trust -= 2;
-        decision.effects.push('未获得证词；张力上升');
+        s.tension += 4; s.trust -= 2; s.suspicion += 10 * sg;
+        decision.effects.push('未获得证词；张力上升，他也开始提防');
         break;
       case 'COUNTER':
-        s.tension += 5;
+        s.tension += 5; s.suspicion += 10 * sg;
         decision.effects.push('未获得证词；邻座警觉');
         game.guests.forEach(function (o) { if (o.id !== q.id) o.state.suspicion += 2 * sg; });
         break;
@@ -225,7 +226,7 @@
         decision.effects.push('交心透底 → 主动摊开关键话题证词');
         break;
       case 'REFUSE':
-        s.tension += 8; s.trust -= 6;
+        s.tension += 8; s.trust -= 6; s.suspicion += 10 * sg;
         decision.effects.push('证词被拒；关系恶化');
         break;
       case 'LEAVE':

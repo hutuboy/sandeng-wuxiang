@@ -284,8 +284,17 @@ h1,h2,h3,p{margin:0}
 .belief-row .bar{flex:1;height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden}
 .belief-row .bar i{display:block;height:100%;background:linear-gradient(90deg,#9b8fd8,#d8534f);border-radius:3px}
 .belief-row .pct{width:42px;text-align:right;font-family:ui-monospace,monospace}
-.result-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:20px}
-.result-foot{margin-top:20px;font-size:11px;color:var(--dim);border-top:1px solid rgba(200,170,120,.12);padding-top:12px;line-height:1.9}
+.result-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:20px}.result-foot{margin-top:20px;font-size:11px;color:var(--dim);border-top:1px solid rgba(200,170,120,.12);padding-top:12px;line-height:1.9}
+/* 复盘卡：漏掉的物证 / 自相矛盾 / 门槛差多少 */
+.result-review{margin:14px 0;text-align:left}
+.rv-wrap{border:1px solid rgba(200,170,120,.18);border-radius:3px;padding:12px 14px;background:rgba(255,255,255,.015)}
+.rv-h{font-size:11px;letter-spacing:.14em;color:var(--muted);margin:2px 0 8px}
+.rv-h+.rv-row{margin-bottom:10px}
+.rv-row{display:flex;gap:10px;font-size:12px;line-height:1.75;color:var(--label);margin-bottom:4px}
+.rv-row .rv-k{flex:0 0 96px;color:#c4ced8}
+.rv-row .rv-v{flex:1;color:var(--muted)}
+.rv-row .rv-v i{color:#c9a227;font-style:normal}
+.rv-foot{margin-top:10px;padding-top:10px;border-top:1px dashed rgba(200,170,120,.16);font-size:11px;color:var(--dim);line-height:1.8}
 .finale-table{width:100%;border-collapse:collapse;margin:18px 0;font-size:12px}
 .finale-table th,.finale-table td{border-bottom:1px solid rgba(200,170,120,.14);padding:8px 6px;text-align:center;color:var(--label)}
 .finale-table th{color:var(--muted);font-weight:400;letter-spacing:.1em;font-size:11px}

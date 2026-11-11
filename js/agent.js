@@ -26,9 +26,10 @@
     }
     if (game.lampsLeft <= 1) return { type: 'ACCUSE', guestId: bestGuess() };
 
-    // 张力过高时先「添茶」：既压住离店风险，也换来 2 次不被闪避的问话窗口
+    // 张力接近「离店阈值」时先添茶：既压住离店风险，也换来 2 次不被闪避的问话窗口
     var maxTension = Math.max.apply(null, game.guests.map(function (q) { return q.state.tension; }));
-    if (maxTension >= 65 && game.lampsLeft >= 2) return { type: 'LISTEN' };
+    var leaveAt = game.cs.difficulty.tensionLeaveAt;
+    if (game.lampsLeft >= 2 && maxTension >= Math.min(65, leaveAt - 6)) return { type: 'LISTEN' };
 
     var clueTopics = game.cs.clues.map(function (c) { return c.topic; });
     var have = {}, attempts = {};

@@ -141,6 +141,47 @@
     return result;
   }
 
+  /* ---- 复盘：结算页告诉玩家「你漏了什么、哪里自相矛盾、离最高结局差多少」 ----
+   * 只读 game 已有数据，不改任何状态；纯展示用。
+   */
+  function buildReview(game) {
+    var missed = [], contra = [];
+    game.cs.clues.forEach(function (clue) {
+      var seen = {};
+      game.statements.forEach(function (s) { if (s.topic === clue.topic) seen[s.guestId] = s; });
+      var miss = game.guests.filter(function (q) { return !seen[q.id] && !q.flags.left; });
+      if (miss.length) {
+        missed.push({
+          clue: clue.title, topic: C.topic(clue.topic).label,
+          guests: miss.map(function (q) { return q.name; })
+        });
+      }
+      game.guests.forEach(function (q) {
+        var s = seen[q.id];
+        if (s && s.value !== clue.expect) {
+          contra.push({ guest: q.name, topic: C.topic(clue.topic).label, said: s.value, expect: clue.expect });
+        }
+      });
+    });
+
+    var clueTopics = game.cs.clues.map(function (c) { return c.topic; });
+    var wasted = (game.decisions || []).filter(function (d) {
+      return d.playerAction && clueTopics.indexOf(d.playerAction.topic) < 0;
+    }).length;
+
+    var need = game.cs.clues.length * 2;                 // 最高结局门槛（与 accuse() 同一口径）
+    var maxChain = game.cs.clues.length * game.guests.length;   // 理论上限：每条物证 × 每位客人
+    var lampsAll = game.lamps;
+    var reachable = maxChain >= need && lampsAll >= need;       // 灯数不够也拿不到
+
+    return {
+      missed: missed, contradictions: contra, wastedAsks: wasted,
+      lampsUsed: lampsAll - game.lampsLeft, lampsAll: lampsAll,
+      need: need, maxChain: maxChain, reachable: reachable,
+      bestEnding: '灯下留名'
+    };
+  }
+
   function accuse(game, guestId) {
     var q = guest(game, guestId);
     if (!q) return { ok: false, error: '指认对象不存在' };
@@ -175,6 +216,7 @@
       correct: correct, accused: q.name, impostor: game.guests.filter(function (x) { return x.id === game.cs.impostorId; })[0].name,
       chain: chain, lampsLeft: game.lampsLeft, avgTrust: C.round(avgTrust, 1),
       score: gain, belief: belief(game), ending: ending,
+      review: buildReview(game),
       reveal: game.cs.clues.map(function (c) {
         return { clue: c.title, topic: C.topic(c.topic).label, expect: c.expect,
           words: game.guests.map(function (x) { return { name: x.name, value: x.alibi[c.topic] }; }) };

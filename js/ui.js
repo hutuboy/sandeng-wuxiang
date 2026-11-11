@@ -407,9 +407,50 @@
       reveal: '<div style="font-size:11px;color:var(--muted);letter-spacing:.14em;margin-bottom:6px">真 相 摊 开</div>' +
         '<div class="reveal-row"><div class="k">无相</div><div class="v"><i>' + esc(r.impostor) + '</i>　·　你指认了 ' + esc(r.accused || '（无人）') + '</div></div>' + reveal,
       belief: '<div style="font-size:11px;color:var(--muted);letter-spacing:.14em;margin:6px 0">掌 柜 的 判 断（证词推理置信度）</div>' + belief,
+      review: r.review || null,
       foot: '证据链 ' + r.chain + ' 条 · 余灯 ' + r.lampsLeft + ' 盏 · 平均信任 ' + r.avgTrust + '　|　seed ' + esc(game.seed)
     };
   }
+  /* ---- 复盘卡：漏掉的物证 / 自相矛盾 / 离最高结局差多少 ---- */
+  function reviewHtml(r) {
+    var rv = r.review;
+    if (!rv) return '';
+    var rows = [];
+
+    if (rv.missed.length) {
+      rows.push('<div class="rv-h">你 漏 掉 的 物 证</div>' + rv.missed.map(function (m) {
+        return '<div class="rv-row"><span class="rv-k">' + esc(m.clue) + '</span>' +
+          '<span class="rv-v">「' + esc(m.topic) + '」没问到：' + esc(m.guests.join('、')) + '</span></div>';
+      }).join(''));
+    } else {
+      rows.push('<div class="rv-h">你 漏 掉 的 物 证</div><div class="rv-row"><span class="rv-v">没有遗漏 —— 每条物证都问到了。</span></div>');
+    }
+
+    if (rv.contradictions.length) {
+      rows.push('<div class="rv-h">自 相 矛 盾</div>' + rv.contradictions.map(function (c) {
+        return '<div class="rv-row"><span class="rv-k">' + esc(c.guest) + '</span>' +
+          '<span class="rv-v"><i>' + esc(c.topic) + '</i> 说「' + esc(c.said) + '」，' +
+          '与事实「' + esc(c.expect) + '」不符</span></div>';
+      }).join(''));
+    } else {
+      rows.push('<div class="rv-h">自 相 矛 盾</div><div class="rv-row"><span class="rv-v">没有捕捉到矛盾 —— 三人证词都咬得住。</span></div>');
+    }
+
+    var gap;
+    if (!rv.reachable) {
+      gap = '本档「' + esc(rv.bestEnding) + '」需 ' + rv.need + ' 条证据，但本档只有 ' + rv.lampsAll +
+        ' 盏灯（最多问 ' + rv.lampsAll + ' 句）→ 数学上不可达，属高档加压设计';
+    } else if (r.chain >= rv.need) {
+      gap = '证据链 ' + r.chain + ' 条 ≥ 门槛 ' + rv.need + ' 条 —— 最高结局条件已达成';
+    } else {
+      gap = '「' + esc(rv.bestEnding) + '」需 ' + rv.need + ' 条证据，你拿到 ' + r.chain + ' 条，差 ' + (rv.need - r.chain) + ' 条';
+    }
+    rows.push('<div class="rv-foot">' + gap + '　·　用灯 ' + rv.lampsUsed + '/' + rv.lampsAll +
+      (rv.wastedAsks ? '　·　' + rv.wastedAsks + ' 次问在了非物证话题上' : '') + '</div>');
+
+    return '<div class="rv-wrap">' + rows.join('') + '</div>';
+  }
+
   function paintResult(ctx) {
     var game = ctx.game, r = resultHtml(game, game.night);
     document.getElementById('result-ornament').textContent = r.ornament;
@@ -419,6 +460,8 @@
     document.getElementById('result-score').textContent = (r.score > 0 ? '+' : '') + r.score;
     document.getElementById('result-reveal').innerHTML = r.reveal;
     document.getElementById('result-belief').innerHTML = r.belief;
+    var rv = document.getElementById('result-review');
+    if (rv) rv.innerHTML = reviewHtml(r);
     document.getElementById('result-foot').textContent = r.foot;
     var next = document.getElementById('btn-next-night');
     next.textContent = game.night >= 3 ? '看完这三夜' : '接着守下一夜';
