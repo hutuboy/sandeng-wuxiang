@@ -17,6 +17,7 @@
       turn: 0,
       lamps: cs.lamps,
       lampsLeft: cs.lamps,
+      calmTurns: 0,
       phase: 'playing',
       statements: [],
       decisions: [],
@@ -97,13 +98,14 @@
 
     if (action.type === 'LISTEN') {
       game.turn++; game.lampsLeft--;
+      game.calmTurns = 2;
       game.guests.forEach(function (q) {
-        q.state.tension = C.clamp(q.state.tension - 12, 0, 100);
-        q.state.trust = C.clamp(q.state.trust + 3, 0, 100);
+        q.state.tension = C.clamp(q.state.tension - 20, 0, 100);
+        q.state.trust = C.clamp(q.state.trust + 8, 0, 100);
         q.memory.push({ turn: game.turn, type: 'LISTEN', topic: null, npcAction: 'CALM', text: '掌柜添了一轮茶。' });
       });
-      pushLog(game, 'system', '你添了一轮茶。灯影稳了些，众人紧绷的肩松下来。');
-      result.events.push({ type: 'CALM', text: '全场张力 −12，信任 +3' });
+      pushLog(game, 'system', '你添了一轮茶。灯影稳了些，众人紧绷的肩松下来，话也好问了。');
+      result.events.push({ type: 'CALM', text: '全场张力 −20，信任 +8，接下来 2 次问话不会被打岔' });
       if (game.lampsLeft <= 0) conclude(game, 'lamps');
       return result;
     }
@@ -116,6 +118,7 @@
 
     game.turn++; game.lampsLeft--;
     var decision = NPC.decide(game, action, { force: opts.forceNpcAction });
+    if (game.calmTurns > 0) game.calmTurns--;
     decision.playerAction = { type: 'ASK', guestId: action.guestId, topic: action.topic, tone: action.tone };
     NPC.apply(game, action, decision);
     game.decisions.push(decision);
@@ -149,8 +152,11 @@
     var gain = 0;
     var diff = game.cs.difficulty;
     if (correct) {
-      gain = 600 + game.lampsLeft * 40 + chain * 35 + Math.round((avgTrust - 45) * 2);
-      if (chain < diff.chainMinForFullCredit) gain -= 120; // 没有证据链，靠蒙
+      // 收益结构：以「证据链」为主、余灯为辅。
+      // 历史配比（chain 35 / lamp 40）导致「少问早猜」严格优于「多问取证」，一局 4 步就结束；
+      // 现配比（chain 110 / lamp 15）让多问一句的边际收益显著高于省一盏灯。
+      gain = 380 + chain * 110 + game.lampsLeft * 15 + Math.round((avgTrust - 45) * 2);
+      if (chain < diff.chainMinForFullCredit) gain -= 180; // 证据链不足，基本靠蒙
       if (leftCount > 0) gain -= 80;
       gain = Math.max(120, gain);
     } else {
@@ -160,7 +166,7 @@
     var ending;
     if (!correct) ending = '灯灭';
     else if (leftCount > 0) ending = '一灯独明';
-    else if (chain >= game.cs.clues.length * 3 && avgTrust >= diff.endingBestTrust) ending = '灯下留名';
+    else if (chain >= game.cs.clues.length * 2 && avgTrust >= diff.endingBestTrust) ending = '灯下留名';
     else ending = '破晓';
 
     game.phase = 'ended';

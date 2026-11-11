@@ -73,6 +73,11 @@
       mask.CONFIDE = false;
       notes.push('同一话题重复提问 → 触发记忆一致性约束');
     }
+    // 「添茶·缓一口气」的战术回报：茶刚添过，客人不好意思当场回避（仅维持有限次数）
+    if (game.calmTurns > 0 && f.repeated !== true) {
+      mask.EVADE = false;
+      notes.push('刚添过茶（剩余 ' + game.calmTurns + ' 次）→ 本轮不闪避');
+    }
     return { mask: mask, notes: notes };
   }
 

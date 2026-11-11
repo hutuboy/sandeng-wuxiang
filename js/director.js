@@ -52,7 +52,7 @@
     return {
       night: n,
       lamps: n === 1 ? 6 : n === 2 ? 5 : 5,
-      clueCount: n === 3 ? 2 : 1,
+      clueCount: n === 3 ? 3 : 2,
       evadeBoost: n === 1 ? -0.6 : n === 2 ? 0 : 0.55,
       redHerring: n >= 2,
       allowFlee: n === 3,

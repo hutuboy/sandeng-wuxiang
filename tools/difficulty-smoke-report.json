@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-11T06:38:37.242Z",
+  "generatedAt": "2026-11-11T12:09:54.585Z",
   "version": "difficulty-smoke.v1",
   "specStatus": "OK",
   "implStatus": "WIRED",
@@ -163,7 +163,7 @@
         "tier": "novice",
         "params": {
           "lamps": 8,
-          "clueCount": 1,
+          "clueCount": 2,
           "evadeBoost": -0.8,
           "temperature": 0.68,
           "redHerring": false,
@@ -187,7 +187,7 @@
         "params": {
           "night": 1,
           "lamps": 8,
-          "clueCount": 1,
+          "clueCount": 2,
           "evadeBoost": -0.8,
           "redHerring": false,
           "allowFlee": false,
@@ -228,7 +228,7 @@
         "tier": "basic",
         "params": {
           "lamps": 6,
-          "clueCount": 1,
+          "clueCount": 2,
           "evadeBoost": -0.6,
           "temperature": 0.75,
           "redHerring": false,
@@ -252,7 +252,7 @@
         "params": {
           "night": 1,
           "lamps": 6,
-          "clueCount": 1,
+          "clueCount": 2,
           "evadeBoost": -0.6,
           "redHerring": false,
           "allowFlee": false,
@@ -293,7 +293,7 @@
         "tier": "intermediate",
         "params": {
           "lamps": 5,
-          "clueCount": 2,
+          "clueCount": 3,
           "evadeBoost": -0.45,
           "temperature": 0.83,
           "redHerring": true,
@@ -317,7 +317,7 @@
         "params": {
           "night": 1,
           "lamps": 5,
-          "clueCount": 2,
+          "clueCount": 3,
           "evadeBoost": -0.45,
           "redHerring": true,
           "allowFlee": false,
@@ -358,7 +358,7 @@
         "tier": "advanced",
         "params": {
           "lamps": 4,
-          "clueCount": 2,
+          "clueCount": 3,
           "evadeBoost": -0.3,
           "temperature": 0.9,
           "redHerring": true,
@@ -382,7 +382,7 @@
         "params": {
           "night": 1,
           "lamps": 4,
-          "clueCount": 2,
+          "clueCount": 3,
           "evadeBoost": -0.3,
           "redHerring": true,
           "allowFlee": false,
@@ -719,7 +719,7 @@
       "expected": {
         "params": {
           "lamps": 8,
-          "clueCount": 1,
+          "clueCount": 2,
           "evadeBoost": -0.8,
           "temperature": 0.68,
           "redHerring": false,
@@ -742,7 +742,7 @@
         "params": {
           "night": 1,
           "lamps": 8,
-          "clueCount": 1,
+          "clueCount": 2,
           "evadeBoost": -0.8,
           "redHerring": false,
           "allowFlee": false,
@@ -768,7 +768,7 @@
       "expected": {
         "params": {
           "lamps": 7,
-          "clueCount": 1,
+          "clueCount": 2,
           "evadeBoost": -0.2,
           "temperature": 0.86,
           "redHerring": false,
@@ -791,7 +791,7 @@
         "params": {
           "night": 2,
           "lamps": 7,
-          "clueCount": 1,
+          "clueCount": 2,
           "evadeBoost": -0.2,
           "redHerring": false,
           "allowFlee": false,
@@ -817,7 +817,7 @@
       "expected": {
         "params": {
           "lamps": 7,
-          "clueCount": 2,
+          "clueCount": 3,
           "evadeBoost": 0.35,
           "temperature": 1.03,
           "redHerring": false,
@@ -840,7 +840,7 @@
         "params": {
           "night": 3,
           "lamps": 7,
-          "clueCount": 2,
+          "clueCount": 3,
           "evadeBoost": 0.35,
           "redHerring": false,
           "allowFlee": false,
@@ -866,7 +866,7 @@
       "expected": {
         "params": {
           "lamps": 6,
-          "clueCount": 1,
+          "clueCount": 2,
           "evadeBoost": -0.6,
           "temperature": 0.75,
           "redHerring": false,
@@ -889,7 +889,7 @@
         "params": {
           "night": 1,
           "lamps": 6,
-          "clueCount": 1,
+          "clueCount": 2,
           "evadeBoost": -0.6,
           "redHerring": false,
           "allowFlee": false,
@@ -915,7 +915,7 @@
       "expected": {
         "params": {
           "lamps": 5,
-          "clueCount": 1,
+          "clueCount": 2,
           "evadeBoost": 0,
           "temperature": 0.95,
           "redHerring": true,
@@ -938,7 +938,7 @@
         "params": {
           "night": 2,
           "lamps": 5,
-          "clueCount": 1,
+          "clueCount": 2,
           "evadeBoost": 0,
           "redHerring": true,
           "allowFlee": false,
@@ -964,7 +964,7 @@
       "expected": {
         "params": {
           "lamps": 5,
-          "clueCount": 2,
+          "clueCount": 3,
           "evadeBoost": 0.55,
           "temperature": 1.15,
           "redHerring": true,
@@ -987,7 +987,7 @@
         "params": {
           "night": 3,
           "lamps": 5,
-          "clueCount": 2,
+          "clueCount": 3,
           "evadeBoost": 0.55,
           "redHerring": true,
           "allowFlee": true,
@@ -1013,7 +1013,7 @@
       "expected": {
         "params": {
           "lamps": 5,
-          "clueCount": 2,
+          "clueCount": 3,
           "evadeBoost": -0.45,
           "temperature": 0.83,
           "redHerring": true,
@@ -1036,7 +1036,7 @@
         "params": {
           "night": 1,
           "lamps": 5,
-          "clueCount": 2,
+          "clueCount": 3,
           "evadeBoost": -0.45,
           "redHerring": true,
           "allowFlee": false,
@@ -1062,7 +1062,7 @@
       "expected": {
         "params": {
           "lamps": 4,
-          "clueCount": 2,
+          "clueCount": 3,
           "evadeBoost": 0.15,
           "temperature": 1.05,
           "redHerring": true,
@@ -1085,7 +1085,7 @@
         "params": {
           "night": 2,
           "lamps": 4,
-          "clueCount": 2,
+          "clueCount": 3,
           "evadeBoost": 0.15,
           "redHerring": true,
           "allowFlee": true,
@@ -1160,7 +1160,7 @@
       "expected": {
         "params": {
           "lamps": 4,
-          "clueCount": 2,
+          "clueCount": 3,
           "evadeBoost": -0.3,
           "temperature": 0.9,
           "redHerring": true,
@@ -1183,7 +1183,7 @@
         "params": {
           "night": 1,
           "lamps": 4,
-          "clueCount": 2,
+          "clueCount": 3,
           "evadeBoost": -0.3,
           "redHerring": true,
           "allowFlee": false,
@@ -1209,7 +1209,7 @@
       "expected": {
         "params": {
           "lamps": 3,
-          "clueCount": 2,
+          "clueCount": 3,
           "evadeBoost": 0.3,
           "temperature": 1.14,
           "redHerring": true,
@@ -1232,7 +1232,7 @@
         "params": {
           "night": 2,
           "lamps": 3,
-          "clueCount": 2,
+          "clueCount": 3,
           "evadeBoost": 0.3,
           "redHerring": true,
           "allowFlee": true,
@@ -1423,12 +1423,12 @@
         "selftest": {
           "pass": true,
           "exit": 0,
-          "tail": "ratio\":0.917,\"firstTrace\":{\"seed\":\"AGENT_0\",\"night\":1,\"steps\":6,\"correct\":true,\"actions\":[{\"type\":\"ASK\",\"guestId\":\"g0\",\"topic\":\"hour\",\"tone\":\"warm\"},{\"type\":\"ASK\",\"guestId\":\"g1\",\"topic\":\"hour\",\"tone\":\"warm\"},{\"type\":\"ASK\",\"guestId\":\"g2\n---\n汇总: {\"total\":6,\"passed\":6,\"failed\":0,\"allPass\":true}\n缺陷复现 F-01 reproduced = true\n已写出: C:\\Users\\lll\\AppData\\Local\\Temp\\qa-difficulty-selftest-1794379183412.json\n"
+          "tail": "ratio\":0.9,\"firstTrace\":{\"seed\":\"AGENT_0\",\"night\":1,\"steps\":6,\"correct\":true,\"actions\":[{\"type\":\"ASK\",\"guestId\":\"g0\",\"topic\":\"hour\",\"tone\":\"warm\"},{\"type\":\"ASK\",\"guestId\":\"g1\",\"topic\":\"hour\",\"tone\":\"warm\"},{\"type\":\"ASK\",\"guestId\":\"g2\",\n---\n汇总: {\"total\":6,\"passed\":6,\"failed\":0,\"allPass\":true}\n缺陷复现 F-01 reproduced = true\n已写出: C:\\Users\\lll\\AppData\\Local\\Temp\\qa-difficulty-selftest-1794399052868.json\n"
         },
         "browserSmoke": {
           "pass": true,
           "exit": 0,
-          "tail": "\n    \"guide-cold-start.png\",\n    \"guide-human-path-01-cover.png\",\n    \"guide-human-path-02-G1.png\",\n    \"guide-human-path-03-G2.png\",\n    \"guide-mobile-after-end.png\",\n    \"guide-mobile-G1.png\",\n    \"guide-mobile-G4.png\",\n    \"guide-mobile-G5.png\",\n    \"guide-replay-active.png\",\n    \"guide-replay-after-end.png\",\n    \"guide-replay-menu.png\",\n    \"guide-skip.png\"\n  ],\n  \"errors\": [],\n  \"logs\": []\n}\n"
+          "tail": " \"guide-human-path-01-cover.png\",\n    \"guide-human-path-02-G1.png\",\n    \"guide-human-path-03-G2.png\",\n    \"guide-mobile-after-end.png\",\n    \"guide-mobile-G1.png\",\n    \"guide-mobile-G4.png\",\n    \"guide-mobile-G5.png\",\n    \"guide-replay-active.png\",\n    \"guide-replay-after-end.png\",\n    \"guide-replay-menu.png\",\n    \"guide-skip.png\",\n    \"promo-cover-vertical.png\"\n  ],\n  \"errors\": [],\n  \"logs\": []\n}\n"
         },
         "guideSmoke": {
           "pass": true,
@@ -1496,265 +1496,265 @@
       "id": "D-10-novice",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T06:38:50.777Z"
+      "at": "2026-11-11T12:10:07.579Z"
     },
     {
       "id": "D-44-novice",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T06:38:51.488Z"
+      "at": "2026-11-11T12:10:08.174Z"
     },
     {
       "id": "D-10-basic",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T06:38:52.736Z"
+      "at": "2026-11-11T12:10:09.275Z"
     },
     {
       "id": "D-44-basic",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T06:38:53.489Z"
+      "at": "2026-11-11T12:10:09.846Z"
     },
     {
       "id": "D-10-intermediate",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T06:38:54.716Z"
+      "at": "2026-11-11T12:10:10.962Z"
     },
     {
       "id": "D-44-intermediate",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T06:38:55.474Z"
+      "at": "2026-11-11T12:10:11.615Z"
     },
     {
       "id": "D-10-advanced",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T06:38:56.782Z"
+      "at": "2026-11-11T12:10:12.748Z"
     },
     {
       "id": "D-44-advanced",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T06:38:57.471Z"
+      "at": "2026-11-11T12:10:13.389Z"
     },
     {
       "id": "D-20",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T06:38:58.643Z"
+      "at": "2026-11-11T12:10:14.400Z"
     },
     {
       "id": "D-21",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T06:38:59.731Z"
+      "at": "2026-11-11T12:10:15.336Z"
     },
     {
       "id": "D-22",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T06:39:00.820Z"
+      "at": "2026-11-11T12:10:16.150Z"
     },
     {
       "id": "D-23-大小写不符",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T06:39:01.972Z"
+      "at": "2026-11-11T12:10:17.068Z"
     },
     {
       "id": "D-23-首尾空格",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T06:39:03.004Z"
+      "at": "2026-11-11T12:10:18.011Z"
     },
     {
       "id": "D-23-空串",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T06:39:04.134Z"
+      "at": "2026-11-11T12:10:19.023Z"
     },
     {
       "id": "D-23-数字",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T06:39:05.202Z"
+      "at": "2026-11-11T12:10:20.023Z"
     },
     {
       "id": "D-23-中文档名",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T06:39:06.256Z"
+      "at": "2026-11-11T12:10:20.918Z"
     },
     {
       "id": "D-23-null/undefined",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T06:39:07.388Z"
+      "at": "2026-11-11T12:10:21.800Z"
     },
     {
       "id": "D-23-URL 编码残留",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T06:39:08.530Z"
+      "at": "2026-11-11T12:10:22.663Z"
     },
     {
       "id": "D-23-原型链键",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T06:39:09.547Z"
+      "at": "2026-11-11T12:10:23.532Z"
     },
     {
       "id": "D-23-汇总",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T06:39:09.595Z"
+      "at": "2026-11-11T12:10:23.577Z"
     },
     {
       "id": "D-23-toast-提示恰好一次",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T06:39:09.595Z"
+      "at": "2026-11-11T12:10:23.578Z"
     },
     {
       "id": "D-24",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T06:39:11.092Z"
+      "at": "2026-11-11T12:10:25.020Z"
     },
     {
       "id": "D-25",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T06:39:12.334Z"
+      "at": "2026-11-11T12:10:26.197Z"
     },
     {
       "id": "D-30",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T06:39:17.087Z"
+      "at": "2026-11-11T12:10:30.793Z"
     },
     {
       "id": "D-31b",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T06:39:18.898Z"
+      "at": "2026-11-11T12:10:32.418Z"
     },
     {
       "id": "D-32-novice|1",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T06:39:19.880Z"
+      "at": "2026-11-11T12:10:33.329Z"
     },
     {
       "id": "D-32-novice|2",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T06:39:20.890Z"
+      "at": "2026-11-11T12:10:34.202Z"
     },
     {
       "id": "D-32-novice|3",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T06:39:21.804Z"
+      "at": "2026-11-11T12:10:35.142Z"
     },
     {
       "id": "D-32-basic|1",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T06:39:22.756Z"
+      "at": "2026-11-11T12:10:36.044Z"
     },
     {
       "id": "D-32-basic|2",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T06:39:23.859Z"
+      "at": "2026-11-11T12:10:36.948Z"
     },
     {
       "id": "D-32-basic|3",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T06:39:24.962Z"
+      "at": "2026-11-11T12:10:37.863Z"
     },
     {
       "id": "D-32-intermediate|1",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T06:39:25.957Z"
+      "at": "2026-11-11T12:10:38.709Z"
     },
     {
       "id": "D-32-intermediate|2",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T06:39:27.009Z"
+      "at": "2026-11-11T12:10:39.682Z"
     },
     {
       "id": "D-32-intermediate|3",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T06:39:27.983Z"
+      "at": "2026-11-11T12:10:40.599Z"
     },
     {
       "id": "D-32-advanced|1",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T06:39:29.016Z"
+      "at": "2026-11-11T12:10:41.448Z"
     },
     {
       "id": "D-32-advanced|2",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T06:39:30.011Z"
+      "at": "2026-11-11T12:10:42.282Z"
     },
     {
       "id": "D-32-advanced|3",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T06:39:30.987Z"
+      "at": "2026-11-11T12:10:43.124Z"
     },
     {
       "id": "D-44-极值",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T06:39:32.741Z"
+      "at": "2026-11-11T12:10:44.685Z"
     },
     {
       "id": "D-34",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T06:39:34.265Z"
+      "at": "2026-11-11T12:10:45.842Z"
     },
     {
       "id": "D-35",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T06:39:35.604Z"
+      "at": "2026-11-11T12:10:46.917Z"
     },
     {
       "id": "D-45",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T06:39:36.733Z"
+      "at": "2026-11-11T12:10:47.662Z"
     },
     {
       "id": "D-46",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T06:39:39.763Z"
+      "at": "2026-11-11T12:10:50.324Z"
     },
     {
       "id": "D-55",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T06:39:43.342Z"
+      "at": "2026-11-11T12:10:52.807Z"
     },
     {
       "id": "D-40/41/42",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T06:40:46.938Z"
+      "at": "2026-11-11T12:11:50.171Z"
     }
   ],
   "tierMatrix": [
@@ -1764,7 +1764,7 @@
       "solvable": true,
       "inBand": true,
       "lamps": 8,
-      "clueCount": 1,
+      "clueCount": 2,
       "temperature": 0.68,
       "lampTotal": 8,
       "lampOk": true
@@ -1775,7 +1775,7 @@
       "solvable": true,
       "inBand": true,
       "lamps": 7,
-      "clueCount": 1,
+      "clueCount": 2,
       "temperature": 0.86,
       "lampTotal": 7,
       "lampOk": true
@@ -1786,7 +1786,7 @@
       "solvable": true,
       "inBand": true,
       "lamps": 7,
-      "clueCount": 2,
+      "clueCount": 3,
       "temperature": 1.03,
       "lampTotal": 7,
       "lampOk": true
@@ -1797,7 +1797,7 @@
       "solvable": true,
       "inBand": true,
       "lamps": 6,
-      "clueCount": 1,
+      "clueCount": 2,
       "temperature": 0.75,
       "lampTotal": 6,
       "lampOk": true
@@ -1808,7 +1808,7 @@
       "solvable": true,
       "inBand": true,
       "lamps": 5,
-      "clueCount": 1,
+      "clueCount": 2,
       "temperature": 0.95,
       "lampTotal": 5,
       "lampOk": true
@@ -1819,7 +1819,7 @@
       "solvable": true,
       "inBand": true,
       "lamps": 5,
-      "clueCount": 2,
+      "clueCount": 3,
       "temperature": 1.15,
       "lampTotal": 5,
       "lampOk": true
@@ -1830,7 +1830,7 @@
       "solvable": true,
       "inBand": true,
       "lamps": 5,
-      "clueCount": 2,
+      "clueCount": 3,
       "temperature": 0.83,
       "lampTotal": 5,
       "lampOk": true
@@ -1841,7 +1841,7 @@
       "solvable": true,
       "inBand": true,
       "lamps": 4,
-      "clueCount": 2,
+      "clueCount": 3,
       "temperature": 1.05,
       "lampTotal": 4,
       "lampOk": true
@@ -1863,7 +1863,7 @@
       "solvable": true,
       "inBand": true,
       "lamps": 4,
-      "clueCount": 2,
+      "clueCount": 3,
       "temperature": 0.9,
       "lampTotal": 4,
       "lampOk": true
@@ -1874,7 +1874,7 @@
       "solvable": true,
       "inBand": true,
       "lamps": 3,
-      "clueCount": 2,
+      "clueCount": 3,
       "temperature": 1.14,
       "lampTotal": 3,
       "lampOk": true
@@ -1894,7 +1894,7 @@
   "screenshots": [
     {
       "file": "docs/screenshots/difficulty-novice.png",
-      "bytes": 624341,
+      "bytes": 661306,
       "ok": true,
       "sig": {
         "screen": "screen-game",
@@ -1906,7 +1906,7 @@
     },
     {
       "file": "docs/screenshots/difficulty-basic.png",
-      "bytes": 622017,
+      "bytes": 659511,
       "ok": true,
       "sig": {
         "screen": "screen-game",
@@ -1918,7 +1918,7 @@
     },
     {
       "file": "docs/screenshots/difficulty-intermediate.png",
-      "bytes": 660998,
+      "bytes": 686210,
       "ok": true,
       "sig": {
         "screen": "screen-game",
@@ -1930,7 +1930,7 @@
     },
     {
       "file": "docs/screenshots/difficulty-advanced.png",
-      "bytes": 658439,
+      "bytes": 687393,
       "ok": true,
       "sig": {
         "screen": "screen-game",
@@ -1942,7 +1942,7 @@
     },
     {
       "file": "docs/screenshots/difficulty-advanced-night3.png",
-      "bytes": 683335,
+      "bytes": 682529,
       "ok": true,
       "sig": {
         "screen": "screen-game",
@@ -1954,7 +1954,7 @@
     },
     {
       "file": "docs/screenshots/difficulty-human-path-01-cover.png",
-      "bytes": 766154,
+      "bytes": 764303,
       "ok": true,
       "sig": {
         "screen": "screen-intro",
@@ -1966,7 +1966,7 @@
     },
     {
       "file": "docs/screenshots/difficulty-human-path-02-select.png",
-      "bytes": 762516,
+      "bytes": 762730,
       "ok": true,
       "sig": {
         "screen": "screen-intro",
@@ -1978,7 +1978,7 @@
     },
     {
       "file": "docs/screenshots/difficulty-human-path-03-game.png",
-      "bytes": 620471,
+      "bytes": 658735,
       "ok": true,
       "sig": {
         "screen": "screen-game",
@@ -2001,7 +2001,7 @@
       "reviewer": "team-lead",
       "note": "第 1 夜·新手级；顶栏「新手级」+ 8 / 8 盏全亮；左侧校验行「1 条物证 · 至少 3 次问话 / 共 8 盏灯 seed SD-PWVXSYu-n1」；正文叙事「灯只点 8 回」与灯数一致；三客人卡、话题按钮、指认按钮齐全，无溢出重叠。",
       "sigMatched": true,
-      "bytesRatio": 0.998,
+      "bytesRatio": 1.057,
       "bytesInBand": true,
       "pixelHashMatched": false,
       "sig": {
@@ -2019,7 +2019,7 @@
       "reviewer": "team-lead",
       "note": "第 1 夜·初级（默认档）；6 / 6 盏；「1 条物证 / 共 6 盏灯 seed SD-PVRA4ZFPn1」；叙事「灯只点 6 回」。与 v1.1.0 基线一致，默认档外观未被改动。",
       "sigMatched": true,
-      "bytesRatio": 1.002,
+      "bytesRatio": 1.063,
       "bytesInBand": true,
       "pixelHashMatched": false,
       "sig": {
@@ -2037,7 +2037,7 @@
       "reviewer": "team-lead",
       "note": "第 1 夜·中级；5 / 5 盏；「2 条物证 · 至少 3 次问话 / 共 5 盏灯 seed SD-PVSLYR8In1」；物证框出现 2 张、对话区 2 条物证文本，与 clueCount+1 一致；版面未因多一条物证而挤压。",
       "sigMatched": true,
-      "bytesRatio": 1.005,
+      "bytesRatio": 1.043,
       "bytesInBand": true,
       "pixelHashMatched": false,
       "sig": {
@@ -2055,7 +2055,7 @@
       "reviewer": "team-lead",
       "note": "第 1 夜·高级；4 / 4 盏；「2 条物证 · 至少 3 次问话 / 共 4 盏灯 seed SD-PVTXZ0x2n1」；4 盏仍满足「至少 3 次问话」可解下限；客人卡与话题区完整。",
       "sigMatched": true,
-      "bytesRatio": 0.999,
+      "bytesRatio": 1.043,
       "bytesInBand": true,
       "pixelHashMatched": false,
       "sig": {
@@ -2073,7 +2073,7 @@
       "reviewer": "team-lead",
       "note": "第三夜·高级；3 / 3 盏（5 −2 已触下限 3）；「3 条物证 / 共 3 盏灯 seed QA-DIFF-A-n3」；叙事「第 3 夜…灯只点 3 回」；三夜叠加与档位正交生效且未越界。",
       "sigMatched": true,
-      "bytesRatio": 1,
+      "bytesRatio": 0.999,
       "bytesInBand": true,
       "pixelHashMatched": false,
       "sig": {
@@ -2091,7 +2091,7 @@
       "reviewer": "team-lead",
       "note": "冷启动封面（未注入任何探针）：封面出现「难度 ｜ 新手级 ｜ 初级 ｜ 中级 ｜ 高级」五段控件，默认选中「初级」为琥珀描边；控件位于主按钮与底部链接之间，不与「点亮·开始守灯」等按钮重叠，右下水印 seed 正常显示。",
       "sigMatched": true,
-      "bytesRatio": 1.002,
+      "bytesRatio": 0.999,
       "bytesInBand": true,
       "pixelHashMatched": false,
       "sig": {
@@ -2127,7 +2127,7 @@
       "reviewer": "team-lead",
       "note": "真实指针点「点亮·开始守灯」后进入对局：初级 6 / 6 盏、三客人卡与话题栏渲染完整、指认按钮可用；说明从封面选档到进夜整条路径无阻断。",
       "sigMatched": true,
-      "bytesRatio": 0.997,
+      "bytesRatio": 1.059,
       "bytesInBand": true,
       "pixelHashMatched": false,
       "sig": {
@@ -2151,12 +2151,12 @@
     "selftest": {
       "pass": true,
       "exit": 0,
-      "tail": "ratio\":0.917,\"firstTrace\":{\"seed\":\"AGENT_0\",\"night\":1,\"steps\":6,\"correct\":true,\"actions\":[{\"type\":\"ASK\",\"guestId\":\"g0\",\"topic\":\"hour\",\"tone\":\"warm\"},{\"type\":\"ASK\",\"guestId\":\"g1\",\"topic\":\"hour\",\"tone\":\"warm\"},{\"type\":\"ASK\",\"guestId\":\"g2\n---\n汇总: {\"total\":6,\"passed\":6,\"failed\":0,\"allPass\":true}\n缺陷复现 F-01 reproduced = true\n已写出: C:\\Users\\lll\\AppData\\Local\\Temp\\qa-difficulty-selftest-1794379183412.json\n"
+      "tail": "ratio\":0.9,\"firstTrace\":{\"seed\":\"AGENT_0\",\"night\":1,\"steps\":6,\"correct\":true,\"actions\":[{\"type\":\"ASK\",\"guestId\":\"g0\",\"topic\":\"hour\",\"tone\":\"warm\"},{\"type\":\"ASK\",\"guestId\":\"g1\",\"topic\":\"hour\",\"tone\":\"warm\"},{\"type\":\"ASK\",\"guestId\":\"g2\",\n---\n汇总: {\"total\":6,\"passed\":6,\"failed\":0,\"allPass\":true}\n缺陷复现 F-01 reproduced = true\n已写出: C:\\Users\\lll\\AppData\\Local\\Temp\\qa-difficulty-selftest-1794399052868.json\n"
     },
     "browserSmoke": {
       "pass": true,
       "exit": 0,
-      "tail": "\n    \"guide-cold-start.png\",\n    \"guide-human-path-01-cover.png\",\n    \"guide-human-path-02-G1.png\",\n    \"guide-human-path-03-G2.png\",\n    \"guide-mobile-after-end.png\",\n    \"guide-mobile-G1.png\",\n    \"guide-mobile-G4.png\",\n    \"guide-mobile-G5.png\",\n    \"guide-replay-active.png\",\n    \"guide-replay-after-end.png\",\n    \"guide-replay-menu.png\",\n    \"guide-skip.png\"\n  ],\n  \"errors\": [],\n  \"logs\": []\n}\n"
+      "tail": " \"guide-human-path-01-cover.png\",\n    \"guide-human-path-02-G1.png\",\n    \"guide-human-path-03-G2.png\",\n    \"guide-mobile-after-end.png\",\n    \"guide-mobile-G1.png\",\n    \"guide-mobile-G4.png\",\n    \"guide-mobile-G5.png\",\n    \"guide-replay-active.png\",\n    \"guide-replay-after-end.png\",\n    \"guide-replay-menu.png\",\n    \"guide-skip.png\",\n    \"promo-cover-vertical.png\"\n  ],\n  \"errors\": [],\n  \"logs\": []\n}\n"
     },
     "guideSmoke": {
       "pass": true,

@@ -23,9 +23,9 @@ const CONTRACT = require('./difficulty-contract.cjs');
 const TIER_IDS = CONTRACT.TIER_IDS;
 const DEFAULT_TIER = CONTRACT.DEFAULT_TIER;
 const D0 = {                                                         // §1.1 夜数曲线（读码所得基线）
-  1: { lamps: 6, clueCount: 1, evadeBoost: -0.60, temperature: 0.75 },
-  2: { lamps: 5, clueCount: 1, evadeBoost: 0.00, temperature: 0.95 },
-  3: { lamps: 5, clueCount: 2, evadeBoost: 0.55, temperature: 1.15 }
+  1: { lamps: 6, clueCount: 2, evadeBoost: -0.60, temperature: 0.75 },
+  2: { lamps: 5, clueCount: 2, evadeBoost: 0.00, temperature: 0.95 },
+  3: { lamps: 5, clueCount: 3, evadeBoost: 0.55, temperature: 1.15 }
 };
 const T = {                                                          // §3.2 13 项契约（12 项数值 + 1 派生）
   novice:       { dLamps: 2,  dClue: 0, dEvade: -0.20, kTemp: 0.90, dRhFrom: 2,  dFleeFrom: 1,
@@ -45,17 +45,17 @@ const RANGE = {                                                      // §1.3 �
 };
 /* §5.3 12 组派生终值表（逐行抄录，作为期望值） */
 const EXPECT_MATRIX = {
-  'novice|1':        { lamps: 8, clueCount: 1, evadeBoost: -0.80, temperature: 0.68, rhFrom: 4, fleeFrom: 4, trustMaskBelow: 25, tensionLeaveAt: 80, fleeSuspicionAt: 80, suspicionGainScale: 0.70, chainMinForFullCredit: 1, endingBestTrust: 45 },
-  'novice|2':        { lamps: 7, clueCount: 1, evadeBoost: -0.20, temperature: 0.86, rhFrom: 4, fleeFrom: 4, trustMaskBelow: 25, tensionLeaveAt: 80, fleeSuspicionAt: 80, suspicionGainScale: 0.70, chainMinForFullCredit: 1, endingBestTrust: 45 },
-  'novice|3':        { lamps: 7, clueCount: 2, evadeBoost: 0.35,  temperature: 1.03, rhFrom: 4, fleeFrom: 4, trustMaskBelow: 25, tensionLeaveAt: 80, fleeSuspicionAt: 80, suspicionGainScale: 0.70, chainMinForFullCredit: 1, endingBestTrust: 45 },
-  'basic|1':         { lamps: 6, clueCount: 1, evadeBoost: -0.60, temperature: 0.75, rhFrom: 2, fleeFrom: 3, trustMaskBelow: 35, tensionLeaveAt: 70, fleeSuspicionAt: 60, suspicionGainScale: 1.00, chainMinForFullCredit: 2, endingBestTrust: 55 },
-  'basic|2':         { lamps: 5, clueCount: 1, evadeBoost: 0.00,  temperature: 0.95, rhFrom: 2, fleeFrom: 3, trustMaskBelow: 35, tensionLeaveAt: 70, fleeSuspicionAt: 60, suspicionGainScale: 1.00, chainMinForFullCredit: 2, endingBestTrust: 55 },
-  'basic|3':         { lamps: 5, clueCount: 2, evadeBoost: 0.55,  temperature: 1.15, rhFrom: 2, fleeFrom: 3, trustMaskBelow: 35, tensionLeaveAt: 70, fleeSuspicionAt: 60, suspicionGainScale: 1.00, chainMinForFullCredit: 2, endingBestTrust: 55 },
-  'intermediate|1':  { lamps: 5, clueCount: 2, evadeBoost: -0.45, temperature: 0.83, rhFrom: 1, fleeFrom: 2, trustMaskBelow: 40, tensionLeaveAt: 65, fleeSuspicionAt: 55, suspicionGainScale: 1.20, chainMinForFullCredit: 3, endingBestTrust: 60 },
-  'intermediate|2':  { lamps: 4, clueCount: 2, evadeBoost: 0.15,  temperature: 1.05, rhFrom: 1, fleeFrom: 2, trustMaskBelow: 40, tensionLeaveAt: 65, fleeSuspicionAt: 55, suspicionGainScale: 1.20, chainMinForFullCredit: 3, endingBestTrust: 60 },
+  'novice|1':        { lamps: 8, clueCount: 2, evadeBoost: -0.80, temperature: 0.68, rhFrom: 4, fleeFrom: 4, trustMaskBelow: 25, tensionLeaveAt: 80, fleeSuspicionAt: 80, suspicionGainScale: 0.70, chainMinForFullCredit: 1, endingBestTrust: 45 },
+  'novice|2':        { lamps: 7, clueCount: 2, evadeBoost: -0.20, temperature: 0.86, rhFrom: 4, fleeFrom: 4, trustMaskBelow: 25, tensionLeaveAt: 80, fleeSuspicionAt: 80, suspicionGainScale: 0.70, chainMinForFullCredit: 1, endingBestTrust: 45 },
+  'novice|3':        { lamps: 7, clueCount: 3, evadeBoost: 0.35,  temperature: 1.03, rhFrom: 4, fleeFrom: 4, trustMaskBelow: 25, tensionLeaveAt: 80, fleeSuspicionAt: 80, suspicionGainScale: 0.70, chainMinForFullCredit: 1, endingBestTrust: 45 },
+  'basic|1':         { lamps: 6, clueCount: 2, evadeBoost: -0.60, temperature: 0.75, rhFrom: 2, fleeFrom: 3, trustMaskBelow: 35, tensionLeaveAt: 70, fleeSuspicionAt: 60, suspicionGainScale: 1.00, chainMinForFullCredit: 2, endingBestTrust: 55 },
+  'basic|2':         { lamps: 5, clueCount: 2, evadeBoost: 0.00,  temperature: 0.95, rhFrom: 2, fleeFrom: 3, trustMaskBelow: 35, tensionLeaveAt: 70, fleeSuspicionAt: 60, suspicionGainScale: 1.00, chainMinForFullCredit: 2, endingBestTrust: 55 },
+  'basic|3':         { lamps: 5, clueCount: 3, evadeBoost: 0.55,  temperature: 1.15, rhFrom: 2, fleeFrom: 3, trustMaskBelow: 35, tensionLeaveAt: 70, fleeSuspicionAt: 60, suspicionGainScale: 1.00, chainMinForFullCredit: 2, endingBestTrust: 55 },
+  'intermediate|1':  { lamps: 5, clueCount: 3, evadeBoost: -0.45, temperature: 0.83, rhFrom: 1, fleeFrom: 2, trustMaskBelow: 40, tensionLeaveAt: 65, fleeSuspicionAt: 55, suspicionGainScale: 1.20, chainMinForFullCredit: 3, endingBestTrust: 60 },
+  'intermediate|2':  { lamps: 4, clueCount: 3, evadeBoost: 0.15,  temperature: 1.05, rhFrom: 1, fleeFrom: 2, trustMaskBelow: 40, tensionLeaveAt: 65, fleeSuspicionAt: 55, suspicionGainScale: 1.20, chainMinForFullCredit: 3, endingBestTrust: 60 },
   'intermediate|3':  { lamps: 4, clueCount: 3, evadeBoost: 0.70,  temperature: 1.26, rhFrom: 1, fleeFrom: 2, trustMaskBelow: 40, tensionLeaveAt: 65, fleeSuspicionAt: 55, suspicionGainScale: 1.20, chainMinForFullCredit: 3, endingBestTrust: 60 },
-  'advanced|1':      { lamps: 4, clueCount: 2, evadeBoost: -0.30, temperature: 0.90, rhFrom: 1, fleeFrom: 2, trustMaskBelow: 45, tensionLeaveAt: 60, fleeSuspicionAt: 48, suspicionGainScale: 1.40, chainMinForFullCredit: 3, endingBestTrust: 65 },
-  'advanced|2':      { lamps: 3, clueCount: 2, evadeBoost: 0.30,  temperature: 1.14, rhFrom: 1, fleeFrom: 2, trustMaskBelow: 45, tensionLeaveAt: 60, fleeSuspicionAt: 48, suspicionGainScale: 1.40, chainMinForFullCredit: 3, endingBestTrust: 65 },
+  'advanced|1':      { lamps: 4, clueCount: 3, evadeBoost: -0.30, temperature: 0.90, rhFrom: 1, fleeFrom: 2, trustMaskBelow: 45, tensionLeaveAt: 60, fleeSuspicionAt: 48, suspicionGainScale: 1.40, chainMinForFullCredit: 3, endingBestTrust: 65 },
+  'advanced|2':      { lamps: 3, clueCount: 3, evadeBoost: 0.30,  temperature: 1.14, rhFrom: 1, fleeFrom: 2, trustMaskBelow: 45, tensionLeaveAt: 60, fleeSuspicionAt: 48, suspicionGainScale: 1.40, chainMinForFullCredit: 3, endingBestTrust: 65 },
   'advanced|3':      { lamps: 3, clueCount: 3, evadeBoost: 0.85,  temperature: 1.38, rhFrom: 1, fleeFrom: 2, trustMaskBelow: 45, tensionLeaveAt: 60, fleeSuspicionAt: 48, suspicionGainScale: 1.40, chainMinForFullCredit: 3, endingBestTrust: 65 }
 };
 
@@ -81,7 +81,7 @@ function derive(tierId, night) {
   r.suspicionGainScale = t.suspicionGainScale;
   r.chainMinForFullCredit = t.chainMinForFullCredit;
   r.endingBestTrust = t.endingBestTrust;
-  r.endingBestChain = 3 * r.clueCount;                     // §5.2 L259 派生，不设独立数值
+  r.endingBestChain = 2 * r.clueCount;                     // §5.2 L259 派生，不设独立数值
   return r;
 }
 
@@ -169,7 +169,7 @@ for (const tier of TIER_IDS) {
     const matched = eq(Object.keys(expect).reduce((o, k) => { o[k] = actual[k]; return o; }, {}), expect);
     const outOfRange = Object.keys(RANGE).filter(k => actual[k] < RANGE[k][0] || actual[k] > RANGE[k][1]);
     const solvable = actual.lamps >= 3;                                  // 手算：3 位客人至少问遍三人
-    const chainDerived = actual.endingBestChain === 3 * actual.clueCount; // §5.2 派生一致
+    const chainDerived = actual.endingBestChain === 2 * actual.clueCount; // §5.2 派生一致
     matrix.push({ key, matched, outOfRange, solvable, chainDerived, lamps: actual.lamps,
       clueCount: actual.clueCount, temperature: actual.temperature });
   }
@@ -185,7 +185,7 @@ results.filter(r => !r.pass).forEach(r => console.log('  FAIL ' + r.name +
   ' expected=' + JSON.stringify(r.expect) + ' actual=' + JSON.stringify(r.actual)));
 console.log('matrix ' + matrix.filter(m => m.matched).length + '/12 与 §5.3 派生表逐项一致');
 console.log('boundary ' + matrix.filter(m => m.outOfRange.length === 0 && m.solvable && m.chainDerived).length +
-  '/12 合法区间 + lamps>=3 + endingBestChain=3*clueCount 全成立');
+  '/12 合法区间 + lamps>=3 + endingBestChain=2*clueCount 全成立');
 console.log('extremes ' + JSON.stringify({
   upper: matrix.find(m => m.key === 'novice|1'),
   lower: matrix.find(m => m.key === 'advanced|3'),

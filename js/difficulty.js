@@ -72,10 +72,13 @@
 
   /* ---------------- 3. D₀(n) 现状三夜基线（设计案 §1.1，读码所得） ---------------- */
   // redHerring / allowFlee 不在此存值：由 n >= rhFrom / n >= fleeFrom 派生，避免第二份事实。
+  // 注：clueCount 于 v1.3.0 由 1/1/2 上调为 2/2/3 —— 原值下每夜只有 1 条物证话题，
+  // 3 位客人问遍即「无话可问」，一局 4 步结束（实测 120 seeds 平均 4.79 步）；
+  // 上调后每夜有 2~3 条物证可交叉验证，问话自然变成 5~7 步。lamps 不动，保持「六盏灯」叙事。
   var BASE_NIGHTS = [
-    { night: 1, lamps: 6, clueCount: 1, evadeBoost: -0.60, temperature: 0.75, rhFrom: 2, fleeFrom: 3 },
-    { night: 2, lamps: 5, clueCount: 1, evadeBoost: 0,    temperature: 0.95, rhFrom: 2, fleeFrom: 3 },
-    { night: 3, lamps: 5, clueCount: 2, evadeBoost: 0.55,  temperature: 1.15, rhFrom: 2, fleeFrom: 3 }
+    { night: 1, lamps: 6, clueCount: 2, evadeBoost: -0.60, temperature: 0.75, rhFrom: 2, fleeFrom: 3 },
+    { night: 2, lamps: 5, clueCount: 2, evadeBoost: 0,    temperature: 0.95, rhFrom: 2, fleeFrom: 3 },
+    { night: 3, lamps: 5, clueCount: 3, evadeBoost: 0.55,  temperature: 1.15, rhFrom: 2, fleeFrom: 3 }
   ];
 
   /* ---------------- 4. 十三项契约值（唯一数值录入处，逐字取自设计案 §3.2） ----------------

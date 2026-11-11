@@ -26,9 +26,9 @@
     }
     if (game.lampsLeft <= 1) return { type: 'ACCUSE', guestId: bestGuess() };
 
-    // 张力过高时先「添茶」，避免 NPC 触发离店导致证据路径关闭
+    // 张力过高时先「添茶」：既压住离店风险，也换来 2 次不被闪避的问话窗口
     var maxTension = Math.max.apply(null, game.guests.map(function (q) { return q.state.tension; }));
-    if (maxTension >= 72 && game.lampsLeft >= 3) return { type: 'LISTEN' };
+    if (maxTension >= 65 && game.lampsLeft >= 2) return { type: 'LISTEN' };
 
     var clueTopics = game.cs.clues.map(function (c) { return c.topic; });
     var have = {}, attempts = {};
