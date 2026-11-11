@@ -408,6 +408,7 @@
         '<div class="reveal-row"><div class="k">无相</div><div class="v"><i>' + esc(r.impostor) + '</i>　·　你指认了 ' + esc(r.accused || '（无人）') + '</div></div>' + reveal,
       belief: '<div style="font-size:11px;color:var(--muted);letter-spacing:.14em;margin:6px 0">掌 柜 的 判 断（证词推理置信度）</div>' + belief,
       review: r.review || null,
+      chain: r.chain,
       foot: '证据链 ' + r.chain + ' 条 · 余灯 ' + r.lampsLeft + ' 盏 · 平均信任 ' + r.avgTrust + '　|　seed ' + esc(game.seed)
     };
   }
