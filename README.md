@@ -78,6 +78,29 @@ node tools/selftest.cjs --seeds 200 --json tools/selftest-report.json
 
 ---
 
+## AI 架构：端侧保底，**LLM 可选、默认关**
+
+核心决策与措辞**全部在浏览器端完成**（`js/npc.js` 效用打分 + 规则掩码 + 模板措辞，`js/director.js` 程序化生成案件），
+**零网络、断网可玩、可复现**。云端大模型是**可选项，默认关闭**：
+
+| 层 | 位置 | 默认 | 说明 |
+| --- | --- | --- | --- |
+| L0 决策 | 浏览器本地 | **必选** | 五维状态 × 人格权重 → 效用 → softmax → 规则校验 → 状态回写；**永不上云** |
+| L1 措辞 | 浏览器本地 | **必选** | 人格词典 + 状态/记忆模板组合 |
+| L2 云端润色 | 自建端点（可选） | **关闭** | 只润色台词表层措辞，**不改决策与存档**；1.5s 超时或任何异常静默回退原文 |
+| L3 DGX 本地大模型 | DGX Spark | **未启用** | 算力**已申请、待审批**；若获批仅用于离线演示 / 录屏 / 评审现场，不挂公开链接 |
+
+**怎么开 L2**（公开链接默认不带端点、不带密钥，不注入即完全零网络）：
+
+```js
+// 浏览器控制台手动注入即启用；删除即恢复纯端侧
+window.SANDENG_LLM = { endpoint: 'https://your-endpoint/polish', key: 'optional', timeout: 1500 };
+// 请求体 { persona, state, action, baseText } → 响应 { text }
+```
+
+适配器实现见 `js/llm.js`，只在 `js/main.js` 的 `afterDispatch` 单点挂钩，**不触碰 `game.js` 状态机**；
+开启与否不影响 `getState()` 与所有自检结果。设计取舍与计费规避见 `docs/AI架构-B方案-端侧+云端兜底-v1.md`。
+
 ## 结构化接口（评测 / 二次开发）
 
 浏览器控制台可直接使用 `window.SANDENG_API`：
@@ -108,6 +131,9 @@ js/game.js              纯状态机 / 计分 / 快照
 js/agent.js             影子掌柜 Agent / 工程自检 / 缺陷复现
 js/ui.js                程序化立绘 / Canvas 夜景 / WebAudio / DOM 渲染
 js/main.js              流程编排 / 存档 / 弹窗 / 对外 API
+js/guide.js             新用户六步引导（G1–G6）
+js/difficulty.js        四档难度配置与派生（唯一数值来源）
+js/llm.js               L2 云端润色可选适配器（默认关、零网络）
 docs/                   创作手记、报名帖、部署指南、交付清单、截图、演示视频
 tools/                  自检 CLI、浏览器冒烟测试、录屏脚本及运行记录
 ```

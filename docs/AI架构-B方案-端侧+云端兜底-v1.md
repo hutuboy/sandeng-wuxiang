@@ -77,7 +77,11 @@
 - [x] 交付清单 §六 冲金奖策略同步
 - [x] 代码：`js/llm.js` 可选适配器（默认关、1.5s 超时、静默回退）+ `js/main.js` `afterDispatch` 单点挂钩（未改 `game.js`）
 - [x] 验收：L2 关闭下重跑 `selftest` **6/6**、`difficulty-smoke` **44/44**、`browser-smoke errors=[]`，负向计数全 0，`nonFileRequestCount=0`
-- [ ] 部署（待用户操作）：魔搭创空间选**免费 CPU**，README 写清"LLM 可选、默认关"
+- [x] 部署（2026-11-11 已完成）：魔搭创空间 **Static + 免费 CPU（2vCPU/8GB）**，未选付费 GPU；
+      线上 https://modelscope.cn/studios/hutuboy/sandeng-wuxiang ，`status=Running`，真实浏览器端到端通关复验通过
+- [x] README 写清「**LLM 可选、默认关**」+ 开启方法与 DGX 待批口径（2026-11-11 补，见 README「AI 架构」节）
+- [ ] DGX Spark 算力：**已申请、待审批**（不影响交付；详见 §7 风险与回退）
+- [x] 上线后平衡优化 v1.3.0（`clueCount` 2/2/3、证据链主导计分、添茶换真话），回归与线上复验全绿
 
 ---
 
