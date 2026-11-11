@@ -19,7 +19,10 @@ license: mit
 
 ## 直接试玩
 
-双击根目录 `index.html` 即可（无需安装、无需构建、无需联网）。
+**在线试玩（魔搭创空间）**：https://modelscope.cn/studios/hutuboy/sandeng-wuxiang
+（Static 类型 · 公开访问 · 免费 CPU；直连应用地址 `https://hutuboy-sandeng-wuxiang.ms.show/`）
+
+本地试玩：双击根目录 `index.html` 即可（无需安装、无需构建、无需联网）。
 也可起一个静态服务器：
 
 ```bash
