@@ -19,8 +19,12 @@
  *      第 13 项 endingBestChain 为派生量（= clueCount × 3），按设计案「不设独立数值」
  *      不进配置、不进 cs.difficulty，由 game.js 现算，列入 DERIVED_KEYS 仅作声明。
  *
- * 本轮范围：只改写本文件。**未接线** —— index.html 未引入、未改动任何其它文件。
- *   接线点见制作人裁决单 §5 裁决 E（14 处），须另行派单后全仓检索消费者逐行施工。
+ * 接线状态（v1.2.0 已完成，裁决单 §5 裁决 E）：index.html 在 core.js 之后、director.js 之前引入；
+ *   director.js（legacyDifficulty 渐进守卫 / difficulty(night,tier) / generate 第三参）、
+ *   npc.js（trustMaskBelow / tensionLeaveAt / fleeSuspicionAt / suspicionGainScale）、
+ *   game.js（chainMinForFullCredit / endingBestTrust）、
+ *   main.js（session.difficultyTier / ?difficulty= 解析 / SANDENG_API.getDifficulty()）、
+ *   ui.js + style.css（封面四档 #tier-pick / 顶栏 #tb-tier）均已按 13 字段消费。
  *
  * 硬约束：
  *   - 零依赖（不 require / import）、不读 DOM、不碰平台存储、不发网络、不用定时器

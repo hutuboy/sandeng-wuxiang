@@ -85,9 +85,15 @@ function derive(tierId, night) {
   return r;
 }
 
-/* H3 升级（team-lead 指令）：契约公式独立复算 → 与运行时 paramsFor(tier,night)
-   输出逐项对拍。运行时未接线（fn 缺失）→ covered:false，如实标注，不猜测。
-   注意：期望值始终来自本文件顶部写死常量，绝不从运行时输出反推（判据①）。 */
+/* 运行时已接线（v1.2.0）：直接 require js/difficulty.js 取 paramsFor 逐项对拍。
+   期望值始终来自本文件顶部写死常量，绝不从运行时输出反推（判据①）；若运行时加载失败，
+   covered:false 如实标注，不猜测、不放过。 */
+function loadRuntimeParamsFor() {
+  try {
+    const m = require('../../js/difficulty.js');
+    return (m && typeof m.paramsFor === 'function') ? m.paramsFor : null;
+  } catch (e) { return null; }
+}
 function compareWithRuntime(runtimeParamsFor) {
   if (typeof runtimeParamsFor !== 'function') {
     return { covered: false, reason: 'IMPL_NOT_WIRED', total: 12, passed: 0, mismatched: [] };
@@ -190,7 +196,8 @@ console.log('manualRecheck ' + JSON.stringify(results.filter(r => r.hit && r.pas
 console.log('note: 期望值来自 §3.2 契约 / §5.3 表（写死常量）；derive() 为 §5.2 公式独立实现；二者互证。');
 console.log('contract ' + JSON.stringify({ tiers: CONTRACT.TIER_IDS, default: CONTRACT.DEFAULT_TIER,
   urlKey: CONTRACT.URL_KEY, sessionField: CONTRACT.SESSION_FIELD, reproKey: CONTRACT.REPRO_KEY }));
-console.log('runtimeCompare ' + JSON.stringify(compareWithRuntime(null)) +
-  '  // 运行时未接线，本轮如实标未覆盖，待实现完成后由 difficulty-smoke.cjs 注入 paramsFor 对拍');
-process.exit(harnessOk && matrixOk ? 0 : 1);
+console.log('runtimeCompare ' + JSON.stringify(compareWithRuntime(loadRuntimeParamsFor())) +
+  '  // 与 js/difficulty.js 的 paramsFor(tier,night) 逐项对拍；期望值来自本文件写死常量');
+const runtimeOk = compareWithRuntime(loadRuntimeParamsFor()).passed === 12;
+process.exit(harnessOk && matrixOk && runtimeOk ? 0 : 1);
 } /* end require.main guard */
