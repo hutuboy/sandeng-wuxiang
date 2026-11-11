@@ -357,6 +357,11 @@
     set('tb-lamps', lampsHtml(game));
     set('tb-lamp-text', game.lampsLeft + ' / ' + game.lamps + ' 盏');
     set('tb-score', String(ctx.session.totalScore || 0));
+    var D = SD.Difficulty;
+    var tierId = D ? D.normalize(ctx.session && ctx.session.difficultyTier) : 'basic';
+    set('tb-tier', D ? D.label(tierId) : '初级');
+    var tierEl = document.getElementById('tb-tier');
+    if (tierEl) tierEl.setAttribute('data-difficulty-tier', tierId);
     set('tb-phase', game.lampsLeft <= 1 ? '灯将尽，该决断了' : '掌柜，客人都到齐了');
     set('guest-row', guestHtml(game, ctx.selected));
     set('dialogue', dialogueHtml(game));

@@ -25,6 +25,13 @@
       <button class="btn btn-primary" id="btn-start">点灯 · 开始守夜</button>
       <button class="btn" id="btn-continue">续上昨夜</button>
       <button class="btn btn-ghost" id="btn-autopilot">看影子掌柜试玩</button>
+      <div class="tier-pick" id="tier-pick" role="radiogroup" aria-label="难度">
+        <span class="tier-pick__label">难度</span>
+        <button type="button" class="btn btn-small tier-opt" data-action="set-tier" data-tier="novice" role="radio" aria-checked="false">新手级</button>
+        <button type="button" class="btn btn-small tier-opt is-on" data-action="set-tier" data-tier="basic" role="radio" aria-checked="true">初级</button>
+        <button type="button" class="btn btn-small tier-opt" data-action="set-tier" data-tier="intermediate" role="radio" aria-checked="false">中级</button>
+        <button type="button" class="btn btn-small tier-opt" data-action="set-tier" data-tier="advanced" role="radio" aria-checked="false">高级</button>
+      </div>
     </div>
     <div class="intro-links">
       <button class="linkbtn" data-modal="howto">玩法说明</button>
@@ -53,6 +60,7 @@
     </div>
     <div class="tb-right">
       <div class="tb-score">累计 <b id="tb-score">0</b></div>
+      <span class="tb-tier" id="tb-tier" data-difficulty-tier="basic">初级</span>
       <button class="icon-btn" id="btn-sound" title="音效开关">♪</button>
       <button class="icon-btn" id="btn-ai-toggle" title="AI 决策面板">AI</button>
       <button class="icon-btn" id="btn-help" title="玩法">?</button>
@@ -147,6 +155,7 @@
 <div id="toast" role="status"></div>
 
 <script src="js/core.js"></script>
+<script src="js/difficulty.js"></script>
 <script src="js/director.js"></script>
 <script src="js/npc.js"></script>
 <script src="js/game.js"></script>

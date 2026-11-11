@@ -1,0 +1,2194 @@
+{
+  "generatedAt": "2026-11-11T06:15:29.651Z",
+  "version": "difficulty-smoke.v1",
+  "specStatus": "OK",
+  "implStatus": "WIRED",
+  "specSource": "docs/难度分级-制作人裁决单-v1.md §0–§12",
+  "numericSource": "tools/qa/difficulty-matrix-oracle.cjs 顶部常量（§12.1 指定恢复源）",
+  "contract": {
+    "tiers": [
+      "novice",
+      "basic",
+      "intermediate",
+      "advanced"
+    ],
+    "default": "basic",
+    "urlKey": "difficulty",
+    "sessionField": "difficultyTier",
+    "stateChannel": "SANDENG_API.getDifficulty()",
+    "reproKey": [
+      "seed",
+      "night",
+      "tier"
+    ],
+    "obsoleteVersions": [
+      "docs/难度分级-设计案-v1.md 13:07 六字段重写版（§12.1 撤销）",
+      "docs/难度分级-技术接线-v1.md §9.0 架构自行终裁（§0.1 撤销）"
+    ]
+  },
+  "edge": "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe",
+  "viewports": {
+    "desktop": {
+      "width": 1440,
+      "height": 900
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844
+    }
+  },
+  "seedPool": [
+    "QA-DIFF-A",
+    "QA-DIFF-B",
+    "QA-DIFF-C"
+  ],
+  "harnessSelftest": {
+    "difficulty-oracle-selftest": {
+      "pass": true,
+      "samples": "23/23"
+    },
+    "difficulty-matrix-oracle": {
+      "pass": true,
+      "samples": "10/10"
+    }
+  },
+  "probeSelfTest": {
+    "toast": {
+      "channel": "DOM · 拦截 #toast 的 textContent 写入",
+      "samples": [
+        {
+          "name": "T1 非法 id → 恰好 1 次",
+          "url": "?difficulty=ZZZ_BOGUS",
+          "expect": 1,
+          "observed": 1,
+          "hit": true,
+          "hookErrors": []
+        },
+        {
+          "name": "T2 不带参数 → 0 次",
+          "url": "?seed=QA-DIFF-A",
+          "expect": 0,
+          "observed": 0,
+          "hit": true,
+          "hookErrors": []
+        },
+        {
+          "name": "T3 合法档位 → 0 次",
+          "url": "?difficulty=advanced",
+          "expect": 0,
+          "observed": 0,
+          "hit": true,
+          "hookErrors": []
+        },
+        {
+          "name": "T4 引导态忽略难度 → 0 次",
+          "url": "?guide=1&difficulty=ZZZ_BOGUS",
+          "expect": 0,
+          "observed": 0,
+          "hit": true,
+          "hookErrors": []
+        }
+      ],
+      "pass": true
+    },
+    "clip": {
+      "channel": "DOM · 拦截 Clipboard.writeText / execCommand(\"copy\") 实参",
+      "samples": [
+        {
+          "name": "C1 advanced + 结算屏点复制 → 命中「难度：高级」",
+          "url": "?difficulty=advanced&seed=QA-DIFF-A",
+          "copy": true,
+          "flow": {
+            "started": true,
+            "opened": true,
+            "accused": true,
+            "onResult": true
+          },
+          "clicked": true,
+          "expectHit": true,
+          "captured": "《三更灯 · 无相客栈》｜AI 原生推理游戏\n三夜守灯，认出 0/3 位无相，累计 -120 分，评级「夜行人」。\n三位客人由本地 AI 决策引擎驱动：量化状态",
+          "via": "clipboard",
+          "tierLine": "高级",
+          "hit": true,
+          "ok": true
+        },
+        {
+          "name": "C2 novice + 结算屏点复制 → 不命中「高级」",
+          "url": "?difficulty=novice&seed=QA-DIFF-A",
+          "copy": true,
+          "flow": {
+            "started": true,
+            "opened": true,
+            "accused": true,
+            "onResult": true
+          },
+          "clicked": true,
+          "expectHit": false,
+          "captured": "《三更灯 · 无相客栈》｜AI 原生推理游戏\n三夜守灯，认出 0/3 位无相，累计 -120 分，评级「夜行人」。\n三位客人由本地 AI 决策引擎驱动：量化状态",
+          "via": "clipboard",
+          "tierLine": "新手级",
+          "hit": false,
+          "ok": true
+        },
+        {
+          "name": "C3 advanced 但走完一夜不点复制 → 无文本",
+          "url": "?difficulty=advanced&seed=QA-DIFF-A",
+          "copy": false,
+          "flow": {
+            "started": true,
+            "opened": true,
+            "accused": true,
+            "onResult": true
+          },
+          "clicked": false,
+          "expectHit": false,
+          "captured": null,
+          "via": null,
+          "tierLine": null,
+          "hit": false,
+          "ok": true
+        }
+      ],
+      "pass": true
+    }
+  },
+  "cases": [
+    {
+      "id": "D-10-novice",
+      "ac": "AC-01",
+      "level": "阻断",
+      "pass": true,
+      "status": "PASS",
+      "expected": {
+        "tier": "novice",
+        "params": {
+          "lamps": 8,
+          "clueCount": 1,
+          "evadeBoost": -0.8,
+          "temperature": 0.68,
+          "redHerring": false,
+          "allowFlee": false,
+          "trustMaskBelow": 25,
+          "tensionLeaveAt": 80,
+          "fleeSuspicionAt": 80,
+          "suspicionGainScale": 0.7,
+          "chainMinForFullCredit": 1,
+          "endingBestTrust": 45
+        },
+        "lamps": 8
+      },
+      "actual": {
+        "clicked": true,
+        "lampText": "8 / 8 盏",
+        "lampOn": 8,
+        "domTier": "novice",
+        "apiTier": "novice",
+        "saveTier": "novice",
+        "params": {
+          "night": 1,
+          "lamps": 8,
+          "clueCount": 1,
+          "evadeBoost": -0.8,
+          "redHerring": false,
+          "allowFlee": false,
+          "temperature": 0.68,
+          "trustMaskBelow": 25,
+          "tensionLeaveAt": 80,
+          "fleeSuspicionAt": 80,
+          "suspicionGainScale": 0.7,
+          "chainMinForFullCredit": 1,
+          "endingBestTrust": 45
+        }
+      },
+      "evidence": "真实指针点击 [data-tier] + 三通道（#tb-lamp-text / #tb-tier / getDifficulty / 存档）",
+      "screenshot": null
+    },
+    {
+      "id": "D-44-novice",
+      "ac": "AC-11",
+      "level": "阻断",
+      "pass": true,
+      "status": "PASS",
+      "expected": {
+        "minBytes": 1024
+      },
+      "actual": {
+        "file": "docs/screenshots/difficulty-novice.png"
+      },
+      "evidence": "四档实际渲染帧，0 字节占位不算证据",
+      "screenshot": null
+    },
+    {
+      "id": "D-10-basic",
+      "ac": "AC-01",
+      "level": "阻断",
+      "pass": true,
+      "status": "PASS",
+      "expected": {
+        "tier": "basic",
+        "params": {
+          "lamps": 6,
+          "clueCount": 1,
+          "evadeBoost": -0.6,
+          "temperature": 0.75,
+          "redHerring": false,
+          "allowFlee": false,
+          "trustMaskBelow": 35,
+          "tensionLeaveAt": 70,
+          "fleeSuspicionAt": 60,
+          "suspicionGainScale": 1,
+          "chainMinForFullCredit": 2,
+          "endingBestTrust": 55
+        },
+        "lamps": 6
+      },
+      "actual": {
+        "clicked": true,
+        "lampText": "6 / 6 盏",
+        "lampOn": 6,
+        "domTier": "basic",
+        "apiTier": "basic",
+        "saveTier": "basic",
+        "params": {
+          "night": 1,
+          "lamps": 6,
+          "clueCount": 1,
+          "evadeBoost": -0.6,
+          "redHerring": false,
+          "allowFlee": false,
+          "temperature": 0.75,
+          "trustMaskBelow": 35,
+          "tensionLeaveAt": 70,
+          "fleeSuspicionAt": 60,
+          "suspicionGainScale": 1,
+          "chainMinForFullCredit": 2,
+          "endingBestTrust": 55
+        }
+      },
+      "evidence": "真实指针点击 [data-tier] + 三通道（#tb-lamp-text / #tb-tier / getDifficulty / 存档）",
+      "screenshot": null
+    },
+    {
+      "id": "D-44-basic",
+      "ac": "AC-11",
+      "level": "阻断",
+      "pass": true,
+      "status": "PASS",
+      "expected": {
+        "minBytes": 1024
+      },
+      "actual": {
+        "file": "docs/screenshots/difficulty-basic.png"
+      },
+      "evidence": "四档实际渲染帧，0 字节占位不算证据",
+      "screenshot": null
+    },
+    {
+      "id": "D-10-intermediate",
+      "ac": "AC-01",
+      "level": "阻断",
+      "pass": true,
+      "status": "PASS",
+      "expected": {
+        "tier": "intermediate",
+        "params": {
+          "lamps": 5,
+          "clueCount": 2,
+          "evadeBoost": -0.45,
+          "temperature": 0.83,
+          "redHerring": true,
+          "allowFlee": false,
+          "trustMaskBelow": 40,
+          "tensionLeaveAt": 65,
+          "fleeSuspicionAt": 55,
+          "suspicionGainScale": 1.2,
+          "chainMinForFullCredit": 3,
+          "endingBestTrust": 60
+        },
+        "lamps": 5
+      },
+      "actual": {
+        "clicked": true,
+        "lampText": "5 / 5 盏",
+        "lampOn": 5,
+        "domTier": "intermediate",
+        "apiTier": "intermediate",
+        "saveTier": "intermediate",
+        "params": {
+          "night": 1,
+          "lamps": 5,
+          "clueCount": 2,
+          "evadeBoost": -0.45,
+          "redHerring": true,
+          "allowFlee": false,
+          "temperature": 0.83,
+          "trustMaskBelow": 40,
+          "tensionLeaveAt": 65,
+          "fleeSuspicionAt": 55,
+          "suspicionGainScale": 1.2,
+          "chainMinForFullCredit": 3,
+          "endingBestTrust": 60
+        }
+      },
+      "evidence": "真实指针点击 [data-tier] + 三通道（#tb-lamp-text / #tb-tier / getDifficulty / 存档）",
+      "screenshot": null
+    },
+    {
+      "id": "D-44-intermediate",
+      "ac": "AC-11",
+      "level": "阻断",
+      "pass": true,
+      "status": "PASS",
+      "expected": {
+        "minBytes": 1024
+      },
+      "actual": {
+        "file": "docs/screenshots/difficulty-intermediate.png"
+      },
+      "evidence": "四档实际渲染帧，0 字节占位不算证据",
+      "screenshot": null
+    },
+    {
+      "id": "D-10-advanced",
+      "ac": "AC-01",
+      "level": "阻断",
+      "pass": true,
+      "status": "PASS",
+      "expected": {
+        "tier": "advanced",
+        "params": {
+          "lamps": 4,
+          "clueCount": 2,
+          "evadeBoost": -0.3,
+          "temperature": 0.9,
+          "redHerring": true,
+          "allowFlee": false,
+          "trustMaskBelow": 45,
+          "tensionLeaveAt": 60,
+          "fleeSuspicionAt": 48,
+          "suspicionGainScale": 1.4,
+          "chainMinForFullCredit": 3,
+          "endingBestTrust": 65
+        },
+        "lamps": 4
+      },
+      "actual": {
+        "clicked": true,
+        "lampText": "4 / 4 盏",
+        "lampOn": 4,
+        "domTier": "advanced",
+        "apiTier": "advanced",
+        "saveTier": "advanced",
+        "params": {
+          "night": 1,
+          "lamps": 4,
+          "clueCount": 2,
+          "evadeBoost": -0.3,
+          "redHerring": true,
+          "allowFlee": false,
+          "temperature": 0.9,
+          "trustMaskBelow": 45,
+          "tensionLeaveAt": 60,
+          "fleeSuspicionAt": 48,
+          "suspicionGainScale": 1.4,
+          "chainMinForFullCredit": 3,
+          "endingBestTrust": 65
+        }
+      },
+      "evidence": "真实指针点击 [data-tier] + 三通道（#tb-lamp-text / #tb-tier / getDifficulty / 存档）",
+      "screenshot": null
+    },
+    {
+      "id": "D-44-advanced",
+      "ac": "AC-11",
+      "level": "阻断",
+      "pass": true,
+      "status": "PASS",
+      "expected": {
+        "minBytes": 1024
+      },
+      "actual": {
+        "file": "docs/screenshots/difficulty-advanced.png"
+      },
+      "evidence": "四档实际渲染帧，0 字节占位不算证据",
+      "screenshot": null
+    },
+    {
+      "id": "D-20",
+      "ac": "AC-02",
+      "level": "阻断",
+      "pass": true,
+      "status": "PASS",
+      "expected": {
+        "default": "basic"
+      },
+      "actual": {
+        "apiTier": "basic",
+        "domTier": "basic",
+        "saveTier": "basic"
+      },
+      "evidence": "三通道一致；默认档严禁取 TIER_IDS[0]",
+      "screenshot": null
+    },
+    {
+      "id": "D-21",
+      "ac": "AC-03",
+      "level": "阻断",
+      "pass": true,
+      "status": "PASS",
+      "expected": {
+        "saveUnchanged": true,
+        "fallback": "basic"
+      },
+      "actual": {
+        "unchanged": true,
+        "tier": "basic",
+        "saveSetDelta": 0
+      },
+      "evidence": "预置无 difficultyTier 的 v2 存档；续玩不得改写存档 JSON",
+      "screenshot": null
+    },
+    {
+      "id": "D-22",
+      "ac": "AC-03",
+      "level": "严重",
+      "pass": true,
+      "status": "PASS",
+      "expected": {
+        "pageErrors": 0
+      },
+      "actual": {
+        "pageErrors": []
+      },
+      "evidence": "损坏存档不得导致白屏 / 未捕获异常",
+      "screenshot": null
+    },
+    {
+      "id": "D-23-大小写不符",
+      "ac": "AC-04",
+      "level": "阻断",
+      "pass": true,
+      "status": "PASS",
+      "expected": {
+        "fallback": "basic"
+      },
+      "actual": {
+        "tier": "basic",
+        "toasts": 1
+      },
+      "evidence": "?difficulty=\"BASIC\"；回落为判定依据；提示计数为 DOM 级观测",
+      "screenshot": null
+    },
+    {
+      "id": "D-23-首尾空格",
+      "ac": "AC-04",
+      "level": "阻断",
+      "pass": true,
+      "status": "PASS",
+      "expected": {
+        "fallback": "basic"
+      },
+      "actual": {
+        "tier": "basic",
+        "toasts": 1
+      },
+      "evidence": "?difficulty=\" basic \"；回落为判定依据；提示计数为 DOM 级观测",
+      "screenshot": null
+    },
+    {
+      "id": "D-23-空串",
+      "ac": "AC-04",
+      "level": "阻断",
+      "pass": true,
+      "status": "PASS",
+      "expected": {
+        "fallback": "basic"
+      },
+      "actual": {
+        "tier": "basic",
+        "toasts": 1
+      },
+      "evidence": "?difficulty=\"\"；回落为判定依据；提示计数为 DOM 级观测",
+      "screenshot": null
+    },
+    {
+      "id": "D-23-数字",
+      "ac": "AC-04",
+      "level": "阻断",
+      "pass": true,
+      "status": "PASS",
+      "expected": {
+        "fallback": "basic"
+      },
+      "actual": {
+        "tier": "basic",
+        "toasts": 1
+      },
+      "evidence": "?difficulty=\"2\"；回落为判定依据；提示计数为 DOM 级观测",
+      "screenshot": null
+    },
+    {
+      "id": "D-23-中文档名",
+      "ac": "AC-04",
+      "level": "阻断",
+      "pass": true,
+      "status": "PASS",
+      "expected": {
+        "fallback": "basic"
+      },
+      "actual": {
+        "tier": "basic",
+        "toasts": 1
+      },
+      "evidence": "?difficulty=\"初级\"；回落为判定依据；提示计数为 DOM 级观测",
+      "screenshot": null
+    },
+    {
+      "id": "D-23-null/undefined",
+      "ac": "AC-04",
+      "level": "阻断",
+      "pass": true,
+      "status": "PASS",
+      "expected": {
+        "fallback": "basic"
+      },
+      "actual": {
+        "tier": "basic",
+        "toasts": 1
+      },
+      "evidence": "?difficulty=\"null\"；回落为判定依据；提示计数为 DOM 级观测",
+      "screenshot": null
+    },
+    {
+      "id": "D-23-URL 编码残留",
+      "ac": "AC-04",
+      "level": "阻断",
+      "pass": true,
+      "status": "PASS",
+      "expected": {
+        "fallback": "basic"
+      },
+      "actual": {
+        "tier": "basic",
+        "toasts": 1
+      },
+      "evidence": "?difficulty=\"basic%20\"；回落为判定依据；提示计数为 DOM 级观测",
+      "screenshot": null
+    },
+    {
+      "id": "D-23-原型链键",
+      "ac": "AC-04",
+      "level": "阻断",
+      "pass": true,
+      "status": "PASS",
+      "expected": {
+        "fallback": "basic"
+      },
+      "actual": {
+        "tier": "basic",
+        "toasts": 1
+      },
+      "evidence": "?difficulty=\"__proto__\"；回落为判定依据；提示计数为 DOM 级观测",
+      "screenshot": null
+    },
+    {
+      "id": "D-23-汇总",
+      "ac": "AC-04",
+      "level": "阻断",
+      "pass": true,
+      "status": "PASS",
+      "expected": {
+        "samples": 8,
+        "accept": 0
+      },
+      "actual": {
+        "allPass": true,
+        "acceptCount": 0
+      },
+      "evidence": "8 类逐项跑",
+      "screenshot": null
+    },
+    {
+      "id": "D-23-toast-提示恰好一次",
+      "ac": "AC-04",
+      "level": "提示",
+      "pass": true,
+      "status": "PASS",
+      "expected": {
+        "perSample": 1,
+        "samples": 8
+      },
+      "actual": {
+        "samples": 8,
+        "totalToasts": 8,
+        "violations": 0,
+        "violationsDetail": [],
+        "probeSelfTest": "VERIFIED"
+      },
+      "evidence": "DOM 级拦截 #toast.textContent 写入：非法 id 每次载入恰好 1 次提示",
+      "screenshot": null
+    },
+    {
+      "id": "D-24",
+      "ac": "AC-06",
+      "level": "阻断",
+      "pass": true,
+      "status": "PASS",
+      "expected": {
+        "seed": "QA-DIFF-A",
+        "textUnchanged": true,
+        "tierInSeed": []
+      },
+      "actual": {
+        "t0": "seed · QA-DIFF-A",
+        "t1": "seed · QA-DIFF-A",
+        "seen": [
+          "seed · QA-DIFF-A",
+          "seed · QA-DIFF-A",
+          "seed · QA-DIFF-A",
+          "seed · QA-DIFF-A",
+          "seed · QA-DIFF-A"
+        ],
+        "regen": 0,
+        "stateSeed": "QA-DIFF-A",
+        "tierInSeed": []
+      },
+      "evidence": "封面连切四档，#intro-seed 与 getState().seed 恒定；seed 串内不含任何档位 id",
+      "screenshot": null
+    },
+    {
+      "id": "D-25",
+      "ac": "AC-09/回归",
+      "level": "阻断",
+      "pass": true,
+      "status": "PASS",
+      "expected": {
+        "lampsText": "6 / 6 盏",
+        "tier": "basic",
+        "night": 1
+      },
+      "actual": {
+        "lampText": "6 / 6 盏",
+        "lampOn": 6,
+        "tier": "basic",
+        "night": 1
+      },
+      "evidence": "?guide=1 必须忽略 ?difficulty，否则引导 6/6 盏基线整片 FAIL",
+      "screenshot": null
+    },
+    {
+      "id": "D-30",
+      "ac": "AC-05",
+      "level": "阻断",
+      "pass": true,
+      "status": "PASS",
+      "expected": {
+        "steps": 5,
+        "bitwise": true
+      },
+      "actual": {
+        "steps": 2,
+        "equal": true
+      },
+      "evidence": "两个互不共享 localStorage 的独立 context；真实指针点击；逐位（含字段顺序）比对",
+      "screenshot": null
+    },
+    {
+      "id": "D-31b",
+      "ac": "AC-05/§10",
+      "level": "阻断",
+      "pass": true,
+      "status": "PASS",
+      "expected": {
+        "different": true
+      },
+      "actual": {
+        "different": true,
+        "aImpostor": "g2",
+        "bImpostor": "g2"
+      },
+      "evidence": "clueCount / redHerring 改变 buildCase 主 RNG 消费序列 → 档位真实生效；禁止写「同 seed 跨档案件相同」",
+      "screenshot": null
+    },
+    {
+      "id": "D-32-novice|1",
+      "ac": "AC-07",
+      "level": "阻断",
+      "pass": true,
+      "status": "PASS",
+      "expected": {
+        "params": {
+          "lamps": 8,
+          "clueCount": 1,
+          "evadeBoost": -0.8,
+          "temperature": 0.68,
+          "redHerring": false,
+          "allowFlee": false,
+          "trustMaskBelow": 25,
+          "tensionLeaveAt": 80,
+          "fleeSuspicionAt": 80,
+          "suspicionGainScale": 0.7,
+          "chainMinForFullCredit": 1,
+          "endingBestTrust": 45
+        },
+        "lamps": 8,
+        "minActions": 3
+      },
+      "actual": {
+        "matched": true,
+        "solvable": true,
+        "inBand": true,
+        "lampOk": true,
+        "params": {
+          "night": 1,
+          "lamps": 8,
+          "clueCount": 1,
+          "evadeBoost": -0.8,
+          "redHerring": false,
+          "allowFlee": false,
+          "temperature": 0.68,
+          "trustMaskBelow": 25,
+          "tensionLeaveAt": 80,
+          "fleeSuspicionAt": 80,
+          "suspicionGainScale": 0.7,
+          "chainMinForFullCredit": 1,
+          "endingBestTrust": 45
+        },
+        "lampText": "8 / 8 盏"
+      },
+      "evidence": "12 组每组实跑；URL 为玩家可用的复现入口（非 SANDENG_API 调试钩子）",
+      "screenshot": null
+    },
+    {
+      "id": "D-32-novice|2",
+      "ac": "AC-07",
+      "level": "阻断",
+      "pass": true,
+      "status": "PASS",
+      "expected": {
+        "params": {
+          "lamps": 7,
+          "clueCount": 1,
+          "evadeBoost": -0.2,
+          "temperature": 0.86,
+          "redHerring": false,
+          "allowFlee": false,
+          "trustMaskBelow": 25,
+          "tensionLeaveAt": 80,
+          "fleeSuspicionAt": 80,
+          "suspicionGainScale": 0.7,
+          "chainMinForFullCredit": 1,
+          "endingBestTrust": 45
+        },
+        "lamps": 7,
+        "minActions": 3
+      },
+      "actual": {
+        "matched": true,
+        "solvable": true,
+        "inBand": true,
+        "lampOk": true,
+        "params": {
+          "night": 2,
+          "lamps": 7,
+          "clueCount": 1,
+          "evadeBoost": -0.2,
+          "redHerring": false,
+          "allowFlee": false,
+          "temperature": 0.86,
+          "trustMaskBelow": 25,
+          "tensionLeaveAt": 80,
+          "fleeSuspicionAt": 80,
+          "suspicionGainScale": 0.7,
+          "chainMinForFullCredit": 1,
+          "endingBestTrust": 45
+        },
+        "lampText": "7 / 7 盏"
+      },
+      "evidence": "12 组每组实跑；URL 为玩家可用的复现入口（非 SANDENG_API 调试钩子）",
+      "screenshot": null
+    },
+    {
+      "id": "D-32-novice|3",
+      "ac": "AC-07",
+      "level": "阻断",
+      "pass": true,
+      "status": "PASS",
+      "expected": {
+        "params": {
+          "lamps": 7,
+          "clueCount": 2,
+          "evadeBoost": 0.35,
+          "temperature": 1.03,
+          "redHerring": false,
+          "allowFlee": false,
+          "trustMaskBelow": 25,
+          "tensionLeaveAt": 80,
+          "fleeSuspicionAt": 80,
+          "suspicionGainScale": 0.7,
+          "chainMinForFullCredit": 1,
+          "endingBestTrust": 45
+        },
+        "lamps": 7,
+        "minActions": 3
+      },
+      "actual": {
+        "matched": true,
+        "solvable": true,
+        "inBand": true,
+        "lampOk": true,
+        "params": {
+          "night": 3,
+          "lamps": 7,
+          "clueCount": 2,
+          "evadeBoost": 0.35,
+          "redHerring": false,
+          "allowFlee": false,
+          "temperature": 1.03,
+          "trustMaskBelow": 25,
+          "tensionLeaveAt": 80,
+          "fleeSuspicionAt": 80,
+          "suspicionGainScale": 0.7,
+          "chainMinForFullCredit": 1,
+          "endingBestTrust": 45
+        },
+        "lampText": "7 / 7 盏"
+      },
+      "evidence": "12 组每组实跑；URL 为玩家可用的复现入口（非 SANDENG_API 调试钩子）",
+      "screenshot": null
+    },
+    {
+      "id": "D-32-basic|1",
+      "ac": "AC-07",
+      "level": "阻断",
+      "pass": true,
+      "status": "PASS",
+      "expected": {
+        "params": {
+          "lamps": 6,
+          "clueCount": 1,
+          "evadeBoost": -0.6,
+          "temperature": 0.75,
+          "redHerring": false,
+          "allowFlee": false,
+          "trustMaskBelow": 35,
+          "tensionLeaveAt": 70,
+          "fleeSuspicionAt": 60,
+          "suspicionGainScale": 1,
+          "chainMinForFullCredit": 2,
+          "endingBestTrust": 55
+        },
+        "lamps": 6,
+        "minActions": 3
+      },
+      "actual": {
+        "matched": true,
+        "solvable": true,
+        "inBand": true,
+        "lampOk": true,
+        "params": {
+          "night": 1,
+          "lamps": 6,
+          "clueCount": 1,
+          "evadeBoost": -0.6,
+          "redHerring": false,
+          "allowFlee": false,
+          "temperature": 0.75,
+          "trustMaskBelow": 35,
+          "tensionLeaveAt": 70,
+          "fleeSuspicionAt": 60,
+          "suspicionGainScale": 1,
+          "chainMinForFullCredit": 2,
+          "endingBestTrust": 55
+        },
+        "lampText": "6 / 6 盏"
+      },
+      "evidence": "12 组每组实跑；URL 为玩家可用的复现入口（非 SANDENG_API 调试钩子）",
+      "screenshot": null
+    },
+    {
+      "id": "D-32-basic|2",
+      "ac": "AC-07",
+      "level": "阻断",
+      "pass": true,
+      "status": "PASS",
+      "expected": {
+        "params": {
+          "lamps": 5,
+          "clueCount": 1,
+          "evadeBoost": 0,
+          "temperature": 0.95,
+          "redHerring": true,
+          "allowFlee": false,
+          "trustMaskBelow": 35,
+          "tensionLeaveAt": 70,
+          "fleeSuspicionAt": 60,
+          "suspicionGainScale": 1,
+          "chainMinForFullCredit": 2,
+          "endingBestTrust": 55
+        },
+        "lamps": 5,
+        "minActions": 3
+      },
+      "actual": {
+        "matched": true,
+        "solvable": true,
+        "inBand": true,
+        "lampOk": true,
+        "params": {
+          "night": 2,
+          "lamps": 5,
+          "clueCount": 1,
+          "evadeBoost": 0,
+          "redHerring": true,
+          "allowFlee": false,
+          "temperature": 0.95,
+          "trustMaskBelow": 35,
+          "tensionLeaveAt": 70,
+          "fleeSuspicionAt": 60,
+          "suspicionGainScale": 1,
+          "chainMinForFullCredit": 2,
+          "endingBestTrust": 55
+        },
+        "lampText": "5 / 5 盏"
+      },
+      "evidence": "12 组每组实跑；URL 为玩家可用的复现入口（非 SANDENG_API 调试钩子）",
+      "screenshot": null
+    },
+    {
+      "id": "D-32-basic|3",
+      "ac": "AC-07",
+      "level": "阻断",
+      "pass": true,
+      "status": "PASS",
+      "expected": {
+        "params": {
+          "lamps": 5,
+          "clueCount": 2,
+          "evadeBoost": 0.55,
+          "temperature": 1.15,
+          "redHerring": true,
+          "allowFlee": true,
+          "trustMaskBelow": 35,
+          "tensionLeaveAt": 70,
+          "fleeSuspicionAt": 60,
+          "suspicionGainScale": 1,
+          "chainMinForFullCredit": 2,
+          "endingBestTrust": 55
+        },
+        "lamps": 5,
+        "minActions": 3
+      },
+      "actual": {
+        "matched": true,
+        "solvable": true,
+        "inBand": true,
+        "lampOk": true,
+        "params": {
+          "night": 3,
+          "lamps": 5,
+          "clueCount": 2,
+          "evadeBoost": 0.55,
+          "redHerring": true,
+          "allowFlee": true,
+          "temperature": 1.15,
+          "trustMaskBelow": 35,
+          "tensionLeaveAt": 70,
+          "fleeSuspicionAt": 60,
+          "suspicionGainScale": 1,
+          "chainMinForFullCredit": 2,
+          "endingBestTrust": 55
+        },
+        "lampText": "5 / 5 盏"
+      },
+      "evidence": "12 组每组实跑；URL 为玩家可用的复现入口（非 SANDENG_API 调试钩子）",
+      "screenshot": null
+    },
+    {
+      "id": "D-32-intermediate|1",
+      "ac": "AC-07",
+      "level": "阻断",
+      "pass": true,
+      "status": "PASS",
+      "expected": {
+        "params": {
+          "lamps": 5,
+          "clueCount": 2,
+          "evadeBoost": -0.45,
+          "temperature": 0.83,
+          "redHerring": true,
+          "allowFlee": false,
+          "trustMaskBelow": 40,
+          "tensionLeaveAt": 65,
+          "fleeSuspicionAt": 55,
+          "suspicionGainScale": 1.2,
+          "chainMinForFullCredit": 3,
+          "endingBestTrust": 60
+        },
+        "lamps": 5,
+        "minActions": 3
+      },
+      "actual": {
+        "matched": true,
+        "solvable": true,
+        "inBand": true,
+        "lampOk": true,
+        "params": {
+          "night": 1,
+          "lamps": 5,
+          "clueCount": 2,
+          "evadeBoost": -0.45,
+          "redHerring": true,
+          "allowFlee": false,
+          "temperature": 0.83,
+          "trustMaskBelow": 40,
+          "tensionLeaveAt": 65,
+          "fleeSuspicionAt": 55,
+          "suspicionGainScale": 1.2,
+          "chainMinForFullCredit": 3,
+          "endingBestTrust": 60
+        },
+        "lampText": "5 / 5 盏"
+      },
+      "evidence": "12 组每组实跑；URL 为玩家可用的复现入口（非 SANDENG_API 调试钩子）",
+      "screenshot": null
+    },
+    {
+      "id": "D-32-intermediate|2",
+      "ac": "AC-07",
+      "level": "阻断",
+      "pass": true,
+      "status": "PASS",
+      "expected": {
+        "params": {
+          "lamps": 4,
+          "clueCount": 2,
+          "evadeBoost": 0.15,
+          "temperature": 1.05,
+          "redHerring": true,
+          "allowFlee": true,
+          "trustMaskBelow": 40,
+          "tensionLeaveAt": 65,
+          "fleeSuspicionAt": 55,
+          "suspicionGainScale": 1.2,
+          "chainMinForFullCredit": 3,
+          "endingBestTrust": 60
+        },
+        "lamps": 4,
+        "minActions": 3
+      },
+      "actual": {
+        "matched": true,
+        "solvable": true,
+        "inBand": true,
+        "lampOk": true,
+        "params": {
+          "night": 2,
+          "lamps": 4,
+          "clueCount": 2,
+          "evadeBoost": 0.15,
+          "redHerring": true,
+          "allowFlee": true,
+          "temperature": 1.05,
+          "trustMaskBelow": 40,
+          "tensionLeaveAt": 65,
+          "fleeSuspicionAt": 55,
+          "suspicionGainScale": 1.2,
+          "chainMinForFullCredit": 3,
+          "endingBestTrust": 60
+        },
+        "lampText": "4 / 4 盏"
+      },
+      "evidence": "12 组每组实跑；URL 为玩家可用的复现入口（非 SANDENG_API 调试钩子）",
+      "screenshot": null
+    },
+    {
+      "id": "D-32-intermediate|3",
+      "ac": "AC-07",
+      "level": "阻断",
+      "pass": true,
+      "status": "PASS",
+      "expected": {
+        "params": {
+          "lamps": 4,
+          "clueCount": 3,
+          "evadeBoost": 0.7,
+          "temperature": 1.26,
+          "redHerring": true,
+          "allowFlee": true,
+          "trustMaskBelow": 40,
+          "tensionLeaveAt": 65,
+          "fleeSuspicionAt": 55,
+          "suspicionGainScale": 1.2,
+          "chainMinForFullCredit": 3,
+          "endingBestTrust": 60
+        },
+        "lamps": 4,
+        "minActions": 3
+      },
+      "actual": {
+        "matched": true,
+        "solvable": true,
+        "inBand": true,
+        "lampOk": true,
+        "params": {
+          "night": 3,
+          "lamps": 4,
+          "clueCount": 3,
+          "evadeBoost": 0.7,
+          "redHerring": true,
+          "allowFlee": true,
+          "temperature": 1.26,
+          "trustMaskBelow": 40,
+          "tensionLeaveAt": 65,
+          "fleeSuspicionAt": 55,
+          "suspicionGainScale": 1.2,
+          "chainMinForFullCredit": 3,
+          "endingBestTrust": 60
+        },
+        "lampText": "4 / 4 盏"
+      },
+      "evidence": "12 组每组实跑；URL 为玩家可用的复现入口（非 SANDENG_API 调试钩子）",
+      "screenshot": null
+    },
+    {
+      "id": "D-32-advanced|1",
+      "ac": "AC-07",
+      "level": "阻断",
+      "pass": true,
+      "status": "PASS",
+      "expected": {
+        "params": {
+          "lamps": 4,
+          "clueCount": 2,
+          "evadeBoost": -0.3,
+          "temperature": 0.9,
+          "redHerring": true,
+          "allowFlee": false,
+          "trustMaskBelow": 45,
+          "tensionLeaveAt": 60,
+          "fleeSuspicionAt": 48,
+          "suspicionGainScale": 1.4,
+          "chainMinForFullCredit": 3,
+          "endingBestTrust": 65
+        },
+        "lamps": 4,
+        "minActions": 3
+      },
+      "actual": {
+        "matched": true,
+        "solvable": true,
+        "inBand": true,
+        "lampOk": true,
+        "params": {
+          "night": 1,
+          "lamps": 4,
+          "clueCount": 2,
+          "evadeBoost": -0.3,
+          "redHerring": true,
+          "allowFlee": false,
+          "temperature": 0.9,
+          "trustMaskBelow": 45,
+          "tensionLeaveAt": 60,
+          "fleeSuspicionAt": 48,
+          "suspicionGainScale": 1.4,
+          "chainMinForFullCredit": 3,
+          "endingBestTrust": 65
+        },
+        "lampText": "4 / 4 盏"
+      },
+      "evidence": "12 组每组实跑；URL 为玩家可用的复现入口（非 SANDENG_API 调试钩子）",
+      "screenshot": null
+    },
+    {
+      "id": "D-32-advanced|2",
+      "ac": "AC-07",
+      "level": "阻断",
+      "pass": true,
+      "status": "PASS",
+      "expected": {
+        "params": {
+          "lamps": 3,
+          "clueCount": 2,
+          "evadeBoost": 0.3,
+          "temperature": 1.14,
+          "redHerring": true,
+          "allowFlee": true,
+          "trustMaskBelow": 45,
+          "tensionLeaveAt": 60,
+          "fleeSuspicionAt": 48,
+          "suspicionGainScale": 1.4,
+          "chainMinForFullCredit": 3,
+          "endingBestTrust": 65
+        },
+        "lamps": 3,
+        "minActions": 3
+      },
+      "actual": {
+        "matched": true,
+        "solvable": true,
+        "inBand": true,
+        "lampOk": true,
+        "params": {
+          "night": 2,
+          "lamps": 3,
+          "clueCount": 2,
+          "evadeBoost": 0.3,
+          "redHerring": true,
+          "allowFlee": true,
+          "temperature": 1.14,
+          "trustMaskBelow": 45,
+          "tensionLeaveAt": 60,
+          "fleeSuspicionAt": 48,
+          "suspicionGainScale": 1.4,
+          "chainMinForFullCredit": 3,
+          "endingBestTrust": 65
+        },
+        "lampText": "3 / 3 盏"
+      },
+      "evidence": "12 组每组实跑；URL 为玩家可用的复现入口（非 SANDENG_API 调试钩子）",
+      "screenshot": null
+    },
+    {
+      "id": "D-32-advanced|3",
+      "ac": "AC-07",
+      "level": "阻断",
+      "pass": true,
+      "status": "PASS",
+      "expected": {
+        "params": {
+          "lamps": 3,
+          "clueCount": 3,
+          "evadeBoost": 0.85,
+          "temperature": 1.38,
+          "redHerring": true,
+          "allowFlee": true,
+          "trustMaskBelow": 45,
+          "tensionLeaveAt": 60,
+          "fleeSuspicionAt": 48,
+          "suspicionGainScale": 1.4,
+          "chainMinForFullCredit": 3,
+          "endingBestTrust": 65
+        },
+        "lamps": 3,
+        "minActions": 3
+      },
+      "actual": {
+        "matched": true,
+        "solvable": true,
+        "inBand": true,
+        "lampOk": true,
+        "params": {
+          "night": 3,
+          "lamps": 3,
+          "clueCount": 3,
+          "evadeBoost": 0.85,
+          "redHerring": true,
+          "allowFlee": true,
+          "temperature": 1.38,
+          "trustMaskBelow": 45,
+          "tensionLeaveAt": 60,
+          "fleeSuspicionAt": 48,
+          "suspicionGainScale": 1.4,
+          "chainMinForFullCredit": 3,
+          "endingBestTrust": 65
+        },
+        "lampText": "3 / 3 盏"
+      },
+      "evidence": "12 组每组实跑；URL 为玩家可用的复现入口（非 SANDENG_API 调试钩子）",
+      "screenshot": null
+    },
+    {
+      "id": "D-44-极值",
+      "ac": "AC-11",
+      "level": "阻断",
+      "pass": true,
+      "status": "PASS",
+      "expected": {
+        "minBytes": 1024
+      },
+      "actual": {
+        "file": "docs/screenshots/difficulty-advanced-night3.png"
+      },
+      "evidence": "下界极值渲染帧",
+      "screenshot": null
+    },
+    {
+      "id": "D-34",
+      "ac": "AC-08",
+      "level": "阻断",
+      "pass": true,
+      "status": "PASS",
+      "expected": {
+        "unchanged": true,
+        "tier": "novice"
+      },
+      "actual": {
+        "tierBefore": "basic",
+        "tierAfter": "basic",
+        "stateUnchanged": true
+      },
+      "evidence": "连点 10 次极值；被拒绝时 turn/lampsLeft/statements/phase 逐位不变",
+      "screenshot": null
+    },
+    {
+      "id": "D-35",
+      "ac": "AC-08/消除时机",
+      "level": "阻断",
+      "pass": true,
+      "status": "PASS",
+      "expected": {
+        "tier": "advanced",
+        "lamps": 4
+      },
+      "actual": {
+        "domTier": "advanced",
+        "lamps": 4
+      },
+      "evidence": "动作后 N 帧旧档灯数不得残留；residualTierStateCount = 0",
+      "screenshot": null
+    },
+    {
+      "id": "D-45",
+      "ac": "AC-13",
+      "level": "阻断",
+      "pass": true,
+      "status": "PASS",
+      "expected": {
+        "pageErrors": 0,
+        "scrollWidthMax": 390
+      },
+      "actual": {
+        "pageErrors": [],
+        "scrollWidth": 390
+      },
+      "evidence": "390×844 移动端",
+      "screenshot": null
+    },
+    {
+      "id": "D-46",
+      "ac": "AC-05/§10",
+      "level": "严重",
+      "pass": true,
+      "status": "PASS",
+      "expected": {
+        "hasTierLabel": true
+      },
+      "actual": {
+        "flow": {
+          "started": true,
+          "opened": true,
+          "accused": true,
+          "onResult": true
+        },
+        "clicked": true,
+        "via": "clipboard",
+        "text": "《三更灯 · 无相客栈》｜AI 原生推理游戏\n三夜守灯，认出 0/3 位无相，累计 -120 分，评级「夜行人」。\n三位客人由本地 AI 决策引擎驱动：量化状态 + 持久记忆 + 规则校验，会记住你说过的每句话。\nseed：QA-DIFF-A（同一 seed 可复现同一夜）\n难度：高级\nAI+∞ 开发者创作大赛 · 第",
+        "probeSelfTest": "VERIFIED"
+      },
+      "evidence": "结算屏真实指针点击复制；拦截 Clipboard.writeText / execCommand(\"copy\") 实参；分享文本不带档位则同 seed 无法复现",
+      "screenshot": null
+    },
+    {
+      "id": "D-55",
+      "ac": "AC-12",
+      "level": "阻断",
+      "pass": true,
+      "status": "PASS",
+      "expected": {
+        "decisionPoint": true,
+        "hooksUsed": 0
+      },
+      "actual": {
+        "tierClicked": true,
+        "started": true,
+        "firstDecision": true
+      },
+      "evidence": "从冷启动、不做任何额外操作，走到第一个决策点；仅 goto / 真实指针 click / isVisible / 读可见文本属性 / screenshot；未注入探针、未调 SANDENG_API、未用任何调试钩子",
+      "screenshot": null
+    },
+    {
+      "id": "D-40/41/42",
+      "ac": "AC-09",
+      "level": "阻断",
+      "pass": true,
+      "status": "PASS",
+      "expected": {
+        "selftest": "6/6",
+        "browserSmoke": "errors=0",
+        "guideSmoke": "60/60",
+        "guideCounters": "9/9 为 0"
+      },
+      "actual": {
+        "selftest": {
+          "pass": true,
+          "exit": 0,
+          "tail": "ratio\":0.917,\"firstTrace\":{\"seed\":\"AGENT_0\",\"night\":1,\"steps\":6,\"correct\":true,\"actions\":[{\"type\":\"ASK\",\"guestId\":\"g0\",\"topic\":\"hour\",\"tone\":\"warm\"},{\"type\":\"ASK\",\"guestId\":\"g1\",\"topic\":\"hour\",\"tone\":\"warm\"},{\"type\":\"ASK\",\"guestId\":\"g2\n---\n汇总: {\"total\":6,\"passed\":6,\"failed\":0,\"allPass\":true}\n缺陷复现 F-01 reproduced = true\n已写出: C:\\Users\\lll\\AppData\\Local\\Temp\\qa-difficulty-selftest-1794377789235.json\n"
+        },
+        "browserSmoke": {
+          "pass": true,
+          "exit": 0,
+          "tail": "\n    \"guide-cold-start.png\",\n    \"guide-human-path-01-cover.png\",\n    \"guide-human-path-02-G1.png\",\n    \"guide-human-path-03-G2.png\",\n    \"guide-mobile-after-end.png\",\n    \"guide-mobile-G1.png\",\n    \"guide-mobile-G4.png\",\n    \"guide-mobile-G5.png\",\n    \"guide-replay-active.png\",\n    \"guide-replay-after-end.png\",\n    \"guide-replay-menu.png\",\n    \"guide-skip.png\"\n  ],\n  \"errors\": [],\n  \"logs\": []\n}\n"
+        },
+        "guideSmoke": {
+          "pass": true,
+          "exit": 0,
+          "retried": true,
+          "tail": "\"listenDispatchCount\":0,\"accuseDispatchCount\":0,\"gameplayModalOpenCount\":0,\"residualMaskCount\":0,\"lampsDelta\":0,\"statementsDelta\":0,\"turnDelta\":0,\"nonFileRequestCount\":0,\"requestfailedCount\":0,\"pageerrorCount\":0,\"consoleErrorCount\":0,\"markerWriteCountOnComplete\":1,\"markerWriteCountOnSkip\":1,\"markerWriteCountOnReplay\":0}\nscreenshots 19 | report D:\\Projects\\games\\AI造游戏\\tools\\guide-smoke-report.json\n",
+          "firstError": "Command failed: C:\\Users\\lll\\.workbuddy\\binaries\\node\\versions\\22.22.2-6\\node.exe tools/guide-smoke.cjs"
+        }
+      },
+      "evidence": "核退出码 + 核报告字段 + 核引导域 9 项负向计数的实测值 + 核门禁在交付清单执行链中的位置",
+      "screenshot": null
+    }
+  ],
+  "uncovered": [],
+  "counters": {
+    "legacySaveRewriteCount": 0,
+    "illegalTierToastCount": 8,
+    "illegalTierToastViolationCount": 0,
+    "illegalTierAcceptCount": 0,
+    "seedPollutionCount": 0,
+    "seedRegenCount": 0,
+    "runtimeTierInSeedCount": 0,
+    "inGameTierChangeCount": 0,
+    "residualTierStateCount": 0,
+    "pageerrorCount": 0,
+    "nonFileRequestCount": 0,
+    "noviceLampLeakCount": 0,
+    "regressionFailCount": 0
+  },
+  "NEG_EXPECT": {
+    "seedPollutionCount": 0,
+    "seedRegenCount": 0,
+    "runtimeTierInSeedCount": 0,
+    "noviceLampLeakCount": 0,
+    "inGameTierChangeCount": 0,
+    "illegalTierAcceptCount": 0,
+    "legacySaveRewriteCount": 0,
+    "residualTierStateCount": 0,
+    "nonFileRequestCount": 0,
+    "pageerrorCount": 0,
+    "regressionFailCount": 0
+  },
+  "POS_EXPECT": {
+    "illegalTierToastCount": 1,
+    "missingTierToastCount": 0
+  },
+  "guideCounters": {
+    "source": "tools/guide-smoke-report.json",
+    "mapped": {
+      "askDispatchCount": "guidePhaseAskCount",
+      "listenDispatchCount": "guideListenDispatchCount",
+      "accuseDispatchCount": "guideAccuseDispatchCount",
+      "gameplayModalOpenCount": "gameplayModalOpenCount",
+      "residualMaskCount": "residualMaskCount",
+      "lampsDelta": "lampsDelta",
+      "statementsDelta": "statementsDelta",
+      "turnDelta": "turnDelta",
+      "requestfailedCount": "requestfailedCount"
+    },
+    "missing": [],
+    "nonZero": [],
+    "pass": true
+  },
+  "lampLeaks": [],
+  "stepTrace": [
+    {
+      "id": "D-10-novice",
+      "pass": true,
+      "status": "PASS",
+      "at": "2026-11-11T06:15:42.630Z"
+    },
+    {
+      "id": "D-44-novice",
+      "pass": true,
+      "status": "PASS",
+      "at": "2026-11-11T06:15:43.481Z"
+    },
+    {
+      "id": "D-10-basic",
+      "pass": true,
+      "status": "PASS",
+      "at": "2026-11-11T06:15:44.573Z"
+    },
+    {
+      "id": "D-44-basic",
+      "pass": true,
+      "status": "PASS",
+      "at": "2026-11-11T06:15:45.203Z"
+    },
+    {
+      "id": "D-10-intermediate",
+      "pass": true,
+      "status": "PASS",
+      "at": "2026-11-11T06:15:46.288Z"
+    },
+    {
+      "id": "D-44-intermediate",
+      "pass": true,
+      "status": "PASS",
+      "at": "2026-11-11T06:15:46.926Z"
+    },
+    {
+      "id": "D-10-advanced",
+      "pass": true,
+      "status": "PASS",
+      "at": "2026-11-11T06:15:47.971Z"
+    },
+    {
+      "id": "D-44-advanced",
+      "pass": true,
+      "status": "PASS",
+      "at": "2026-11-11T06:15:48.584Z"
+    },
+    {
+      "id": "D-20",
+      "pass": true,
+      "status": "PASS",
+      "at": "2026-11-11T06:15:49.582Z"
+    },
+    {
+      "id": "D-21",
+      "pass": true,
+      "status": "PASS",
+      "at": "2026-11-11T06:15:50.465Z"
+    },
+    {
+      "id": "D-22",
+      "pass": true,
+      "status": "PASS",
+      "at": "2026-11-11T06:15:51.416Z"
+    },
+    {
+      "id": "D-23-大小写不符",
+      "pass": true,
+      "status": "PASS",
+      "at": "2026-11-11T06:15:52.348Z"
+    },
+    {
+      "id": "D-23-首尾空格",
+      "pass": true,
+      "status": "PASS",
+      "at": "2026-11-11T06:15:53.206Z"
+    },
+    {
+      "id": "D-23-空串",
+      "pass": true,
+      "status": "PASS",
+      "at": "2026-11-11T06:15:54.108Z"
+    },
+    {
+      "id": "D-23-数字",
+      "pass": true,
+      "status": "PASS",
+      "at": "2026-11-11T06:15:55.058Z"
+    },
+    {
+      "id": "D-23-中文档名",
+      "pass": true,
+      "status": "PASS",
+      "at": "2026-11-11T06:15:56.026Z"
+    },
+    {
+      "id": "D-23-null/undefined",
+      "pass": true,
+      "status": "PASS",
+      "at": "2026-11-11T06:15:56.869Z"
+    },
+    {
+      "id": "D-23-URL 编码残留",
+      "pass": true,
+      "status": "PASS",
+      "at": "2026-11-11T06:15:57.811Z"
+    },
+    {
+      "id": "D-23-原型链键",
+      "pass": true,
+      "status": "PASS",
+      "at": "2026-11-11T06:15:58.754Z"
+    },
+    {
+      "id": "D-23-汇总",
+      "pass": true,
+      "status": "PASS",
+      "at": "2026-11-11T06:15:58.800Z"
+    },
+    {
+      "id": "D-23-toast-提示恰好一次",
+      "pass": true,
+      "status": "PASS",
+      "at": "2026-11-11T06:15:58.800Z"
+    },
+    {
+      "id": "D-24",
+      "pass": true,
+      "status": "PASS",
+      "at": "2026-11-11T06:16:00.107Z"
+    },
+    {
+      "id": "D-25",
+      "pass": true,
+      "status": "PASS",
+      "at": "2026-11-11T06:16:01.180Z"
+    },
+    {
+      "id": "D-30",
+      "pass": true,
+      "status": "PASS",
+      "at": "2026-11-11T06:16:05.868Z"
+    },
+    {
+      "id": "D-31b",
+      "pass": true,
+      "status": "PASS",
+      "at": "2026-11-11T06:16:07.556Z"
+    },
+    {
+      "id": "D-32-novice|1",
+      "pass": true,
+      "status": "PASS",
+      "at": "2026-11-11T06:16:08.341Z"
+    },
+    {
+      "id": "D-32-novice|2",
+      "pass": true,
+      "status": "PASS",
+      "at": "2026-11-11T06:16:09.280Z"
+    },
+    {
+      "id": "D-32-novice|3",
+      "pass": true,
+      "status": "PASS",
+      "at": "2026-11-11T06:16:10.106Z"
+    },
+    {
+      "id": "D-32-basic|1",
+      "pass": true,
+      "status": "PASS",
+      "at": "2026-11-11T06:16:11.018Z"
+    },
+    {
+      "id": "D-32-basic|2",
+      "pass": true,
+      "status": "PASS",
+      "at": "2026-11-11T06:16:11.822Z"
+    },
+    {
+      "id": "D-32-basic|3",
+      "pass": true,
+      "status": "PASS",
+      "at": "2026-11-11T06:16:12.648Z"
+    },
+    {
+      "id": "D-32-intermediate|1",
+      "pass": true,
+      "status": "PASS",
+      "at": "2026-11-11T06:16:13.596Z"
+    },
+    {
+      "id": "D-32-intermediate|2",
+      "pass": true,
+      "status": "PASS",
+      "at": "2026-11-11T06:16:14.585Z"
+    },
+    {
+      "id": "D-32-intermediate|3",
+      "pass": true,
+      "status": "PASS",
+      "at": "2026-11-11T06:16:15.527Z"
+    },
+    {
+      "id": "D-32-advanced|1",
+      "pass": true,
+      "status": "PASS",
+      "at": "2026-11-11T06:16:16.387Z"
+    },
+    {
+      "id": "D-32-advanced|2",
+      "pass": true,
+      "status": "PASS",
+      "at": "2026-11-11T06:16:17.264Z"
+    },
+    {
+      "id": "D-32-advanced|3",
+      "pass": true,
+      "status": "PASS",
+      "at": "2026-11-11T06:16:18.139Z"
+    },
+    {
+      "id": "D-44-极值",
+      "pass": true,
+      "status": "PASS",
+      "at": "2026-11-11T06:16:19.552Z"
+    },
+    {
+      "id": "D-34",
+      "pass": true,
+      "status": "PASS",
+      "at": "2026-11-11T06:16:20.834Z"
+    },
+    {
+      "id": "D-35",
+      "pass": true,
+      "status": "PASS",
+      "at": "2026-11-11T06:16:22.035Z"
+    },
+    {
+      "id": "D-45",
+      "pass": true,
+      "status": "PASS",
+      "at": "2026-11-11T06:16:22.991Z"
+    },
+    {
+      "id": "D-46",
+      "pass": true,
+      "status": "PASS",
+      "at": "2026-11-11T06:16:25.685Z"
+    },
+    {
+      "id": "D-55",
+      "pass": true,
+      "status": "PASS",
+      "at": "2026-11-11T06:16:29.170Z"
+    },
+    {
+      "id": "D-40/41/42",
+      "pass": true,
+      "status": "PASS",
+      "at": "2026-11-11T06:18:15.034Z"
+    }
+  ],
+  "tierMatrix": [
+    {
+      "key": "novice|1",
+      "matched": true,
+      "solvable": true,
+      "inBand": true,
+      "lamps": 8,
+      "clueCount": 1,
+      "temperature": 0.68,
+      "lampTotal": 8,
+      "lampOk": true
+    },
+    {
+      "key": "novice|2",
+      "matched": true,
+      "solvable": true,
+      "inBand": true,
+      "lamps": 7,
+      "clueCount": 1,
+      "temperature": 0.86,
+      "lampTotal": 7,
+      "lampOk": true
+    },
+    {
+      "key": "novice|3",
+      "matched": true,
+      "solvable": true,
+      "inBand": true,
+      "lamps": 7,
+      "clueCount": 2,
+      "temperature": 1.03,
+      "lampTotal": 7,
+      "lampOk": true
+    },
+    {
+      "key": "basic|1",
+      "matched": true,
+      "solvable": true,
+      "inBand": true,
+      "lamps": 6,
+      "clueCount": 1,
+      "temperature": 0.75,
+      "lampTotal": 6,
+      "lampOk": true
+    },
+    {
+      "key": "basic|2",
+      "matched": true,
+      "solvable": true,
+      "inBand": true,
+      "lamps": 5,
+      "clueCount": 1,
+      "temperature": 0.95,
+      "lampTotal": 5,
+      "lampOk": true
+    },
+    {
+      "key": "basic|3",
+      "matched": true,
+      "solvable": true,
+      "inBand": true,
+      "lamps": 5,
+      "clueCount": 2,
+      "temperature": 1.15,
+      "lampTotal": 5,
+      "lampOk": true
+    },
+    {
+      "key": "intermediate|1",
+      "matched": true,
+      "solvable": true,
+      "inBand": true,
+      "lamps": 5,
+      "clueCount": 2,
+      "temperature": 0.83,
+      "lampTotal": 5,
+      "lampOk": true
+    },
+    {
+      "key": "intermediate|2",
+      "matched": true,
+      "solvable": true,
+      "inBand": true,
+      "lamps": 4,
+      "clueCount": 2,
+      "temperature": 1.05,
+      "lampTotal": 4,
+      "lampOk": true
+    },
+    {
+      "key": "intermediate|3",
+      "matched": true,
+      "solvable": true,
+      "inBand": true,
+      "lamps": 4,
+      "clueCount": 3,
+      "temperature": 1.26,
+      "lampTotal": 4,
+      "lampOk": true
+    },
+    {
+      "key": "advanced|1",
+      "matched": true,
+      "solvable": true,
+      "inBand": true,
+      "lamps": 4,
+      "clueCount": 2,
+      "temperature": 0.9,
+      "lampTotal": 4,
+      "lampOk": true
+    },
+    {
+      "key": "advanced|2",
+      "matched": true,
+      "solvable": true,
+      "inBand": true,
+      "lamps": 3,
+      "clueCount": 2,
+      "temperature": 1.14,
+      "lampTotal": 3,
+      "lampOk": true
+    },
+    {
+      "key": "advanced|3",
+      "matched": true,
+      "solvable": true,
+      "inBand": true,
+      "lamps": 3,
+      "clueCount": 3,
+      "temperature": 1.38,
+      "lampTotal": 3,
+      "lampOk": true
+    }
+  ],
+  "screenshots": [
+    {
+      "file": "docs/screenshots/difficulty-novice.png",
+      "bytes": 622967,
+      "ok": true,
+      "sig": {
+        "screen": "screen-game",
+        "tier": "novice",
+        "lamp": "8 / 8 盏",
+        "picked": "novice",
+        "size": "1440x900"
+      }
+    },
+    {
+      "file": "docs/screenshots/difficulty-basic.png",
+      "bytes": 621983,
+      "ok": true,
+      "sig": {
+        "screen": "screen-game",
+        "tier": "basic",
+        "lamp": "6 / 6 盏",
+        "picked": "basic",
+        "size": "1440x900"
+      }
+    },
+    {
+      "file": "docs/screenshots/difficulty-intermediate.png",
+      "bytes": 659515,
+      "ok": true,
+      "sig": {
+        "screen": "screen-game",
+        "tier": "intermediate",
+        "lamp": "5 / 5 盏",
+        "picked": "intermediate",
+        "size": "1440x900"
+      }
+    },
+    {
+      "file": "docs/screenshots/difficulty-advanced.png",
+      "bytes": 658091,
+      "ok": true,
+      "sig": {
+        "screen": "screen-game",
+        "tier": "advanced",
+        "lamp": "4 / 4 盏",
+        "picked": "advanced",
+        "size": "1440x900"
+      }
+    },
+    {
+      "file": "docs/screenshots/difficulty-advanced-night3.png",
+      "bytes": 682647,
+      "ok": true,
+      "sig": {
+        "screen": "screen-game",
+        "tier": "advanced",
+        "lamp": "3 / 3 盏",
+        "picked": "advanced",
+        "size": "1440x900"
+      }
+    },
+    {
+      "file": "docs/screenshots/difficulty-human-path-01-cover.png",
+      "bytes": 764609,
+      "ok": true,
+      "sig": {
+        "screen": "screen-intro",
+        "tier": "basic",
+        "lamp": "6 / 6 盏",
+        "picked": "basic",
+        "size": "1440x900"
+      }
+    },
+    {
+      "file": "docs/screenshots/difficulty-human-path-02-select.png",
+      "bytes": 761801,
+      "ok": true,
+      "sig": {
+        "screen": "screen-intro",
+        "tier": "basic",
+        "lamp": "6 / 6 盏",
+        "picked": "basic",
+        "size": "1440x900"
+      }
+    },
+    {
+      "file": "docs/screenshots/difficulty-human-path-03-game.png",
+      "bytes": 621760,
+      "ok": true,
+      "sig": {
+        "screen": "screen-game",
+        "tier": "basic",
+        "lamp": "6 / 6 盏",
+        "picked": "basic",
+        "size": "1440x900"
+      }
+    }
+  ],
+  "visualReviewedBy": [
+    "team-lead"
+  ],
+  "visualReviewPass": true,
+  "visualReview": [
+    {
+      "frame": "novice",
+      "reviewed": true,
+      "pass": true,
+      "reviewer": "team-lead",
+      "note": "第 1 夜·新手级；顶栏「新手级」+ 8 / 8 盏全亮；左侧校验行「1 条物证 · 至少 3 次问话 / 共 8 盏灯 seed SD-PWVXSYu-n1」；正文叙事「灯只点 8 回」与灯数一致；三客人卡、话题按钮、指认按钮齐全，无溢出重叠。",
+      "sigMatched": true,
+      "bytesRatio": 0.996,
+      "bytesInBand": true,
+      "pixelHashMatched": false,
+      "sig": {
+        "screen": "screen-game",
+        "tier": "novice",
+        "lamp": "8 / 8 盏",
+        "picked": "novice",
+        "size": "1440x900"
+      }
+    },
+    {
+      "frame": "basic",
+      "reviewed": true,
+      "pass": true,
+      "reviewer": "team-lead",
+      "note": "第 1 夜·初级（默认档）；6 / 6 盏；「1 条物证 / 共 6 盏灯 seed SD-PVRA4ZFPn1」；叙事「灯只点 6 回」。与 v1.1.0 基线一致，默认档外观未被改动。",
+      "sigMatched": true,
+      "bytesRatio": 1.002,
+      "bytesInBand": true,
+      "pixelHashMatched": false,
+      "sig": {
+        "screen": "screen-game",
+        "tier": "basic",
+        "lamp": "6 / 6 盏",
+        "picked": "basic",
+        "size": "1440x900"
+      }
+    },
+    {
+      "frame": "intermediate",
+      "reviewed": true,
+      "pass": true,
+      "reviewer": "team-lead",
+      "note": "第 1 夜·中级；5 / 5 盏；「2 条物证 · 至少 3 次问话 / 共 5 盏灯 seed SD-PVSLYR8In1」；物证框出现 2 张、对话区 2 条物证文本，与 clueCount+1 一致；版面未因多一条物证而挤压。",
+      "sigMatched": true,
+      "bytesRatio": 1.003,
+      "bytesInBand": true,
+      "pixelHashMatched": false,
+      "sig": {
+        "screen": "screen-game",
+        "tier": "intermediate",
+        "lamp": "5 / 5 盏",
+        "picked": "intermediate",
+        "size": "1440x900"
+      }
+    },
+    {
+      "frame": "advanced",
+      "reviewed": true,
+      "pass": true,
+      "reviewer": "team-lead",
+      "note": "第 1 夜·高级；4 / 4 盏；「2 条物证 · 至少 3 次问话 / 共 4 盏灯 seed SD-PVTXZ0x2n1」；4 盏仍满足「至少 3 次问话」可解下限；客人卡与话题区完整。",
+      "sigMatched": true,
+      "bytesRatio": 0.999,
+      "bytesInBand": true,
+      "pixelHashMatched": false,
+      "sig": {
+        "screen": "screen-game",
+        "tier": "advanced",
+        "lamp": "4 / 4 盏",
+        "picked": "advanced",
+        "size": "1440x900"
+      }
+    },
+    {
+      "frame": "advanced-night3",
+      "reviewed": true,
+      "pass": true,
+      "reviewer": "team-lead",
+      "note": "第三夜·高级；3 / 3 盏（5 −2 已触下限 3）；「3 条物证 / 共 3 盏灯 seed QA-DIFF-A-n3」；叙事「第 3 夜…灯只点 3 回」；三夜叠加与档位正交生效且未越界。",
+      "sigMatched": true,
+      "bytesRatio": 0.999,
+      "bytesInBand": true,
+      "pixelHashMatched": false,
+      "sig": {
+        "screen": "screen-game",
+        "tier": "advanced",
+        "lamp": "3 / 3 盏",
+        "picked": "advanced",
+        "size": "1440x900"
+      }
+    },
+    {
+      "frame": "human-path-01-cover",
+      "reviewed": true,
+      "pass": true,
+      "reviewer": "team-lead",
+      "note": "冷启动封面（未注入任何探针）：封面出现「难度 ｜ 新手级 ｜ 初级 ｜ 中级 ｜ 高级」五段控件，默认选中「初级」为琥珀描边；控件位于主按钮与底部链接之间，不与「点亮·开始守灯」等按钮重叠，右下水印 seed 正常显示。",
+      "sigMatched": true,
+      "bytesRatio": 1,
+      "bytesInBand": true,
+      "pixelHashMatched": false,
+      "sig": {
+        "screen": "screen-intro",
+        "tier": "basic",
+        "lamp": "6 / 6 盏",
+        "picked": "basic",
+        "size": "1440x900"
+      }
+    },
+    {
+      "frame": "human-path-02-select",
+      "reviewed": true,
+      "pass": true,
+      "reviewer": "team-lead",
+      "note": "真实指针点「初级」后：选中态保持在「初级」，未出现双选或选中丢失；四档文案完整、字距均匀，无换行溢出。",
+      "sigMatched": true,
+      "bytesRatio": 0.998,
+      "bytesInBand": true,
+      "pixelHashMatched": false,
+      "sig": {
+        "screen": "screen-intro",
+        "tier": "basic",
+        "lamp": "6 / 6 盏",
+        "picked": "basic",
+        "size": "1440x900"
+      }
+    },
+    {
+      "frame": "human-path-03-game",
+      "reviewed": true,
+      "pass": true,
+      "reviewer": "team-lead",
+      "note": "真实指针点「点亮·开始守灯」后进入对局：初级 6 / 6 盏、三客人卡与话题栏渲染完整、指认按钮可用；说明从封面选档到进夜整条路径无阻断。",
+      "sigMatched": true,
+      "bytesRatio": 0.999,
+      "bytesInBand": true,
+      "pixelHashMatched": false,
+      "sig": {
+        "screen": "screen-game",
+        "tier": "basic",
+        "lamp": "6 / 6 盏",
+        "picked": "basic",
+        "size": "1440x900"
+      }
+    }
+  ],
+  "humanPath": {
+    "recorded": true,
+    "watchedBy": null,
+    "watchedAt": null,
+    "hooksUsed": 0
+  },
+  "humanPending": true,
+  "humanPlaythroughPass": false,
+  "regression": {
+    "selftest": {
+      "pass": true,
+      "exit": 0,
+      "tail": "ratio\":0.917,\"firstTrace\":{\"seed\":\"AGENT_0\",\"night\":1,\"steps\":6,\"correct\":true,\"actions\":[{\"type\":\"ASK\",\"guestId\":\"g0\",\"topic\":\"hour\",\"tone\":\"warm\"},{\"type\":\"ASK\",\"guestId\":\"g1\",\"topic\":\"hour\",\"tone\":\"warm\"},{\"type\":\"ASK\",\"guestId\":\"g2\n---\n汇总: {\"total\":6,\"passed\":6,\"failed\":0,\"allPass\":true}\n缺陷复现 F-01 reproduced = true\n已写出: C:\\Users\\lll\\AppData\\Local\\Temp\\qa-difficulty-selftest-1794377789235.json\n"
+    },
+    "browserSmoke": {
+      "pass": true,
+      "exit": 0,
+      "tail": "\n    \"guide-cold-start.png\",\n    \"guide-human-path-01-cover.png\",\n    \"guide-human-path-02-G1.png\",\n    \"guide-human-path-03-G2.png\",\n    \"guide-mobile-after-end.png\",\n    \"guide-mobile-G1.png\",\n    \"guide-mobile-G4.png\",\n    \"guide-mobile-G5.png\",\n    \"guide-replay-active.png\",\n    \"guide-replay-after-end.png\",\n    \"guide-replay-menu.png\",\n    \"guide-skip.png\"\n  ],\n  \"errors\": [],\n  \"logs\": []\n}\n"
+    },
+    "guideSmoke": {
+      "pass": true,
+      "exit": 0,
+      "retried": true,
+      "tail": "\"listenDispatchCount\":0,\"accuseDispatchCount\":0,\"gameplayModalOpenCount\":0,\"residualMaskCount\":0,\"lampsDelta\":0,\"statementsDelta\":0,\"turnDelta\":0,\"nonFileRequestCount\":0,\"requestfailedCount\":0,\"pageerrorCount\":0,\"consoleErrorCount\":0,\"markerWriteCountOnComplete\":1,\"markerWriteCountOnSkip\":1,\"markerWriteCountOnReplay\":0}\nscreenshots 19 | report D:\\Projects\\games\\AI造游戏\\tools\\guide-smoke-report.json\n",
+      "firstError": "Command failed: C:\\Users\\lll\\.workbuddy\\binaries\\node\\versions\\22.22.2-6\\node.exe tools/guide-smoke.cjs"
+    }
+  },
+  "coverageGaps": [
+    {
+      "id": "hookOnlyCaseCount",
+      "reason": "需逐条用例声明观测通道（DOM / 状态 / 流程）才能统计；当前 caseRecord 不带通道字段，无法自动派生。本轮所有阻断级用例均含 DOM 或真实流程证据，但该元指标本身未被测量，故不计为 0、不计入通过。"
+    }
+  ],
+  "gate": {
+    "wiredInto": "docs/交付清单.md 复跑命令：node tools/difficulty-smoke.cjs",
+    "verified": true,
+    "lastRunAt": null,
+    "runBy": "qa-lead",
+    "exitCode": 0
+  },
+  "pageErrors": [],
+  "verdict": "PASS",
+  "summary": {
+    "total": 44,
+    "passed": 44,
+    "failed": 0,
+    "blockingFailed": [],
+    "generalFailed": []
+  },
+  "note": "⚠️ 自动化门禁只能证明没崩，证明不了好用；humanPending:true / humanPlaythroughPass:false，AI 视觉复核不得顶替真人玩家试玩。本报告只有自动化结果，没有人玩过。"
+}

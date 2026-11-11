@@ -441,3 +441,16 @@ body.is-guiding #btn-help{border-color:var(--amber);color:var(--amber-lt)}
 @media (prefers-reduced-motion:reduce){
   *{animation-duration:.01ms !important;transition-duration:.01ms !important}
 }
+/* ================= 四档难度选择（v1.2 追加段，不修改上方任何既有规则） ================= */
+.tier-pick{flex:0 0 100%;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:4px}
+.tier-pick__label{font-family:var(--serif);font-size:11px;letter-spacing:.18em;color:var(--muted);margin-right:2px}
+.tier-opt{padding:6px 13px;font-size:12px;letter-spacing:.08em;color:var(--muted);border-color:rgba(200,170,120,.18);background:transparent}
+.tier-opt:hover:not(:disabled){border-color:var(--amber);color:var(--amber-lt);transform:none;box-shadow:none}
+.tier-opt.is-on{border-color:var(--amber);color:var(--amber-lt);background:rgba(232,164,92,.12);box-shadow:inset 0 0 0 1px rgba(232,164,92,.35)}
+.tier-opt:focus-visible{outline:2px solid var(--amber-lt);outline-offset:2px}
+.tb-tier{font-size:11px;color:var(--amber-lt);white-space:nowrap;border:1px solid var(--line);padding:2px 8px;border-radius:2px;font-family:var(--serif);letter-spacing:.08em}
+@media (max-width:760px){
+  .tb-tier{display:none}
+  .tier-pick{gap:6px}
+  .tier-opt{padding:6px 9px;font-size:11px}
+}

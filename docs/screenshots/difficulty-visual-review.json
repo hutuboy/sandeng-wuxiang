@@ -1,0 +1,86 @@
+{
+  "schema": "sandeng.difficulty.visual-review.v1",
+  "reviewedAt": "2026-11-11T14:10:00+08:00",
+  "reviewer": "team-lead（制作人亲自逐帧复核 · AI 视觉复核）",
+  "method": "逐帧打开 PNG 实测：核 screen / 档位徽标 / 顶栏灯数文本 / 光源亮灯数 / 左侧校验行（物证条数·灯数·seed）一致，并检查溢出、重叠、错位、留白异常；结论逐帧签 sig + bytes，供 tools/difficulty-smoke.cjs 比对是否 stale。",
+  "integrity": {
+    "gate": "状态签名一致 + 体积在复核值 0.7~1.4 倍内",
+    "pixelHashNote": "像素 sha256 一并记录但不作门禁：实测同样输入连跑两次，8/8 帧哈希全不同（画布动画亚像素差异），把像素哈希当门禁会让复核永远 stale。"
+  },
+  "notHumanPlaytest": true,
+  "notHumanNote": "本文件只覆盖「帧级视觉复核」，不等于真人玩家试玩；humanPending 仍为 true，不得用本文件顶替真人试玩。",
+  "frames": [
+    {
+      "frame": "novice",
+      "pass": true,
+      "reviewer": "team-lead",
+      "note": "第 1 夜·新手级；顶栏「新手级」+ 8 / 8 盏全亮；左侧校验行「1 条物证 · 至少 3 次问话 / 共 8 盏灯 seed SD-PWVXSYu-n1」；正文叙事「灯只点 8 回」与灯数一致；三客人卡、话题按钮、指认按钮齐全，无溢出重叠。",
+      "sig": { "screen": "screen-game", "tier": "novice", "lamp": "8 / 8 盏", "picked": "novice", "size": "1440x900" },
+      "bytes": 625368,
+      "sha256": "b3d647e8448fa55857adfd1bf917a19cd5b7100566c15a71cc8e9a376490f384"
+    },
+    {
+      "frame": "basic",
+      "pass": true,
+      "reviewer": "team-lead",
+      "note": "第 1 夜·初级（默认档）；6 / 6 盏；「1 条物证 / 共 6 盏灯 seed SD-PVRA4ZFPn1」；叙事「灯只点 6 回」。与 v1.1.0 基线一致，默认档外观未被改动。",
+      "sig": { "screen": "screen-game", "tier": "basic", "lamp": "6 / 6 盏", "picked": "basic", "size": "1440x900" },
+      "bytes": 620623,
+      "sha256": "0b21f1c4057d371d0b5cb475fc9934c84d54342bfbcb91a7a57351a78965842f"
+    },
+    {
+      "frame": "intermediate",
+      "pass": true,
+      "reviewer": "team-lead",
+      "note": "第 1 夜·中级；5 / 5 盏；「2 条物证 · 至少 3 次问话 / 共 5 盏灯 seed SD-PVSLYR8In1」；物证框出现 2 张、对话区 2 条物证文本，与 clueCount+1 一致；版面未因多一条物证而挤压。",
+      "sig": { "screen": "screen-game", "tier": "intermediate", "lamp": "5 / 5 盏", "picked": "intermediate", "size": "1440x900" },
+      "bytes": 657729,
+      "sha256": "1743bab130ed351ed31f85b17594f126c9d4ac667716d3d02e70346cd85a7948"
+    },
+    {
+      "frame": "advanced",
+      "pass": true,
+      "reviewer": "team-lead",
+      "note": "第 1 夜·高级；4 / 4 盏；「2 条物证 · 至少 3 次问话 / 共 4 盏灯 seed SD-PVTXZ0x2n1」；4 盏仍满足「至少 3 次问话」可解下限；客人卡与话题区完整。",
+      "sig": { "screen": "screen-game", "tier": "advanced", "lamp": "4 / 4 盏", "picked": "advanced", "size": "1440x900" },
+      "bytes": 659028,
+      "sha256": "c97cf9e01b2eac8da7b6b53ae2caabc2bb47f5f2771c229e96944ca80dccfd28"
+    },
+    {
+      "frame": "advanced-night3",
+      "pass": true,
+      "reviewer": "team-lead",
+      "note": "第三夜·高级；3 / 3 盏（5 −2 已触下限 3）；「3 条物证 / 共 3 盏灯 seed QA-DIFF-A-n3」；叙事「第 3 夜…灯只点 3 回」；三夜叠加与档位正交生效且未越界。",
+      "sig": { "screen": "screen-game", "tier": "advanced", "lamp": "3 / 3 盏", "picked": "advanced", "size": "1440x900" },
+      "bytes": 683026,
+      "sha256": "099865a0eac864ef9c113ec67dc5cc4f1384da0d08f0ac7b13d273d2b919bafc"
+    },
+    {
+      "frame": "human-path-01-cover",
+      "pass": true,
+      "reviewer": "team-lead",
+      "note": "冷启动封面（未注入任何探针）：封面出现「难度 ｜ 新手级 ｜ 初级 ｜ 中级 ｜ 高级」五段控件，默认选中「初级」为琥珀描边；控件位于主按钮与底部链接之间，不与「点亮·开始守灯」等按钮重叠，右下水印 seed 正常显示。",
+      "sig": { "screen": "screen-intro", "tier": "basic", "lamp": "6 / 6 盏", "picked": "basic", "size": "1440x900" },
+      "bytes": 764909,
+      "sha256": "ffc4558e805b78478de0c3dc846f57345d1ef578204fb17e01c14d3b185918ba"
+    },
+    {
+      "frame": "human-path-02-select",
+      "pass": true,
+      "reviewer": "team-lead",
+      "note": "真实指针点「初级」后：选中态保持在「初级」，未出现双选或选中丢失；四档文案完整、字距均匀，无换行溢出。",
+      "sig": { "screen": "screen-intro", "tier": "basic", "lamp": "6 / 6 盏", "picked": "basic", "size": "1440x900" },
+      "bytes": 763240,
+      "sha256": "069c68e2eef54f94ad196c02ef58a1ba0cefe789010633af323286f1575708fa"
+    },
+    {
+      "frame": "human-path-03-game",
+      "pass": true,
+      "reviewer": "team-lead",
+      "note": "真实指针点「点亮·开始守灯」后进入对局：初级 6 / 6 盏、三客人卡与话题栏渲染完整、指认按钮可用；说明从封面选档到进夜整条路径无阻断。",
+      "sig": { "screen": "screen-game", "tier": "basic", "lamp": "6 / 6 盏", "picked": "basic", "size": "1440x900" },
+      "bytes": 622095,
+      "sha256": "1f45b611091bea72f846af4649fc6e53e1177e2e8f4cb31acbda1b08d1ad5b80"
+    }
+  ]
+}

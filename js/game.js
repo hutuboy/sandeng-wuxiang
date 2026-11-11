@@ -10,7 +10,7 @@
 
   function create(seed, night, opts) {
     opts = opts || {};
-    var cs = Director.generate(seed == null ? 'SANDENG' : String(seed), night || 1);
+    var cs = Director.generate(seed == null ? 'SANDENG' : String(seed), night || 1, opts.tierId);
     var game = {
       cs: cs,
       guests: C.deepClone(cs.guests),
@@ -147,9 +147,10 @@
     var leftCount = game.guests.filter(function (x) { return x.flags.left; }).length;
 
     var gain = 0;
+    var diff = game.cs.difficulty;
     if (correct) {
       gain = 600 + game.lampsLeft * 40 + chain * 35 + Math.round((avgTrust - 45) * 2);
-      if (chain < 2) gain -= 120; // 没有证据链，靠蒙
+      if (chain < diff.chainMinForFullCredit) gain -= 120; // 没有证据链，靠蒙
       if (leftCount > 0) gain -= 80;
       gain = Math.max(120, gain);
     } else {
@@ -159,7 +160,7 @@
     var ending;
     if (!correct) ending = '灯灭';
     else if (leftCount > 0) ending = '一灯独明';
-    else if (chain >= game.cs.clues.length * 3 && avgTrust >= 55) ending = '灯下留名';
+    else if (chain >= game.cs.clues.length * 3 && avgTrust >= diff.endingBestTrust) ending = '灯下留名';
     else ending = '破晓';
 
     game.phase = 'ended';

@@ -50,6 +50,7 @@
   /* ---- 规则层：动作合法性校验（评奖硬指标） ---- */
   function legalMask(game, q, f) {
     var mask = {}, notes = [];
+    var d = game.cs.difficulty;
     ACTIONS.forEach(function (a) { mask[a] = true; });
 
     if (q.flags.left) {
@@ -58,12 +59,12 @@
       return { mask: mask, notes: notes };
     }
     if (!q.isImpostor) { mask.ANSWER_LIE = false; notes.push('清白客人不会编造证词'); }
-    if (q.state.trust < 35) {
+    if (q.state.trust < d.trustMaskBelow) {
       mask.CONFIDE = false; mask.GIFT = false;
-      notes.push('信任 ' + C.round(q.state.trust, 0) + ' < 35 → 拒绝交付关键道具 / 锁定交心分支');
+      notes.push('信任 ' + C.round(q.state.trust, 0) + ' < ' + d.trustMaskBelow + ' → 拒绝交付关键道具 / 锁定交心分支');
     }
-    if (q.state.tension < 70) { mask.LEAVE = false; notes.push('张力 ' + C.round(q.state.tension, 0) + ' < 70 → 未达离店阈值'); }
-    if (!(q.isImpostor && game.cs.difficulty.allowFlee && q.state.suspicion >= 60)) {
+    if (q.state.tension < d.tensionLeaveAt) { mask.LEAVE = false; notes.push('张力 ' + C.round(q.state.tension, 0) + ' < ' + d.tensionLeaveAt + ' → 未达离店阈值'); }
+    if (!(q.isImpostor && d.allowFlee && q.state.suspicion >= d.fleeSuspicionAt)) {
       mask.FLEE = false;
       notes.push('遁走需满足：无相身份 + 高疑心 + 第三夜');
     }
@@ -178,11 +179,13 @@
     var q = game.guests.filter(function (x) { return x.id === act.guestId; })[0];
     var s = q.state, d = game.cs.difficulty;
     var tone = act.tone;
+    // 疑心三处增量统一缩放；basic 档 1.00 逐位恒等（6*1.00 === 6，不引入浮点差异）
+    var sg = d.suspicionGainScale;
 
     // 语气先改变状态
     if (tone === 'warm') { s.affinity += 6; s.tension -= 3; s.trust += 2; }
     if (tone === 'press') { s.tension += 9; s.trust -= 3; }
-    if (tone === 'show') { s.tension += 5; s.suspicion += 6; s.trust -= 1; }
+    if (tone === 'show') { s.tension += 5; s.suspicion += 6 * sg; s.trust -= 1; }
 
     switch (decision.chosen) {
       case 'ANSWER_TRUE':
@@ -191,7 +194,7 @@
         decision.effects.push('证词入簿：' + C.topic(act.topic).label + ' = ' + q.alibi[act.topic]);
         break;
       case 'ANSWER_LIE':
-        s.tension += 5; s.suspicion += 8;
+        s.tension += 5; s.suspicion += 8 * sg;
         decision.revealed = { guestId: q.id, guestName: q.name, topic: act.topic, value: q.alibi[act.topic], surface: q.surface[act.topic] };
         decision.effects.push('证词入簿（伪）：' + C.topic(act.topic).label + ' = ' + q.alibi[act.topic]);
         break;
@@ -202,7 +205,7 @@
       case 'COUNTER':
         s.tension += 5;
         decision.effects.push('未获得证词；邻座警觉');
-        game.guests.forEach(function (o) { if (o.id !== q.id) o.state.suspicion += 2; });
+        game.guests.forEach(function (o) { if (o.id !== q.id) o.state.suspicion += 2 * sg; });
         break;
       case 'GIFT':
         q.flags.gifted = true; s.affinity += 8;

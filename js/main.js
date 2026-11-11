@@ -11,7 +11,7 @@
   var App = {
     screen: 'intro', game: null, selected: null, tone: 'warm',
     lastDecision: null, ended: false, autopilot: false, autoTrace: null,
-    session: { seed: '', night: 1, totalScore: 0, nights: [] },
+    session: { seed: '', night: 1, totalScore: 0, nights: [], difficultyTier: 'basic' },
     soundOn: true, aiShown: true
   };
   g.SANDENG_APP = App;
@@ -57,13 +57,19 @@
   }
 
   /* ---------------- 会话 ---------------- */
-  function newRun(seed, night) {
-    App.session = { seed: seed || randSeed(), night: night || 1, totalScore: 0, nights: [] };
+  function newRun(seed, night, tierId) {
+    var D = SD.Difficulty;
+    var prevTier = App.session ? App.session.difficultyTier : null;
+    var tier = D ? D.normalize(tierId == null ? prevTier : tierId) : 'basic';
+    App.session = { seed: seed || randSeed(), night: night || 1, totalScore: 0, nights: [], difficultyTier: tier };
     startNight(App.session.night, true);
   }
   function startNight(night, fresh) {
     App.session.night = night;
-    App.game = Game.create(App.session.seed, night);
+    var D = SD.Difficulty;
+    App.game = Game.create(App.session.seed, night, {
+      tierId: D ? D.normalize(App.session.difficultyTier) : 'basic'
+    });
     App.selected = App.game.guests[0].id;
     App.lastDecision = null;
     App.ended = false;
@@ -90,6 +96,17 @@
     if (!s || !s.game) { UI.toast('没有找到存档，先点灯吧'); return; }
     App.session = s.session; App.game = s.game; App.selected = s.selected || App.game.guests[0].id;
     App.tone = s.tone || 'warm'; App.ended = !!s.ended; App.lastDecision = null;
+    /* 老存档兼容：忽略 URL；缺字段一律按 basic 契约值在内存补齐，不改写存档 */
+    var D = SD.Difficulty;
+    var tier = D ? D.normalize(App.session.difficultyTier) : 'basic';
+    App.session.difficultyTier = tier;
+    if (App.game && App.game.cs && App.game.cs.difficulty) {
+      var cd = App.game.cs.difficulty;
+      var full = D ? D.apply(tier, { night: App.game.night || 1 }) : null;
+      if (full) D.PARAM_KEYS.forEach(function (k) {
+        if (cd[k] === undefined || cd[k] === null) cd[k] = full[k];
+      });
+    }
     UI.resetCache();
     if (App.ended || App.game.phase === 'ended') {
       UI.paintResult(App); UI.showScreen('screen-result'); App.screen = 'result';
@@ -163,6 +180,7 @@
       '三夜守灯，认出 ' + c + '/3 位无相，累计 ' + App.session.totalScore + ' 分，评级「' + (c === 3 ? '守夜人' : c === 2 ? '掌灯人' : c === 1 ? '值夜人' : '夜行人') + '」。\n' +
       '三位客人由本地 AI 决策引擎驱动：量化状态 + 持久记忆 + 规则校验，会记住你说过的每句话。\n' +
       'seed：' + App.session.seed + '（同一 seed 可复现同一夜）\n' +
+      '难度：' + (SD.Difficulty ? SD.Difficulty.label(App.session.difficultyTier) : '初级') + '\n' +
       'AI+∞ 开发者创作大赛 · 第三期「AI 造游戏」参赛作品';
   }
 
@@ -358,6 +376,22 @@
         var a = el.getAttribute('data-action');
         if (a === 'select-guest') { App.selected = el.getAttribute('data-guest'); UI.audio.sfx('click'); UI.paint(App); return; }
         if (a === 'set-tone') { App.tone = el.getAttribute('data-tone'); UI.audio.sfx('click'); UI.paint(App); save(); return; }
+        if (a === 'set-tier') {
+          /* 档位选择只在封面生效；局内不出现切换控件 */
+          if (App.screen !== 'intro') return;
+          var TD = SD.Difficulty;
+          var picked = TD ? TD.normalize(el.getAttribute('data-tier')) : 'basic';
+          App.session.difficultyTier = picked;
+          var opts = document.querySelectorAll('#tier-pick [data-tier]');
+          for (var oi = 0; oi < opts.length; oi++) {
+            var on = opts[oi].getAttribute('data-tier') === picked;
+            opts[oi].setAttribute('aria-checked', on ? 'true' : 'false');
+            opts[oi].classList.toggle('is-on', on);
+          }
+          UI.audio.sfx('click');
+          save();
+          return;
+        }
         if (a === 'ask') { doAsk(el.getAttribute('data-topic')); return; }
         if (a === 'close-modal') { UI.closeModal(); return; }
         if (a === 'guide-replay') {
@@ -434,7 +468,28 @@
       getState: function () { return App.game ? Game.snapshot(App.game) : null; },
       listActions: function () { return App.game ? Game.listActions(App.game) : []; },
       dispatch: function (action) { var r = App.game ? Game.dispatch(App.game, action) : { ok: false, error: 'no game' }; afterDispatch(r); return r; },
-      newRun: function (seed, night) { newRun(seed || randSeed(), night || 1); return this.getState(); },
+      newRun: function (seed, night, tierId) { newRun(seed || randSeed(), night || 1, tierId); return this.getState(); },
+      /* 裁决 K：13 项运行期参数的只读观测通道；返回深拷贝而非 cs.difficulty 引用，不缓存、不写全局 */
+      getDifficulty: function () {
+        var D = SD.Difficulty;
+        var tier = D ? D.normalize(App.session && App.session.difficultyTier) : 'basic';
+        var night = App.game ? App.game.night : (App.session.night || 1);
+        var base = (App.game && App.game.cs) ? App.game.cs.difficulty : null;
+        var full = D ? D.apply(tier, { night: night }) : null;
+        var params = {};
+        if (D) {
+          D.PARAM_KEYS.forEach(function (k) {
+            params[k] = (base && base[k] !== undefined && base[k] !== null) ? base[k] : full[k];
+          });
+        } else if (base) {
+          Object.keys(base).forEach(function (k) { params[k] = base[k]; });
+        }
+        return {
+          tier: tier,
+          configId: (base && base.configId) || (D ? D.SCHEMA_VERSION : 'sandeng.difficulty.v1'),
+          params: params
+        };
+      },
       create: Game.create, dispatchPure: Game.dispatch, belief: Game.belief,
       Director: SD.Director, NPC: NPC, Agent: Agent, Game: Game, Core: C,
       selftest: function (n) { return Agent.selftest({ seeds: n || 200 }); },
@@ -454,12 +509,33 @@
     var defaultSeed = p.seed || randSeed();
     q('intro-seed').textContent = 'seed · ' + defaultSeed;
     refreshContinue();
+
+    /* 难度入口：?difficulty=<id> 精确匹配；非法值拒绝回落 basic 且只提示一次，缺失不提示。
+       ?guide=1 一律忽略 URL 难度、固定 basic + 第 1 夜（引导 6/6 盏基线不可动）。 */
+    var D = SD.Difficulty;
+    var guideForced = p.guide === '1' && p.autopilot !== '1';
+    var hasTierParam = !guideForced && Object.prototype.hasOwnProperty.call(p, 'difficulty');
+    var rawTier = hasTierParam ? p.difficulty : null;
+    var bootTier = D ? D.normalize(rawTier) : 'basic';
+    App.session.difficultyTier = bootTier;
+    if (hasTierParam && D && !D.validate(rawTier)) UI.toast('难度未识别，已按初级开局');
+
+    /* 封面四档：文案由 label() 提供、枚举与 IDS 一致；同步 aria-checked 与选中态 */
+    var tierBtns = document.querySelectorAll('#tier-pick [data-tier]');
+    for (var ti = 0; ti < tierBtns.length; ti++) {
+      var tid = tierBtns[ti].getAttribute('data-tier');
+      if (D && D.validate(tid)) tierBtns[ti].textContent = D.label(tid);
+      var on = tid === bootTier;
+      tierBtns[ti].setAttribute('aria-checked', on ? 'true' : 'false');
+      tierBtns[ti].classList.toggle('is-on', on);
+    }
+
     if (p.autopilot === '1') { setTimeout(startAutopilot, 260); }
-    else if (p.seed && p.night) { newRun(p.seed, parseInt(p.night, 10) || 1); }
+    else if (!guideForced && p.seed && p.night) { newRun(p.seed, parseInt(p.night, 10) || 1, bootTier); }
     /* 可复跑验收入口：?guide=1 强制进入第 1 夜并从 G1 起播，全程不改写标记 */
-    if (p.guide === '1' && p.autopilot !== '1') {
+    if (guideForced) {
       setTimeout(function () {
-        if (!App.game) newRun(defaultSeed, 1);
+        if (!App.game) newRun(defaultSeed, 1, 'basic');
         if (SD.Guide) SD.Guide.start({ replay: true });
       }, 300);
     }

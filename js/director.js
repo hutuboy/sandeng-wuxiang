@@ -44,7 +44,10 @@
     '那会儿风大，灯笼一直晃。', '门槛上还积着水。', '伙计替我提过灯。', '街口有卖汤饼的没收摊。'
   ];
 
-  function difficulty(night) {
+  /* v1.1.0 现状曲线：仅当 SD.Difficulty 未加载（Node 单测 / 渐进接线）时启用。
+     六个新阈值是 v1.1.0 现有字面量，与 difficulty.js 的 basic 契约值逐项相等，
+     保证「默认档逐字节恒等」；正常路径全部由 SD.Difficulty.apply() 派生。 */
+  function legacyDifficulty(night) {
     var n = Math.max(1, Math.min(3, night | 0));
     return {
       night: n,
@@ -53,8 +56,18 @@
       evadeBoost: n === 1 ? -0.6 : n === 2 ? 0 : 0.55,
       redHerring: n >= 2,
       allowFlee: n === 3,
-      temperature: n === 1 ? 0.75 : n === 2 ? 0.95 : 1.15
+      temperature: n === 1 ? 0.75 : n === 2 ? 0.95 : 1.15,
+      trustMaskBelow: 35, tensionLeaveAt: 70, fleeSuspicionAt: 60,
+      suspicionGainScale: 1.00, chainMinForFullCredit: 2, endingBestTrust: 55
     };
+  }
+
+  function difficulty(night, tierId) {
+    var D = SD.Difficulty;
+    // 渐进守卫：脚本未引入时原样回落现状曲线，不引入任何行为变化
+    if (!D || !D.apply) return legacyDifficulty(night);
+    // apply() 是生成 cs.difficulty 的唯一入口；内部按 paramsFor(normalize(tierId), night) 查表
+    return D.apply(D.normalize(tierId), { night: night });
   }
 
   function makeSurface(rng, topicId, value, style) {
@@ -168,8 +181,8 @@
     return { ok: ok, trace: trace };
   }
 
-  function generate(seed, night) {
-    var diff = difficulty(night);
+  function generate(seed, night, tier) {
+    var diff = difficulty(night, tier);
     var last = null;
     for (var attempt = 0; attempt < 60; attempt++) {
       var cs = buildCase(seed, night, diff, attempt);
