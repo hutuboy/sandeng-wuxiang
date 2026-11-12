@@ -463,3 +463,49 @@ body.is-guiding #btn-help{border-color:var(--amber);color:var(--amber-lt)}
   .tier-pick{gap:6px}
   .tier-opt{padding:6px 9px;font-size:11px}
 }
+/* ================= 界面优化 S0（v1.5.0 追加段，不改几何） =================
+ * 约束：只追加、不删改上方任何既有规则；不新增色值；不改尺寸/位移/吸底；
+ *       不声明 .guide-bubble（G-91b 逐块校验 width）；不出现 z-index:21（G-91c）。
+ * 内容：① 六档字号 token 与「向下归并」 ② 三级色阶 ③ 顶栏分组降权
+ *       ④ 核心信息与主入口提权（仅颜色/字重/阴影） ⑤ :focus-visible 补齐
+ * 说明：<11px 辅助字上抬到 11px 会改盒高，按 D12 归入 S2，本段不做。
+ * ================================================================ */
+:root{
+  --sp-1:8px; --sp-2:12px; --sp-3:20px; --sp-4:32px;
+  --tap:44px;
+  --fs-micro:11px; --fs-label:12px; --fs-body:13px;
+  --fs-lead:15px;  --fs-title:18px; --fs-num:20px;
+}
+
+/* ① 字号阶梯：只把 ≥13px 的零散值向下归并到 6 档；按钮字号不动（避免盒高变化） */
+.panel-head h2{font-size:var(--fs-label)}            /* 14 → 12 */
+.clue h3{font-size:var(--fs-label)}                  /* 13 → 12 */
+.dline{font-size:var(--fs-label)}                    /* 12.5 → 12 */
+.dline.sys,.dline.clue,.stmt,.ai-empty{font-size:var(--fs-micro)} /* 11.5 → 11 */
+.result-desc{font-size:var(--fs-label)}              /* 14 → 12（结局散文非主信息） */
+.linkbtn{font-size:var(--fs-micro)}                  /* 12 → 11 */
+
+/* ② 三级色阶：L3 辅助（工程/快捷键/装饰标签）退出注意力竞争 */
+.tb-lamp-label,.tb-score,.ai-block h4,.ai-block h4 span,
+.rv-h,.result-eyebrow{color:var(--dim)}
+.chip{color:var(--muted)}
+
+/* ③ 顶栏分组：信息组与工具组之间加一条不占位的分隔线（box-shadow 不改布局） */
+.tb-right{box-shadow:-1px 0 0 rgba(200,170,120,.14)}
+body:not(.is-guiding) .tb-right .icon-btn{opacity:.82}
+body:not(.is-guiding) .tb-right .icon-btn:hover,
+body:not(.is-guiding) .tb-right .icon-btn.on{opacity:1}
+
+/* ④ 核心信息与主入口提权（只改颜色/字重/阴影，不改字号与盒模型） */
+.tb-score b{color:var(--amber-lt);font-weight:700;text-shadow:0 0 10px rgba(232,164,92,.32)}
+#tb-lamp-text{color:var(--amber-lt);font-weight:700;letter-spacing:.06em}
+.dock-label,.topic-card .name{color:var(--amber-lt)}
+.topic-card:not(:disabled){border-color:rgba(200,170,120,.30)}
+.btn-primary{box-shadow:0 6px 26px rgba(232,164,92,.28),inset 0 1px 0 rgba(255,255,255,.35),0 0 0 1px rgba(255,201,135,.22)}
+.dock-foot .btn-danger:not(:disabled){box-shadow:0 0 0 1px rgba(216,83,79,.30),0 6px 18px rgba(216,83,79,.12)}
+
+/* ⑤ :focus-visible 补齐（键盘可达性；未改动既有 outline 语义） */
+.btn:focus-visible,.icon-btn:focus-visible,.topic-card:focus-visible,
+.mini-btn:focus-visible,.linkbtn:focus-visible,.tone:focus-visible{
+  outline:2px solid var(--amber-lt);outline-offset:2px;
+}
