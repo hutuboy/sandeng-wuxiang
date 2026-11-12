@@ -86,21 +86,26 @@ python -m http.server 8000
 
 ### 2. AI 导演（`js/director.js`）
 
-带约束求解的程序化案件生成：随机选客人 / 人格 / 无相 / 物证，构造唯一矛盾；
-`solve()` 校验「矛盾唯一 + 行动点充足 + 理想玩家可解」，不满足则重掷（最多 60 次）。
+带约束求解的程序化案件生成：随机选客人 / 人格 / 无相 / 物证，构造唯一矛盾。
+四档各有一条「命格残卷式」（`js/logic.js` 的 `PLANS`）：新手 `∧`、初级 `∨`、中级 `¬`、高级 `⊕`；
+生成器**按式子反推**每个人的说法去满足它，于是「满足式子者恰好一位」是构造出来的，不是重掷撞出来的。
+`solve()` 用 `Logic.uniqueFor(cs, cs.logic.expr)` 校验，并核对「矛盾唯一 + 行动点充足」。
 所有案件由 `seed` 决定，可完整复现。难度随夜次递增（红鲱鱼措辞、双物证、遁走分支）。
 
 ### 3. 影子掌柜 · 自动试玩 Agent（`js/agent.js`）
 
 只通过结构化接口 `getState() / listActions() / dispatch()` 驱动游戏，与人走同一套规则。
-以信息增益选择问话、以信念更新做指认，输出「初始状态 + 随机种子 + 完整动作序列 + 信念轨迹」。
+以信息增益选择问话、以**残卷式后验**做指认（未问到的格子按五五开枚举，看他在多少种世界里符合式子），
+输出「初始状态 + 随机种子 + 完整动作序列 + 信念轨迹」。可用 `run(seed, night, { tierId })` 指定档位跑。
 另附跨种子不变量自检与预置缺陷复现：
 
 ```bash
 node tools/selftest.cjs --seeds 200 --json tools/selftest-report.json
 ```
 
-200 组种子实测：6/6 项通过，自动试玩通关率 91.7%。
+200 组种子实测：**8/8** 项通过（含 T7「残卷式命中唯一」720 组、T8「算子区分度」四档）；
+自动试玩分档通关率：新手 98.3% / 初级 95.0% / 中级 35.0% / 高级 33.3%
+（中/高级档受灯数限制问不全六格，是**量出来**的设计缺口，见 `docs/优化方案-逻辑层与分步窗口-v1.md` §9.8）。
 
 ---
 
@@ -173,6 +178,7 @@ node tools/browser-smoke.cjs          # 需要 .tooling/playwright-core + 本机
 node tools/guide-smoke.cjs            # 新用户引导 60 项门禁（含几何断洞）
 QA_DIFFICULTY_RUN=1 node tools/difficulty-smoke.cjs   # 四档难度 44 项
 node tools/clue-toggle-probe.cjs      # 物证条展开态：问话重绘后不丢、换局复位
+node tools/logic-v2-shot.cjs       # 逻辑层 v2 视觉探针：四档残卷式 / 换算子警示 / 窄屏不溢出（开发期）
 node tools/g5-geom.cjs                # 引导 G5 气泡与两处高亮洞的重叠面积应为 0
 node tools/make-demo.cjs              # 重新录制演示视频（需要 ffmpeg）
 ```

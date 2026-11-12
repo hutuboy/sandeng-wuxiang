@@ -72,6 +72,19 @@
         if (s.value !== clue.expect) raw[s.guestId] += 1;
       });
     });
+    // 逻辑层（P2）：满足当夜残卷式的人直接压倒「不符条数」。
+    // 高级档里「三处全不符」的清白客条数最多，只数叉会把他当无相；
+    // 这里让「式子筛出来的那一位」带走大头，与推演台同一口径。
+    // 灯不够问全时，未问的格子按五五开枚举（logic.posterior），
+    // 于是「嫌疑度」= 他在所有可能世界里符合残卷式的比例。
+    var lg = (SD.Logic && game.cs.logic && game.cs.logic.expr) ? game.cs.logic : null;
+    if (lg) {
+      var post = SD.Logic.posterior(game.cs, game.statements, lg.expr);
+      if (post) {
+        var bonus = game.cs.clues.length + 1;
+        game.guests.forEach(function (q) { raw[q.id] = post.share[q.id] * bonus; });
+      }
+    }
     var total = 0;
     game.guests.forEach(function (q) { raw[q.id] += 0.12; total += raw[q.id]; });
     game.guests.forEach(function (q) { b[q.id] = C.round(raw[q.id] / total, 3); });

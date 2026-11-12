@@ -64,10 +64,14 @@
   /* ---- 跑完一整夜并留痕 ---- */
   function run(seed, night, opts) {
     opts = opts || {};
-    var game = Game.create(seed, night || 1, { auto: true });
+    var createOpts = { auto: true };
+    if (opts.tierId) createOpts.tierId = opts.tierId;   // P2：影子掌柜可按档位跑（自检 T6 用）
+    var game = Game.create(seed, night || 1, createOpts);
     var trace = {
       schema: 'sandeng.agent.trace.v1',
       seed: String(seed), night: night || 1,
+      tier: opts.tierId || (game.cs.difficulty && game.cs.difficulty.tier) || 'basic',
+      logic: game.cs.logic ? { op: game.cs.logic.op, expr: game.cs.logic.text } : null,
       initialState: getState(game),
       actions: [], finalState: null, correct: false, steps: 0
     };
@@ -87,6 +91,18 @@
       });
     }
     trace.finalState = getState(game);
+    // 信息上限：这一夜凭「已问到的证词」最多能有多少把握 —— 取后验最大值。
+    // 灯数不够把九格问全时，它就是通关概率的天花板（高级档尤其明显）。
+    if (game.cs.logic && SD.Logic && SD.Logic.posterior) {
+      var post = SD.Logic.posterior(game.cs, game.statements, game.cs.logic.expr);
+      if (post) {
+        var mx = 0;
+        Object.keys(post.share).forEach(function (k) { if (post.share[k] > mx) mx = post.share[k]; });
+        trace.ceiling = C.round(mx, 3);
+        trace.known = game.cs.clues.length * game.guests.length - post.unknown;
+        trace.cells = game.cs.clues.length * game.guests.length;
+      }
+    }
     trace.correct = !!(game.result && game.result.correct);
     trace.steps = trace.actions.length;
     return trace;
@@ -171,15 +187,25 @@
       { checked: total5, distributionChanged: changed, top1Changed: topChanged,
         avgL1: C.round(l1sum / total5, 4), perturbation: '信任 −30 / 张力 +30' });
 
-    // T6 自动试玩 Agent 通关率
-    var wins = 0, M = Math.min(N, 60), sample6 = null;
-    for (var i6 = 0; i6 < M; i6++) {
-      var tr = run('AGENT_' + i6, (i6 % 3) + 1);
-      if (tr.correct) wins++;
-      if (!sample6 && i6 === 0) sample6 = { seed: tr.seed, night: tr.night, steps: tr.steps, correct: tr.correct, actions: tr.actions.map(function (a) { return a.action; }) };
-    }
-    add('T6 影子掌柜自动试玩通关率 ≥ 70%', wins / M >= 0.7,
-      { checked: M, wins: wins, ratio: C.round(wins / M, 3), firstTrace: sample6 });
+    // T6 自动试玩 Agent 通关率（P2：四档各跑一遍）
+    //    底线按「灯够不够把式子要的格子问全」定：初级/基础档 6~8 盏灯问 4~6 格，
+    //    通得过；中级/高级档只有 3~5 盏灯，问不全六格，通关率必然贴着随机线（见 docs §9.8）。
+    var FLOOR = { novice: 0.7, basic: 0.7, intermediate: 0.28, advanced: 0.28 };
+    var tiers6 = (SD.Difficulty && SD.Difficulty.IDS) ? SD.Difficulty.IDS : ['basic'];
+    var M = Math.min(N, 60), sample6 = null, tierStat = {};
+    tiers6.forEach(function (tier) {
+      var w6 = 0;
+      for (var i6 = 0; i6 < M; i6++) {
+        var tr = run('AGENT_' + i6, (i6 % 3) + 1, { tierId: tier });
+        if (tr.correct) w6++;
+        if (!sample6 && i6 === 0) sample6 = { seed: tr.seed, night: tr.night, steps: tr.steps, correct: tr.correct, actions: tr.actions.map(function (a) { return a.action; }) };
+      }
+      tierStat[tier] = { wins: w6, checked: M, ratio: C.round(w6 / M, 3), floor: FLOOR[tier] || 0.35 };
+    });
+    var wins6 = tiers6.reduce(function (s, t) { return s + tierStat[t].wins; }, 0);
+    var ok6 = tiers6.every(function (t) { return tierStat[t].ratio >= tierStat[t].floor; });
+    add('T6 影子掌柜自动试玩通关率（四档，按档设底线）', ok6,
+      { total: C.round(wins6 / (M * tiers6.length), 3), tierStat: tierStat, firstTrace: sample6 });
 
     report.summary = { total: report.cases.length, passed: report.cases.length - fails, failed: fails, allPass: fails === 0 };
     return report;

@@ -372,67 +372,119 @@
   }
   function solverHtml(game) {
     var ok = game.cs.solvable && game.cs.logicSolvable !== false;
-    return (ok ? '✓ ' : '! ') + '标准解唯一（∧ 全部不符）· ' + game.cs.clues.length + ' 件物证 · ' + game.lamps + ' 盏灯';
+    var lg = game.cs.logic;
+    var meta = lg && SD.Logic ? SD.Logic.opMeta(lg.op) : null;
+    var rule = meta ? meta.sym + ' ' + meta.name : '∧ 全部不符';
+    return (ok ? '✓ ' : '! ') + '残卷式唯一（' + rule + '）· ' + game.cs.clues.length + ' 件物证 · ' + game.lamps + ' 盏灯';
   }
 
-  /* ---------------- 推演台（逻辑筛人）：弹窗与第三幕共用同一份渲染 ---------------- */
+  /* ---------------- 推演台（逻辑筛人）：弹窗与第三幕共用同一份渲染 ----------------
+   * v2：式子是可嵌套的表达式树 —— 残卷上的算子只作用在前 group 格物证，
+   *     其余物证固定按 ∧ 叠加上去（如「(A⊕B) ∧ C」）。
+   *     残卷给出的那条式子才是当夜的答案；换算子会换出别人，正是这一层要教的。
+   */
   function logicCoreHtml(cs, statements, op, opt) {
     opt = opt || {};
     var L = SD.Logic;
     if (!L) return '<p style="color:var(--dim)">逻辑层未加载。</p>';
-    var OPS = L.OPS || [{ id: 'AND', sym: '∧', name: '与', gloss: '每条都对不上' }];
-    var ok = false;
-    OPS.forEach(function (o) { if (o.id === op) ok = true; });
-    if (!ok) op = 'AND';
-    var formula = { op: op, atoms: cs.clues.map(function (c) { return c.topic; }) };
-    var ev = L.evaluate(cs, statements, formula);
+    var OPS = L.OPS || [{ id: 'AND', sym: '∧', name: '与', gloss: '每条都对不上', form: 'A∧B' }];
+    var lg = cs.logic || null;
+    var scrollOp = (lg && lg.op) || 'AND';
+    var plan = (lg && lg.plan) || null;
+    var okOp = false;
+    OPS.forEach(function (o) { if (o.id === op) okOp = true; });
+    if (!okOp) op = scrollOp;
+
+    var expr = L.buildFormula(cs, op);
+    var ev = L.evaluateExpr(cs, statements, expr);
+    var scrollExpr = (lg && lg.expr) || L.buildFormula(cs, scrollOp);
     var guests = cs.guests;
+
     var head = '<tr><th>物证 · 真值</th>' + guests.map(function (q) { return '<th>' + esc(q.name) + '</th>'; }).join('') + '</tr>';
+    var unasked = 0;
     var rows = cs.clues.map(function (c) {
       return '<tr><td><b style="color:var(--amber-lt)">' + esc(c.title) + '</b><br /><span class="lg-dim">' +
         esc(C.topic(c.topic).label) + ' 应为「' + esc(c.expect) + '」</span></td>' +
         guests.map(function (q) {
           var d = ev.dev[q.id][c.topic];
+          if (d === null) unasked++;
           var cell = d === null ? '<span class="lg-dim">? 未问</span>'
             : d ? '<span style="color:var(--crimson)">✗ 不符</span>'
               : '<span style="color:var(--jade)">✓ 相符</span>';
           return '<td>' + cell + '</td>';
         }).join('') + '</tr>';
     }).join('');
-    var cur = null; OPS.forEach(function (o) { if (o.id === op) cur = o; });
+
+    var cur = L.opMeta(op);
     var resRow = '<tr><td><b>按「' + (cur ? cur.sym + ' ' + cur.name : op) + '」判定</b><br /><span class="lg-dim">' +
-      (cur ? esc(cur.form) : '') + '</span></td>' +
+      esc(L.formulaText(expr, cs)) + '</span></td>' +
       guests.map(function (q) {
         var r = ev.result[q.id];
         return '<td>' + (r === null ? '<span class="lg-dim">? 未定</span>'
           : r ? '<span style="color:var(--jade);font-weight:700">✓ 命中</span>'
             : '<span class="lg-dim">✗</span>') + '</td>';
       }).join('') + '</tr>';
+
     var ops = OPS.map(function (o) {
       var on = op === o.id;
       return '<button class="opbtn' + (on ? ' on' : '') + '" data-action="logic-op" data-op="' + o.id + '" title="' + esc(o.gloss) + '">' +
         '<b>' + o.sym + '</b><span>' + o.name + '</span></button>';
     }).join('');
+
     var names = ev.winners.map(function (id) {
       var q = null; guests.forEach(function (x) { if (x.id === id) q = x; }); return q ? q.name : id;
     });
-    var isStd = op === 'AND';
-    var verdict = ev.winners.length === 1
-      ? '<b style="color:var(--jade)">命中唯一：' + esc(names[0]) + '</b>' + (isStd ? ' —— 他即「无相」，可去点灯指认。' : ' —— 换个算子再看，别只信一种问法。')
-      : ev.winners.length === 0
-        ? '<b style="color:var(--crimson)">无人命中</b> —— 换个算子，或还有证词没问全。'
-        : '<b style="color:var(--amber-lt)">命中 ' + ev.winners.length + ' 人</b>（' + esc(names.join('、')) + '）—— 范围还不够小' +
-          (isStd ? '，说明有人只「记岔」了一条。' : '。');
+    var isScroll = op === scrollOp;
+    var scrollSym = L.opMeta(scrollOp) ? L.opMeta(scrollOp).sym : '∧';
+    // 「?」不是「否」——有格子没问，式子就落在未定上，不能报成「无人命中」
+    var undet = guests.filter(function (q) { return ev.result[q.id] === null; }).length;
+    var verdict;
+    if (ev.winners.length === 1) {
+      verdict = '<b style="color:var(--jade)">命中唯一：' + esc(names[0]) + '</b>' +
+        (isScroll ? ' —— 与残卷同一条式子，可以去点灯指认。'
+          : ' —— 但残卷上是「' + scrollSym + '」，换个算子也许就指到别人；先按残卷验一遍。');
+    } else if (ev.winners.length > 1) {
+      verdict = '<b style="color:var(--amber-lt)">命中 ' + ev.winners.length + ' 人</b>（' + esc(names.join('、')) + '）' +
+        (isScroll ? ' —— 范围还没缩到一人：也许有人只「记岔」了一条，也许还有话没问全。'
+          : ' —— 换个算子，别只信一种问法。');
+    } else if (undet > 0) {
+      verdict = '<b>还判不了</b> —— ' + (undet === guests.length ? '三位客人' : undet + ' 位客人') +
+        '还有格子空着（共 ' + unasked + ' 格），式子落在「?」上就是未定。' +
+        (isScroll ? '' : '残卷上用的是「' + scrollSym + '」。');
+    } else {
+      verdict = '<b style="color:var(--crimson)">无人命中</b> —— ' +
+        (isScroll ? '这六格全问到了，仍没人的说法同时踩中这条式子：换回别的算子看看。'
+          : '残卷上不是这个算子，换回「' + scrollSym + '」再看。');
+    }
+
     var legend = OPS.map(function (o) {
       return '<li' + (o.id === op ? ' class="on"' : '') + '><b>' + o.sym + '</b> ' + esc(o.gloss) + '</li>';
     }).join('');
+
+    var scrollLine = '<div class="lg-scroll">' +
+      '<span class="lg-tag">当夜残卷</span>' +
+      '<b class="lg-expr">' + esc(L.formulaText(scrollExpr, cs)) + '</b>' +
+      (plan && plan.lead ? '<span class="lg-gloss">' + esc(plan.lead) + '</span>' : '') +
+      '</div>';
+    var warn = isScroll ? ''
+      : '<p class="lg-warn">你把算子换成了「' + (cur ? cur.sym : op) + '」—— 式子变了，筛出来的人也会变。</p>';
+    var gcount = (plan && plan.group) || cs.clues.length;
+    var overlay = '';
+    if (cs.clues.length > gcount) {
+      overlay = plan && plan.rest
+        ? '<p class="lg-dim lg-foot">式子只套在前 ' + gcount + ' 格上，其余物证固定按 ∧ 叠在后面（写成「(…)∧C」）。</p>'
+        : '<p class="lg-dim lg-foot">式子只落在前 ' + gcount + ' 件物证上；柜上另外 ' + (cs.clues.length - gcount) + ' 件与本案无涉 —— 问它只是费灯。</p>';
+    }
+
     return '<div class="logic-board">' +
       (opt.hideIntro ? '' : '<p>把每位客人在各物证上的「<span style="color:var(--jade)">相符</span> / <span style="color:var(--crimson)">不符</span>」摆成一张表，再用逻辑算子筛人。' +
         '表里每个「不符」都是一次<span class="lg-em">¬</span>——「他的话不是真的」。</p>') +
+      scrollLine +
       '<div class="oprow">' + ops + '</div>' +
       '<ul class="op-legend">' + legend + '</ul>' +
       '<table class="finale-table logic-table"><thead>' + head + '</thead><tbody>' + rows + resRow + '</tbody></table>' +
       '<p class="logic-verdict">' + verdict + '</p>' +
+      warn + overlay +
       '<p class="lg-dim lg-foot">「?」= 那句话还没问到。问话消耗灯，取舍在你。</p>' +
       '</div>';
   }
@@ -527,7 +579,7 @@
     set('tone-group', toneHtml(ctx.tone));
 
     /* 第三 / 四幕 */
-    set('logic-stage', logicStageHtml(game, ctx.logicOp || 'AND'));
+    set('logic-stage', logicStageHtml(game, ctx.logicOp));
     set('accuse-stage', accuseStageHtml(game));
 
     /* 常驻栏 */

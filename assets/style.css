@@ -342,6 +342,14 @@ h1,h2,h3,p{margin:0}
 .logic-table th{background:rgba(232,164,92,.08);color:var(--amber-lt);font-size:11px;letter-spacing:.08em;font-weight:400}
 .logic-table tbody tr:last-child{background:rgba(155,143,216,.07)}
 .logic-verdict{margin-top:12px;font-size:12.5px;line-height:1.9}
+/* 当夜残卷：式子本身摆在推演台最上面，换算子前后都留着一份对照 */
+.lg-scroll{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin:10px 0 0;padding:7px 10px;
+  border-left:2px solid rgba(232,164,92,.5);background:rgba(232,164,92,.06);border-radius:2px}
+.lg-tag{font-size:10px;letter-spacing:.18em;color:var(--amber);border:1px solid rgba(232,164,92,.4);
+  padding:1px 5px;border-radius:2px;white-space:nowrap}
+.lg-expr{font-family:var(--serif);font-size:15px;color:var(--amber-lt);letter-spacing:.03em}
+.lg-gloss{font-size:11px;color:var(--dim);line-height:1.7;flex:1 1 100%}
+.lg-warn{margin:6px 0 0;font-size:11px;color:var(--amber-lt);line-height:1.8}
 
 /* 第四幕 · 指认 */
 .accuse-stage{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0 0}

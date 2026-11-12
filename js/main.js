@@ -11,7 +11,8 @@
   var App = {
     screen: 'intro', game: null, selected: null, tone: 'warm',
     lastDecision: null, ended: false, autopilot: false, autoTrace: null,
-    logicOp: 'AND', act: 'lamp',
+    // logicOp = null 表示「还没动过算子」→ 推演台默认落在当夜残卷给的那个算子上
+    logicOp: null, act: 'lamp',
     session: { seed: '', night: 1, totalScore: 0, nights: [], difficultyTier: 'basic' },
     soundOn: true, aiShown: true
   };
@@ -84,6 +85,8 @@
       tierId: D ? D.normalize(App.session.difficultyTier) : 'basic'
     });
     App.selected = App.game.guests[0].id;
+    // 每一夜都从「残卷给的算子」起手，别把上一夜的选择带过来
+    App.logicOp = null;
     App.lastDecision = null;
     App.ended = false;
     App.act = (opts && opts.skipLamp) ? 'ask' : 'lamp';
@@ -359,7 +362,7 @@
   function modalLogicBoard() {
     if (!App.game) return;
     UI.openModal('推演台 · 逻辑筛人',
-      SD.UI.logicBoardHtml(App.game.cs, App.game.statements, App.logicOp || 'AND'));
+      SD.UI.logicBoardHtml(App.game.cs, App.game.statements, App.logicOp));
   }
   function modalAccuse() {
     var b = Game.belief(App.game);
