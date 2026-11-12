@@ -37,9 +37,9 @@
     { id: 'G4', anchor: '#topic-row', fallback: '.action-dock', secondary: null,
       title: '点话头，就是开口',
       body: '五张话头，点一张便是问一句、灭一盏灯。等下由你亲手点。' },
-    { id: 'G5', anchor: '#statement-list', fallback: '.col-left', secondary: '#clue-list',
-      title: '话落在簿上',
-      body: '他答的话记进证词簿，拿去对柜上物证，破绽才现形。' },
+    { id: 'G5', anchor: '#clue-list', fallback: '.col-left', secondary: null,
+      title: '对柜上物证',
+      body: '他答的话留在对话里，浅青的字就是关键。拿去对柜上物证，破绽才现形。' },
     { id: 'G6', anchor: '.topbar', fallback: '.tb-center', secondary: null,
       title: '该你开口了',
       body: '灯在顶栏，「AI」摊开客人的心思，灯尽前点灯指认。现在，点张话头，问出第一句吧。' }

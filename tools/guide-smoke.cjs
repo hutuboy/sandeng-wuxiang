@@ -32,10 +32,10 @@ const EXPECT_STEP_COPY = [                       // 逐字抄设计案第二章
   ['先相中一位', '三位客人都到了。等下点谁，话就问给谁听；第一位已替你相中。'],
   ['同一句，三种问法', '温问养信任，逼问要真话，示物压伪饰。语气随你，先不定也成。'],
   ['点话头，就是开口', '五张话头，点一张便是问一句、灭一盏灯。等下由你亲手点。'],
-  ['话落在簿上', '他答的话记进证词簿，拿去对柜上物证，破绽才现形。'],
+  ['对柜上物证', '他答的话留在对话里，浅青的字就是关键。拿去对柜上物证，破绽才现形。'],
   ['该你开口了', '灯在顶栏，「AI」摊开客人的心思，灯尽前点灯指认。现在，点张话头，问出第一句吧。']
 ];
-const EXPECT_ANCHORS = [null, '#guest-row', '#tone-group', '#topic-row', '#statement-list', '.topbar'];
+const EXPECT_ANCHORS = [null, '#guest-row', '#tone-group', '#topic-row', '#clue-list', '.topbar'];
 const SEL = {
   root: '#guide-layer', bubble: '#guide-bubble', mask: '#guide-mask', hole: '.guide-hole',
   next: '#btn-guide-next', prev: '#btn-guide-prev', skip: '#btn-guide-skip',
@@ -234,7 +234,7 @@ async function snapshot(h) {
       phase: s.phase, schema: s.schema,
       lampText: lampText ? lampText.textContent : '',
       lampOn: document.querySelectorAll('#tb-lamps .lamp.on').length,
-      stmtCount: (document.getElementById('stmt-count') || {}).textContent || '',
+      stmtCount: String(document.querySelectorAll('#dialogue mark').length),
       turnTag: (document.getElementById('turn-tag') || {}).textContent || '',
       modalCount: document.querySelectorAll('#modal-root .modal, #modal-root .modal-mask').length
     };
@@ -357,7 +357,7 @@ async function runNegative() {
       '三通道 Δ灯 = 0', { t0: [t0.lampText, t0.lampOn, t0.lamps], t1: [t1.lampText, t1.lampOn, t1.lamps] },
       '顶栏文本 / .lamp.on / getState().lampsLeft 三通道独立复算');
     check('G-13', 'AC-07', '阻断', t1.statements === t0.statements && t1.stmtCount === t0.stmtCount,
-      'Δ证词 = 0', { t0: [t0.statements, t0.stmtCount], t1: [t1.statements, t1.stmtCount] }, '含 #stmt-count 文本');
+      'Δ证词 = 0', { t0: [t0.statements, t0.stmtCount], t1: [t1.statements, t1.stmtCount] }, 'S3 起证词簿并入对话，此处数 #dialogue mark 高亮数（原 #stmt-count 文本）');
     check('G-15', 'AC-07', '一般', t1.turn === t0.turn && t1.turnTag === t0.turnTag && t1.phase === 'playing',
       'Δ回合 = 0 / phase=playing', { t0: [t0.turn, t0.turnTag, t0.phase], t1: [t1.turn, t1.turnTag, t1.phase] }, '');
     check('G-14', 'AC-07', '阻断', t1.modalCount === 0 && mid.modalCount === 0,
@@ -390,16 +390,16 @@ async function runNegative() {
     });
     check('G-93a', 'AC-02', '阻断', overlapCounts.every(function (v) { return v === 0; }),
       '每步气泡与全部高亮洞重叠数 = 0', overlapCounts,
-      'G5 主副锚同屏可见且不被气泡遮挡');
+      'G5 单锚（柜上物证）可见且不被气泡遮挡');
 
     const holeCounts = trace.map(function (t) { return t.holeCount; });
     check('G-93d', 'AC-02', '阻断',
       holeCounts[0] === 0 && holeCounts.slice(1).every(function (v) { return v >= 1; }),
       'G1 = 0 洞 / G2–G6 >= 1 洞', holeCounts,
       '设计案第二章 + C-14（G1 豁免洞不是高亮洞）');
-    check('G-93e', 'AC-02', '阻断', holeCounts[4] === 2,
-      'G5（>400px）洞数 = 2', holeCounts[4],
-      '#statement-list 主锚 + #clue-list 副锚');
+    check('G-93e', 'AC-02', '阻断', holeCounts[4] === 1,
+      'G5（>400px）洞数 = 1', holeCounts[4],
+      'S3 合并后仅 #clue-list 单锚（原 #statement-list 主锚 + #clue-list 副锚双洞）');
 
     /* G-94b：正文元素不得溢出气泡根（滚动加在正文、气泡根 overflow:visible 以容纳箭头） */
     const bodyOverflow = trace.map(function (t) {
@@ -472,7 +472,7 @@ async function runNegative() {
         toastShown: toast ? toast.classList.contains('show') : false,
         leftCards: document.querySelectorAll('#guest-row .guest-card.left').length,
         lampText: (document.getElementById('tb-lamp-text') || {}).textContent || '',
-        stmtCount: (document.getElementById('stmt-count') || {}).textContent || '',
+        stmtCount: String(document.querySelectorAll('#dialogue mark').length),
         turnTag: (document.getElementById('turn-tag') || {}).textContent || '',
         phase: window.SANDENG_API.getState().phase
       };
@@ -724,7 +724,7 @@ async function runMobile() {
   check('G-95', 'AC-02', '阻断',
     checks.holes[0] === 0 && checks.holes.slice(1).every(v => v === 1),
     '[0,1,1,1,1,1]（G1 无洞 / G2–G6 各 1 洞）', checks.holes,
-    '390px < 400px 门槛，副锚#clue-list 不生成洞；与桌面 G-93e=2 洞对照');
+    '390px < 400px 门槛；S3 合并后 G5 在桌面/窄屏同为单洞，不再有副锚降级对照');
   /* G-93b：窄屏下气泡不得遮住本步高亮洞 */
   check('G-93b', 'AC-02', '阻断', checks.holeOverlap.every(v => v === 0),
     '气泡与高亮洞 6 步全不相交', checks.holeOverlap,
@@ -886,7 +886,7 @@ async function runZeroDependency() {
       'guide-02-G2.png': ['pass', '客人行整排高亮，气泡置于其下方，不压卡片'],
       'guide-03-G3.png': ['pass', '语气三按钮高亮，气泡在其上方，未遮挡'],
       'guide-04-G4.png': ['pass', '五张话头整排高亮，气泡在上方，未遮挡'],
-      'guide-05-G5.png': ['pass', '双洞（柜上物证 + 证词簿）均可见，气泡右移至中栏，讲什么不再遮什么——四向重选落位修复已生效'],
+      'guide-05-G5.png': ['pass', '单洞高亮整套柜上物证（S3 合并后证词簿撤销），物证列表已撑满左栏，气泡右移至中栏，不遮挡高亮区——四向重选落位生效'],
       'guide-06-G6.png': ['pass', '顶栏单洞整条高亮，气泡在下方，灯/AI/问号可见'],
       'guide-cold-start.png': ['pass', '冷启动首帧，与 guide-01-G1 同构'],
       'guide-skip.png': ['pass', '无遮罩无气泡，灯 6/6、证词 0 条，可正常继续玩'],
@@ -896,7 +896,7 @@ async function runZeroDependency() {
       'guide-after-end.png': ['pass', '走完 6 步后无残留，灯 6/6 未损耗'],
       'guide-mobile-G1.png': ['pass', '390×844 气泡完整在视口内，无横向溢出'],
       'guide-mobile-G4.png': ['pass', '话头整排高亮，气泡在上方，未压吸底操作台'],
-      'guide-mobile-G5.png': ['pass', '≤400px 单洞降级：只高亮证词簿，柜上物证不出洞，气泡在其上方——设计案 9.2 落地证据'],
+      'guide-mobile-G5.png': ['pass', '≤400px 窄屏：G5 单洞高亮柜上物证，气泡在其下方，物证列表限高 150px 未把中栏顶出屏幕'],
       'guide-mobile-after-end.png': ['pass', '走完后无残留；灯 5/6、证词 1 条，证明窄屏收口后真实问话可用'],
       'guide-human-path-01-cover.png': ['pass', '封面屏无引导层（仅对局屏第 1 夜触发）'],
       'guide-human-path-02-G1.png': ['pass', '纯 UI 路径（无 evaluate/initScript）下 G1 完整可见，标题/正文/进度/三按钮齐备'],

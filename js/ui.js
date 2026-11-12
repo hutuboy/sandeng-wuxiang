@@ -255,32 +255,46 @@
         '</article>';
     }).join('');
   }
+  /* S3：证词簿并入对话 —— 证词 surface 本就是 decision.text 的子串，
+     故直接在对话正文上高亮关键词，不再单列条目（姓名/话题/交付标记均已在同一行或上一行）。 */
+  var _KW = null;
+  function keywords() {
+    if (_KW) return _KW;
+    var out = [];
+    C.TOPICS.forEach(function (t) {
+      t.values.forEach(function (v) {
+        /* 单字值（如「无」）误伤率高，不参与高亮：它不构成可辨认的关键词 */
+        if (v && v.length >= 2 && out.indexOf(v) < 0) out.push(v);
+      });
+    });
+    /* 长词优先，避免「三更」抢先吃掉「三更三刻」这类包含关系 */
+    _KW = out.sort(function (a, b) { return b.length - a.length; });
+    return _KW;
+  }
   function dialogueHtml(game) {
     var lines = game.log.slice(-14);
+    var kw = keywords();
+    var prevClue = false;
     return lines.map(function (l) {
-      if (l.type === 'system') return '<div class="dline sys">· ' + esc(l.text) + '</div>';
-      /* T1：物证全文已在左栏「柜上物证」逐字展示，此处只留一行提示（不删节点、不改 class） */
-      if (l.type === 'clue') return '<div class="dline clue">◈ 新物证入册 · 见左栏「柜上物证」</div>';
+      if (l.type === 'system') { prevClue = false; return '<div class="dline sys">· ' + esc(l.text) + '</div>'; }
+      /* T1：物证全文已在左栏「柜上物证」逐字展示，此处只留一行提示（不删节点、不改 class）
+         S3：开局一次生成 2 件物证会连推两条同样提示，连续重复只留一条，免得对话被提示刷满 */
+      if (l.type === 'clue') {
+        if (prevClue) return '';
+        prevClue = true;
+        return '<div class="dline clue">◈ 新物证入册 · 见左栏「柜上物证」</div>';
+      }
+      prevClue = false;
       if (l.type === 'ask') return '<div class="dline ask"><span class="who">掌柜</span>' + esc(l.text.replace(/^【你】/, '')) + '</div>';
       var m = /^【(.+?)·(.+?)】(.+)$/.exec(l.text);
-      if (m) return '<div class="dline npc"><span class="act">' + esc(m[2]) + '</span><span class="who">' + esc(m[1]) + '</span>' + esc(m[3]) + '</div>';
-      return '<div class="dline npc">' + esc(l.text) + '</div>';
+      if (m) return '<div class="dline npc"><span class="act">' + esc(m[2]) + '</span><span class="who">' + esc(m[1]) + '</span>' + markWords(m[3], kw) + '</div>';
+      return '<div class="dline npc">' + markWords(l.text, kw) + '</div>';
     }).join('');
   }
   function cluesHtml(game) {
     return game.cs.clues.map(function (c) {
       return '<div class="clue"><h3>◈ ' + esc(c.title) + '</h3><p>' + esc(c.text) + '</p>' +
         '<span class="expect">真值 · ' + esc(C.topic(c.topic).label) + ' = ' + esc(c.expect) + '</span></div>';
-    }).join('');
-  }
-  function statementsHtml(game) {
-    if (!game.statements.length) return '<div class="empty-note">还没有人开口。</div>';
-    var vals = {};
-    C.TOPICS.forEach(function (t) { t.values.forEach(function (v) { vals[v] = 1; }); });
-    return game.statements.map(function (s) {
-      return '<div class="stmt"><span class="who">' + esc(s.guestName) + '</span><span class="topic">' + esc(C.topic(s.topic).label) + '</span>' +
-        (s.byGift ? '<span class="extra">［交付］</span>' : s.byConfide ? '<span class="extra">［交心］</span>' : '') +
-        markWords(s.surface || s.value, Object.keys(vals)) + '</div>';
     }).join('');
   }
   function toneHtml(current) {
@@ -368,14 +382,12 @@
     set('guest-row', guestHtml(game, ctx.selected));
     set('dialogue', dialogueHtml(game));
     set('clue-list', cluesHtml(game));
-    set('statement-list', statementsHtml(game));
     set('topic-row', topicHtml());
     set('tone-group', toneHtml(ctx.tone));
     set('ai-panel', aiHtml(ctx));
     set('solver-note', solverHtml(game));
     set('turn-tag', '第 ' + game.turn + ' 回');
     set('clue-count', game.cs.clues.length + ' 件');
-    set('stmt-count', game.statements.length + ' 条');
     var sel = ctx.selected ? Game.guest(game, ctx.selected) : null;
     set('guest-hint', sel ? '已选 ' + esc(sel.name) + ' · 点一张话头发问' : '先点一位客人，再点一张话头');
     var dlg = document.getElementById('dialogue'); if (dlg) dlg.scrollTop = dlg.scrollHeight;

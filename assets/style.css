@@ -160,15 +160,8 @@ h1,h2,h3,p{margin:0}
 .clue .expect{display:inline-block;margin-top:6px;font-size:11px;color:var(--jade);border:1px solid rgba(95,209,178,.3);padding:1px 7px;border-radius:2px}
 .solver-note{padding:8px 12px;border-top:1px solid var(--line);font-size:10.5px;color:var(--jade);letter-spacing:.03em}
 
-/* 证词簿 */
-.statement-list{flex:1;min-height:0;overflow:auto;padding:9px 11px;display:flex;flex-direction:column;gap:7px}
-.stmt{border-left:2px solid rgba(155,143,216,.5);padding:5px 8px;background:rgba(255,255,255,.025);font-size:11.5px;color:var(--label);line-height:1.7}
-.stmt .who{color:var(--amber-lt);font-family:var(--serif);margin-right:5px}
-.stmt .topic{color:var(--muted);font-size:10px;border:1px solid var(--line);padding:0 4px;margin-right:5px}
-.stmt mark{background:rgba(95,209,178,.16);color:#a8f0da;padding:0 2px;border-radius:2px}
-.stmt .extra{color:var(--violet);font-size:10px}
-.empty-note{color:var(--dim);font-size:11.5px;text-align:center;padding:22px 8px;line-height:1.9}
-.col-left .panel.grow>.mini-btn{margin:0 11px 11px;width:auto;flex:0 0 auto}
+/* S3：证词簿已并入「灯下对话」（见 index.html / ui.js / guide.js），
+   .statement-list / .stmt / .empty-note 三组规则随之删除，不留死代码 */
 
 /* 客人卡 */
 .guest-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;flex:0 0 auto}
@@ -338,7 +331,6 @@ h1,h2,h3,p{margin:0}
   .col-left{flex-direction:row;gap:9px}
   .col-left .panel{flex:1;min-width:0}
   .clue-list{max-height:150px}
-  .statement-list{max-height:150px}
   .col-center{gap:9px}
   .guest-row{gap:6px}
   .guest-card{min-height:158px}
@@ -366,7 +358,7 @@ h1,h2,h3,p{margin:0}
 }
 @media (max-width:400px){
   .col-left{flex-direction:column}
-  .clue-list,.statement-list{max-height:120px}
+  .clue-list{max-height:120px}
   .guest-card{min-height:142px}
   .portrait{height:58px}
 }
@@ -481,7 +473,7 @@ body.is-guiding #btn-help{border-color:var(--amber);color:var(--amber-lt)}
 .panel-head h2{font-size:var(--fs-label)}            /* 14 → 12 */
 .clue h3{font-size:var(--fs-label)}                  /* 13 → 12 */
 .dline{font-size:var(--fs-label)}                    /* 12.5 → 12 */
-.dline.sys,.dline.clue,.stmt,.ai-empty{font-size:var(--fs-micro)} /* 11.5 → 11 */
+.dline.sys,.dline.clue,.ai-empty{font-size:var(--fs-micro)} /* 11.5 → 11 */
 .result-desc{font-size:var(--fs-label)}              /* 14 → 12（结局散文非主信息） */
 .linkbtn{font-size:var(--fs-micro)}                  /* 12 → 11 */
 
@@ -530,7 +522,7 @@ body:not(.is-guiding) .tb-right .icon-btn.on{opacity:1}
 .topic-card .hint{font-size:10px}
 
 /* ④ 辅助字上抬到 11：只动不参与客人卡高度计算的文本 */
-.stmt .topic,.stmt .extra,.dline .act,.ai-block h4,.chip,.util,.delta,.rule-note,.memo{font-size:var(--fs-micro)}
+.dline .act,.ai-block h4,.chip,.util,.delta,.rule-note,.memo{font-size:var(--fs-micro)}
 
 /* ⑤ 外貌描述：界面隐藏，信息挂到 .guest-card 的 title（ui.js 已补） */
 .guest-meta .look{display:none}
@@ -571,3 +563,42 @@ body:not(.is-guiding) .tb-right .icon-btn.on{opacity:1}
 /* ⑩ 结算三段：统一容器与间距，不折叠 */
 .result-reveal,.result-belief,.result-review{margin:var(--sp-2) 0}
 .result-reveal,.rv-wrap{border-color:rgba(200,170,120,.18)}
+
+/* ================= 界面优化 S3（v1.6.0 追加段，信息架构） =================
+ * 变更：证词簿撤销，内容并入「灯下对话」（关键词就地高亮）；左栏整列归「柜上物证」。
+ * 约束：只追加覆盖；不新增色值/资源；不声明 .guide-bubble；不出现 z-index:21。
+ * ================================================================ */
+
+/* ① 左栏：物证独占整列 —— 列表取消 210px 固定上限，改按剩余高度伸缩 */
+.col-left .panel.grow .clue-list{flex:1;min-height:0;max-height:none}
+.col-left .panel.grow .solver-note{flex:0 0 auto}
+
+/* ② 对话内关键词：原证词簿的 <mark> 语义就地保留，不新增一行条目 */
+.dline.npc mark{background:rgba(95,209,178,.15);color:#a8f0da;padding:0 2px;border-radius:2px}
+
+/* ③ 窄屏：左栏只剩一块面板，占满整行；物证列表仍限高，免得把中栏顶出屏幕 */
+@media (max-width:760px){
+  .col-left{flex-direction:column}
+  .col-left .panel.grow{flex:0 0 auto}
+  /* 原左栏两块面板各限高 150，合并后只剩物证，额度合并为 190（约 1.4 件可见，余下滚动） */
+  .col-left .panel.grow .clue-list{flex:0 0 auto;max-height:190px}
+}
+
+/* ④ 物证卡：左栏独占后有了纵向余量，卡片排版随之舒展（信息密度不变，只放大留白与字号） */
+.clue-list{gap:10px}
+.clue{padding:10px 12px}
+.clue p{font-size:12.5px;line-height:1.8}
+.clue h3{margin-bottom:5px}
+
+/* ⑤ 对话贴底对齐：聊天窗惯例，新话从下方长出，空白收到顶部而不是压在最后一句下面。
+ *    ⚠ 不能用 justify-content:flex-end —— 那样内容溢出时溢出方向朝上，
+ *      浏览器不为它生成可滚动区域（实测 scrollHeight 仍等于 clientHeight、首行永久不可见）。
+ *      改用首行 margin-top:auto：不满时推开、溢出时解析为 0 并正常滚动。
+ *    （物证列表仍靠上堆叠；试过 space-between 均分，两件会被拉到面板两头，遂回退） */
+.dialogue > .dline:first-child{margin-top:auto}
+.col-left .panel.grow .clue-list{justify-content:flex-start}
+
+/* ⑥ 溢出健壮性：.dialogue / .clue-list 都是 column flex 容器，
+ *    子项默认 flex-shrink:1 —— 内容一多就会被压扁而不是产生滚动（实测 14 行时
+ *    scrollHeight 仍等于容器高、首行被裁到容器外且滚不上去）。锁死自然高度。 */
+.dline,.clue{flex:0 0 auto}
