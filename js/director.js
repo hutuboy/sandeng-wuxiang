@@ -84,29 +84,32 @@
     return rng.pick(pool);
   }
 
-  /* ---------------- P2：按档位构造「残卷式」与结构性诱饵 ----------------
-   * devPatterns(tier, topics, group) 返回 [无相, 诱饵甲, 诱饵乙] 三份「不符」集合。
+  /* ---------------- P4：按「破绽类型」构造案件 ----------------
+   * devPatterns(kind, topics, group) 返回 [无相, 诱饵甲, 诱饵乙] 三份「不符」集合。
    * 记 A = topics[0]、B = topics[1]（式子只吃前 group 条，其余是干扰件）。
+   * 由破绽类型（而不是档位名）决定结构，于是「残卷说他是哪种说谎的人」
+   * 与「生成器怎么造他」是同一件事：
    *
-   *   novice  ∧：无相处处不符；一位清白客只「记岔」一条
-   *              → ∨ 会连他一起命中，∧ 才筛得掉他。
-   *   basic   ∨：无相只错一处，其余人一处也不错
-   *              → ∧ 无人命中，∨ 唯一。式子逼你承认「不必每条都错」。
-   *   intermediate ¬：无相只错一处，两位清白客都错两处
-   *              → ∧ 命中那两位（都不是他），∨ 命中三人，只有 ¬(A∧B) 落回他。
-   *   advanced ⊕：无相恰错一处；一位错两处（⊕ 假）、一位一处也不错（⊕ 假）
-   *              → 只有 ⊕「恰一」这一条能把他从「全错」与「全对」之间挑出来。
-   *
-   * 于是四档的差别是**式子结构**，不是同一道题换皮。
+   *   substitute 换值（∨）：无相只错一处，其余人一处也不错
+   *              → 只要找到那一条对不上的，就是他。
+   *   cumulative 累积（∧）：无相处处不符；一位清白客只「记岔」一条
+   *              → ∨ 会连他一起命中，只有 ∧（两处都对不上）筛得掉他。
+   *   negative  否定（¬）：无相只错一处，两位清白客都错两处
+   *              → ∧ 命中那两位（都不是他），∨ 命中三人，只有 ¬ 落回他。
+   *   quantify  恰一（⊕）：无相恰错一处；一位错两处、一位一处也不错
+   *              → 只有「恰好一处」能把他从「全错」与「全对」之间挑出来。
    */
-  function devPatterns(tier, topics, group) {
+  var PATTERNS = {
+    substitute: function (g, a, b) { return [[a], [], []]; },
+    cumulative: function (g, a, b) { return [g.slice(), [a], []]; },
+    negative: function (g, a, b) { return [[a], g.slice(), g.slice()]; },
+    quantify: function (g, a, b) { return [[b], g.slice(), []]; }
+  };
+  function devPatterns(kind, topics, group) {
     var g = topics.slice(0, Math.max(1, Math.min(group || 2, topics.length)));
     var a = g[0], b = g[1] || g[0];
-    function all() { return g.slice(); }
-    if (tier === 'novice') return [all(), [a], []];
-    if (tier === 'intermediate') return [[a], all(), all()];
-    if (tier === 'advanced') return [[b], all(), []];
-    return [[a], [], []]; // basic（默认）
+    var fn = PATTERNS[kind] || PATTERNS.cumulative;
+    return fn(g, a, b);
   }
 
   function buildCase(seed, night, diff, attempt) {
@@ -129,12 +132,13 @@
     var topics = clues.map(function (c) { return c.topic; });
     var tier = diff.tier || 'basic';
 
-    // 残卷式 F：仅当 logic.js 已加载时构造（渐进守卫：未加载则整局按旧计数法走）
+    // 残卷：只给「破绽类型」，不给式子（式子只存在于引擎里）
+    var flaw = SD.Logic ? SD.Logic.flawOf(tier) : null;
     var plan = SD.Logic ? SD.Logic.planFor(tier) : null;
     var expr = plan ? SD.Logic.buildFormula({ clues: clues, logic: { plan: plan } }, plan.op) : null;
 
-    // 结构诱饵：按档位给出三位的「不符」集合，顺序为 [无相, 诱饵甲, 诱饵乙]
-    var patterns = plan ? devPatterns(tier, topics, plan.group) : null;
+    // 结构诱饵：按破绽类型给出三位的「不符」集合，顺序为 [无相, 诱饵甲, 诱饵乙]
+    var patterns = flaw ? devPatterns(flaw.kind, topics, plan.group) : null;
     var decoyOrder = 1;
 
     // 为每位客人生成 5 个话题的「真值/伪值」与措辞
@@ -193,12 +197,19 @@
     var impDev = topics.filter(function (t) { return patterns ? patterns[0].indexOf(t) >= 0 : true; });
     var lieTopic = impDev.length ? impDev[impDev.length - 1] : mainTopic;
 
+    // 第三夜叠加「改口」：无相被问到第二次时会换一个说法（行为破绽，不靠数值）。
+    // 清白客的证词在记忆里恒等（selftest T3 的不变量），所以「两次不同」本身就是破绽。
+    var drift = (flaw && night >= 3) ? { guestId: guests[impostor].id, topic: lieTopic } : null;
+
     return {
       seed: String(seed), night: night, attempt: attempt,
       difficulty: diff,
       guests: guests, clues: clues,
       impostorId: guests[impostor].id,
       lieTopic: lieTopic, lieValue: guests[impostor].alibi[lieTopic],
+      // 残卷（玩家可见的只有 kind / label / lead / ask）
+      flaw: flaw ? { kind: flaw.kind, label: flaw.label, depth: flaw.depth, lead: flaw.lead, ask: flaw.ask, tier: tier } : null,
+      drift: drift,
       logic: plan ? {
         tier: tier, op: plan.op, depth: plan.depth, plan: plan, expr: expr,
         text: SD.Logic.formulaText(expr, { clues: clues }),
@@ -233,8 +244,14 @@
       var uniq = SD.Logic.uniqueFor(cs, cs.logic.expr);
       trace.push({
         logic: cs.logic.op, expr: cs.logic.text,
+        flaw: cs.flaw ? cs.flaw.kind : null,
         winners: uniq.winners.map(nameOf), unique: uniq.unique
       });
+      // 「可问全」校验：式子要吃几位 × 几处，灯够不够问完（信息经济的第一道闸）。
+      // 刻意用 infoEnough 而不是 enough —— T1 的「行动点充足」口径是「灯 ≥ 人数」，
+      // 这里记的是更强的「灯 ≥ 格子数」，中/高级档目前不够，留给 P5 的对簿 + 灯数重标定收口。
+      var need = cs.logic.plan ? cs.logic.plan.group * cs.guests.length : cs.clues.length * cs.guests.length;
+      trace.push({ infoBudget: { cells: need, lamps: cs.lamps, infoEnough: cs.lamps >= need } });
       return { ok: uniq.unique && cs.lamps >= cost, trace: trace };
     }
 
@@ -255,12 +272,16 @@
       var r = solve(cs);
       cs.solvable = r.ok;
       cs.solverTrace = r.trace;
-      // 逻辑推演层（P2）：用 alibi 真值复核「满足残卷式者唯一」，并记下命中者
+      // 破绽层（P4）：用 alibi 真值复核「满足破绽判定者唯一」，并记下命中者
       if (SD.Logic && cs.logic && cs.logic.expr) {
         var sol = SD.Logic.solution(cs);
         cs.logic.winners = sol.winners;
         cs.logic.unique = sol.unique;
         cs.logicSolvable = sol.unique;
+        if (cs.flaw) {
+          cs.flaw.unique = sol.unique;
+          cs.flaw.winners = sol.winners;
+        }
       }
       last = cs;
       if (r.ok) return cs;

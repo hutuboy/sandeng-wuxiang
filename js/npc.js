@@ -122,7 +122,7 @@
   }
 
   /* ---- 组合式语言生成 ---- */
-  function composeText(game, q, act, choice, rng) {
+  function composeText(game, q, act, choice, rng, sp) {
     var t = C.topic(act.topic);
     var p = persona(q);
     var mood = q.state.tension > 60 ? 'cold' : q.state.trust < 35 ? 'wary' : p.id === 'proud' ? 'proud' : 'calm';
@@ -134,8 +134,9 @@
     switch (choice) {
       case 'ANSWER_TRUE':
       case 'ANSWER_LIE':
-        var val = q.alibi[act.topic];
-        var surf = q.surface[act.topic] || makeFallback(t, val);
+        var spk = sp || { value: q.alibi[act.topic], surface: q.surface[act.topic] || makeFallback(t, q.alibi[act.topic]) };
+        var val = spk.value;
+        var surf = spk.surface;
         var conn = choice === 'ANSWER_LIE' ? rng.pick(C.CONNECT.lie) : rng.pick(C.CONNECT.true);
         body = conn + surf;
         break;
@@ -152,6 +153,25 @@
   }
   function makeFallback(topic, val) { return '要问' + topic.label + '，那便是' + val + '。'; }
 
+  /* ---- 改口（drift，P4）----
+   * 第三夜的无相被问到同一处第二次时，会换一个说法；清白客人的证词恒等。
+   * 这是唯一一条**不靠数值**的破绽：玩家要靠「追问 + 记着先前那句」抓住它。
+   * 触发条件写死成「已有一条该话题的旧证词，且旧证词仍是原口径」，
+   * 于是每局最多改口一次，不会变成无限换词的噪声。 */
+  function spokenValue(game, q, topic) {
+    var id = C.topic(topic);
+    var base = q.alibi[topic];
+    var surf = q.surface[topic] || makeFallback(id, base);
+    var d = game.cs && game.cs.drift;
+    if (!d || d.guestId !== q.id || d.topic !== topic) return { value: base, surface: surf, drifted: false };
+    var prev = (game.statements || []).filter(function (s) { return s.guestId === q.id && s.topic === topic; });
+    if (!prev.length || prev[0].value !== base) return { value: base, surface: surf, drifted: false };
+    var rng = rngFor(game, 'drift|' + topic);
+    var pool = id.values.filter(function (v) { return v !== base; });
+    var alt = rng.pick(pool);
+    return { value: alt, surface: '（他停了一停）' + makeFallback(id, alt), drifted: true };
+  }
+
   /* ---- 主入口：给定一个玩家动作，产出可审计的 NPC 决策 ---- */
   function decide(game, act, opts) {
     opts = opts || {};
@@ -164,6 +184,7 @@
     if (!Object.keys(scores).length) scores = { REFUSE: 1 };
     var rng = rngFor(game, q.id + act.topic + act.tone);
     var chosen = opts.force || C.softmaxSample(scores, game.cs.difficulty.temperature, rng);
+    var sp = spokenValue(game, q, act.topic);
 
     var decision = {
       guestId: q.id, guestName: q.name, actionLabel: ACTION_META[chosen].label,
@@ -171,7 +192,8 @@
       utilities: calc.utilities, features: calc.features,
       legal: rule.mask, ruleNotes: rule.notes,
       temperature: game.cs.difficulty.temperature,
-      text: composeText(game, q, act, chosen, rng),
+      text: composeText(game, q, act, chosen, rng, sp),
+      spoken: sp,
       stateBefore: C.deepClone(q.state),
       stateAfter: null, stateDelta: null,
       effects: [], memoryEntry: null, revealed: null
@@ -196,13 +218,15 @@
     switch (decision.chosen) {
       case 'ANSWER_TRUE':
         s.trust += 3; s.tension += 2;
-        decision.revealed = { guestId: q.id, guestName: q.name, topic: act.topic, value: q.alibi[act.topic], surface: q.surface[act.topic] };
-        decision.effects.push('证词入簿：' + C.topic(act.topic).label + ' = ' + q.alibi[act.topic]);
+        var spT = decision.spoken || { value: q.alibi[act.topic], surface: q.surface[act.topic] };
+        decision.revealed = { guestId: q.id, guestName: q.name, topic: act.topic, value: spT.value, surface: spT.surface };
+        decision.effects.push('证词入簿：' + C.topic(act.topic).label + ' = ' + spT.value);
         break;
       case 'ANSWER_LIE':
         s.tension += 5; s.suspicion += 8 * sg;
-        decision.revealed = { guestId: q.id, guestName: q.name, topic: act.topic, value: q.alibi[act.topic], surface: q.surface[act.topic] };
-        decision.effects.push('证词入簿（伪）：' + C.topic(act.topic).label + ' = ' + q.alibi[act.topic]);
+        var spL = decision.spoken || { value: q.alibi[act.topic], surface: q.surface[act.topic] };
+        decision.revealed = { guestId: q.id, guestName: q.name, topic: act.topic, value: spL.value, surface: spL.surface };
+        decision.effects.push('证词入簿（伪）：' + C.topic(act.topic).label + ' = ' + spL.value);
         break;
       case 'EVADE':
         s.tension += 4; s.trust -= 2; s.suspicion += 10 * sg;

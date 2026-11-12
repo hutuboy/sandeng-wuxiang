@@ -1,7 +1,7 @@
 {
   "schema": "sandeng.selftest.v1",
   "seeds": 200,
-  "generatedAt": "2026-11-12T12:17:07.986Z",
+  "generatedAt": "2026-11-12T13:28:24.423Z",
   "cases": [
     {
       "name": "T1 AI 导演：案件唯一矛盾 + 行动点充足",
@@ -45,7 +45,7 @@
         "checked": 60,
         "distributionChanged": 60,
         "top1Changed": 8,
-        "avgL1": 0.5417,
+        "avgL1": 0.5451,
         "perturbation": "信任 −30 / 张力 +30"
       }
     },
@@ -53,7 +53,7 @@
       "name": "T6 影子掌柜自动试玩通关率（四档，按档设底线）",
       "pass": true,
       "detail": {
-        "total": 0.654,
+        "total": 0.658,
         "tierStat": {
           "novice": {
             "wins": 59,
@@ -62,9 +62,9 @@
             "floor": 0.7
           },
           "basic": {
-            "wins": 57,
+            "wins": 58,
             "checked": 60,
-            "ratio": 0.95,
+            "ratio": 0.967,
             "floor": 0.7
           },
           "intermediate": {
@@ -84,94 +84,103 @@
           "seed": "AGENT_0",
           "night": 1,
           "steps": 8,
-          "correct": true,
+          "correct": false,
           "actions": [
             {
               "type": "ASK",
               "guestId": "g0",
-              "topic": "origin",
+              "topic": "hour",
               "tone": "warm"
             },
             {
               "type": "ASK",
               "guestId": "g1",
-              "topic": "origin",
+              "topic": "hour",
               "tone": "warm"
             },
             {
               "type": "ASK",
               "guestId": "g2",
-              "topic": "origin",
-              "tone": "warm"
-            },
-            {
-              "type": "ASK",
-              "guestId": "g1",
-              "topic": "origin",
+              "topic": "hour",
               "tone": "warm"
             },
             {
               "type": "ASK",
               "guestId": "g0",
-              "topic": "hour",
-              "tone": "show"
+              "topic": "origin",
+              "tone": "warm"
             },
             {
               "type": "ASK",
               "guestId": "g1",
               "topic": "hour",
-              "tone": "show"
+              "tone": "warm"
+            },
+            {
+              "type": "ASK",
+              "guestId": "g1",
+              "topic": "origin",
+              "tone": "warm"
             },
             {
               "type": "ASK",
               "guestId": "g2",
-              "topic": "hour",
+              "topic": "origin",
               "tone": "warm"
             },
             {
               "type": "ACCUSE",
-              "guestId": "g1"
+              "guestId": "g0"
             }
           ]
         }
       }
     },
     {
-      "name": "T7 残卷式 F 命中唯一（四档 × 三夜，含算子与档位一致）",
+      "name": "T7 破绽判定命中唯一（四档 × 三夜，破绽类型与档位一致）",
       "pass": true,
       "detail": {
         "checked": 720,
         "bad": 0,
         "firstBad": null,
-        "opHist": {
-          "AND": 180,
-          "OR": 180,
-          "NAND": 180,
-          "XOR": 180
+        "kindHist": {
+          "substitute": 180,
+          "cumulative": 180,
+          "negative": 180,
+          "quantify": 180
         }
       }
     },
     {
-      "name": "T8 算子区分度：用错算子会指错人 / 筛空 / 命中两人",
+      "name": "T8 破绽类型区分度：用错判定会指错人 / 筛空 / 命中两人",
       "pass": true,
       "detail": {
         "tiers": [
-          "novice:ok",
-          "basic:ok",
-          "intermediate:ok",
-          "advanced:ok"
+          "novice(substitute):ok",
+          "basic(cumulative):ok",
+          "intermediate(negative):ok",
+          "advanced(quantify):ok"
         ],
+        "firstBad": null
+      }
+    },
+    {
+      "name": "T9 改口破绽：仅第三夜无相改口，清白客证词恒等",
+      "pass": true,
+      "detail": {
+        "checked": 480,
+        "bad": 0,
         "firstBad": null
       }
     }
   ],
   "summary": {
-    "total": 8,
-    "passed": 8,
+    "total": 9,
+    "passed": 9,
     "failed": 0,
     "allPass": true
   },
-  "elapsedMs": 774,
+  "elapsedMs": 635,
   "runtime": "node v22.22.2",
   "defectDemo": {
     "schema": "sandeng.defect.v1",
@@ -187,7 +196,7 @@
       "phase": "playing",
       "ending": null,
       "impostorId": "g0",
-      "lieTopic": "token",
+      "lieTopic": "origin",
       "clues": [
         {
           "id": "clue_token",
@@ -206,9 +215,9 @@
           "name": "顾长风",
           "isImpostor": true,
           "state": {
-            "trust": 57,
-            "affinity": 52,
-            "tension": 13,
+            "trust": 43,
+            "affinity": 43,
+            "tension": 17,
             "suspicion": 0,
             "calm": 71
           },
@@ -225,11 +234,11 @@
           "name": "程鹤",
           "isImpostor": false,
           "state": {
-            "trust": 56,
-            "affinity": 40,
-            "tension": 27,
+            "trust": 53,
+            "affinity": 54,
+            "tension": 14,
             "suspicion": 0,
-            "calm": 82
+            "calm": 81
           },
           "memoryLen": 0,
           "flags": {
@@ -244,11 +253,11 @@
           "name": "裴照",
           "isImpostor": false,
           "state": {
-            "trust": 46,
-            "affinity": 36,
-            "tension": 20,
+            "trust": 55,
+            "affinity": 38,
+            "tension": 26,
             "suspicion": 0,
-            "calm": 62
+            "calm": 84
           },
           "memoryLen": 0,
           "flags": {
@@ -271,42 +280,42 @@
       {
         "type": "ASK",
         "guestId": "g0",
-        "topic": "token",
+        "topic": "origin",
         "tone": "warm"
       },
       {
         "type": "ASK",
         "guestId": "g0",
-        "topic": "token",
+        "topic": "origin",
         "tone": "warm"
       }
     ],
     "firstResponse": {
       "npcAction": "ANSWER_TRUE",
-      "text": "（慢慢道）这倒不必瞒你，说不准，大约是柜上收了我的木牒，天亮来赎。",
-      "revealed": "木牒"
+      "text": "我记得分明：听人这么说，走的是北坡那条道，绕了些远路。",
+      "revealed": "北坡"
     },
     "legacy": {
       "repeatedFeature": 0,
       "confideLegal": true,
       "topActions": [
         {
-          "action": "CONFIDE",
-          "label": "交心透底",
-          "score": 2.56
-        },
-        {
           "action": "ANSWER_TRUE",
           "label": "据实作答",
-          "score": 2.56
+          "score": 2.33
         },
         {
           "action": "ANSWER_LIE",
           "label": "虚与委蛇",
-          "score": 2.31
+          "score": 2.32
+        },
+        {
+          "action": "CONFIDE",
+          "label": "交心透底",
+          "score": 2.09
         }
       ],
-      "text": "（放下茶盏）既如此，索性说透：说不准，大约是柜上收了我的木牒，天亮来赎。"
+      "text": "（慢慢道）这倒不必瞒你，听人这么说，走的是北坡那条道，绕了些远路。"
     },
     "fixed": {
       "repeatedFeature": 1,
@@ -315,20 +324,20 @@
         {
           "action": "EVADE",
           "label": "避而不答",
-          "score": 2.55
+          "score": 2.59
         },
         {
           "action": "ANSWER_LIE",
           "label": "虚与委蛇",
-          "score": 2.31
+          "score": 2.32
         },
         {
-          "action": "GIFT",
-          "label": "交付物件",
-          "score": 2.07
+          "action": "ANSWER_TRUE",
+          "label": "据实作答",
+          "score": 1.78
         }
       ],
-      "text": "（放下茶盏）又是这个问题——我的答复不会改。我这儿有件东西，或许可作个凭证。"
+      "text": "（慢慢道）又是这个问题——我的答复不会改。你要问这个，那便是听人这么说，走的是北坡那条道，绕了些远路。"
     },
     "reproduced": true,
     "fix": "在 features() 增加 repeated 特征，并在 legalMask() 中「重复话题 → 锁定 CONFIDE」，同时措辞层引用历史答复。"
@@ -345,7 +354,7 @@
       "phase": "playing",
       "ending": null,
       "impostorId": "g1",
-      "lieTopic": "hour",
+      "lieTopic": "baggage",
       "clues": [
         {
           "id": "clue_hour",
@@ -369,11 +378,11 @@
           "name": "沈砚",
           "isImpostor": false,
           "state": {
-            "trust": 46,
-            "affinity": 48,
-            "tension": 18,
+            "trust": 47,
+            "affinity": 41,
+            "tension": 29,
             "suspicion": 0,
-            "calm": 68
+            "calm": 82
           },
           "memoryLen": 0,
           "flags": {
@@ -388,11 +397,11 @@
           "name": "程鹤",
           "isImpostor": true,
           "state": {
-            "trust": 44,
-            "affinity": 44,
+            "trust": 45,
+            "affinity": 51,
             "tension": 18,
             "suspicion": 0,
-            "calm": 63
+            "calm": 65
           },
           "memoryLen": 0,
           "flags": {
@@ -407,11 +416,11 @@
           "name": "温叙",
           "isImpostor": false,
           "state": {
-            "trust": 52,
-            "affinity": 52,
+            "trust": 56,
+            "affinity": 53,
             "tension": 15,
             "suspicion": 0,
-            "calm": 61
+            "calm": 79
           },
           "memoryLen": 0,
           "flags": {
@@ -436,7 +445,7 @@
         "action": {
           "type": "ASK",
           "guestId": "g0",
-          "topic": "hour",
+          "topic": "baggage",
           "tone": "warm"
         },
         "beliefBefore": {
@@ -445,18 +454,18 @@
           "g2": 0.333
         },
         "beliefAfter": {
-          "g0": 0.254,
-          "g1": 0.373,
-          "g2": 0.373
+          "g0": 0.051,
+          "g1": 0.475,
+          "g2": 0.475
         },
-        "npcAction": "CONFIDE",
-        "npcText": "（慢慢道）既如此，索性说透：约莫一更光景，雨正落得密。",
+        "npcAction": "GIFT",
+        "npcText": "（放下茶盏）既问到这儿，这个你拿着。",
         "ruleNotes": [
           "清白客人不会编造证词",
-          "张力 18 < 70 → 未达离店阈值",
+          "张力 29 < 70 → 未达离店阈值",
           "遁走需满足：无相身份 + 高疑心 + 第三夜"
         ],
-        "revealed": "一更",
+        "revealed": "书箱",
         "lampsLeft": 4
       },
       {
@@ -464,26 +473,26 @@
         "action": {
           "type": "ASK",
           "guestId": "g1",
-          "topic": "hour",
+          "topic": "baggage",
           "tone": "warm"
         },
         "beliefBefore": {
-          "g0": 0.254,
-          "g1": 0.373,
-          "g2": 0.373
+          "g0": 0.051,
+          "g1": 0.475,
+          "g2": 0.475
         },
         "beliefAfter": {
-          "g0": 0.226,
-          "g1": 0.44,
+          "g0": 0.036,
+          "g1": 0.631,
           "g2": 0.333
         },
         "npcAction": "ANSWER_TRUE",
-        "npcText": "（慢慢道）这倒不必瞒你，算起来该是到店时刚过二更，门还没上栓。",
+        "npcText": "（慢慢道）这倒不必瞒你，听人这么说，手里拎着药箱，搁在脚边了。",
         "ruleNotes": [
           "张力 18 < 70 → 未达离店阈值",
           "遁走需满足：无相身份 + 高疑心 + 第三夜"
         ],
-        "revealed": "二更",
+        "revealed": "药箱",
         "lampsLeft": 3
       },
       {
@@ -491,27 +500,27 @@
         "action": {
           "type": "ASK",
           "guestId": "g2",
-          "topic": "hour",
+          "topic": "baggage",
           "tone": "warm"
         },
         "beliefBefore": {
-          "g0": 0.226,
-          "g1": 0.44,
+          "g0": 0.036,
+          "g1": 0.631,
           "g2": 0.333
         },
         "beliefAfter": {
-          "g0": 0.254,
-          "g1": 0.493,
-          "g2": 0.254
+          "g0": 0.051,
+          "g1": 0.898,
+          "g2": 0.051
         },
-        "npcAction": "CONFIDE",
-        "npcText": "（放下茶盏）既如此，索性说透：约莫是——约莫一更光景，雨正落得密。",
+        "npcAction": "GIFT",
+        "npcText": "（抬眼）既问到这儿，这个你拿着。",
         "ruleNotes": [
           "清白客人不会编造证词",
           "张力 15 < 70 → 未达离店阈值",
           "遁走需满足：无相身份 + 高疑心 + 第三夜"
         ],
-        "revealed": "一更",
+        "revealed": "书箱",
         "lampsLeft": 2
       },
       {
@@ -519,27 +528,27 @@
         "action": {
           "type": "ASK",
           "guestId": "g0",
-          "topic": "baggage",
+          "topic": "hour",
           "tone": "warm"
         },
         "beliefBefore": {
-          "g0": 0.254,
-          "g1": 0.493,
-          "g2": 0.254
+          "g0": 0.051,
+          "g1": 0.898,
+          "g2": 0.051
         },
         "beliefAfter": {
-          "g0": 0.019,
-          "g1": 0.648,
-          "g2": 0.333
+          "g0": 0.051,
+          "g1": 0.898,
+          "g2": 0.051
         },
         "npcAction": "ANSWER_TRUE",
-        "npcText": "（慢慢道）这倒不必瞒你，带的书箱，不值什么钱。",
+        "npcText": "（放下茶盏）照实说，说不准，大约是到店时刚过三更，门还没上栓。",
         "ruleNotes": [
           "清白客人不会编造证词",
-          "张力 15 < 70 → 未达离店阈值",
+          "张力 26 < 70 → 未达离店阈值",
           "遁走需满足：无相身份 + 高疑心 + 第三夜"
         ],
-        "revealed": "书箱",
+        "revealed": "三更",
         "lampsLeft": 1
       },
       {
@@ -549,14 +558,14 @@
           "guestId": "g1"
         },
         "beliefBefore": {
-          "g0": 0.019,
-          "g1": 0.648,
-          "g2": 0.333
+          "g0": 0.051,
+          "g1": 0.898,
+          "g2": 0.051
         },
         "beliefAfter": {
-          "g0": 0.019,
-          "g1": 0.648,
-          "g2": 0.333
+          "g0": 0.051,
+          "g1": 0.898,
+          "g2": 0.051
         },
         "npcAction": "ACCUSE",
         "npcText": "",

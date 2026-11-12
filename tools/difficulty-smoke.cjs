@@ -951,14 +951,29 @@ function runRegression() {
       }
     }
   }
-  try { fs.unlinkSync(tmp); } catch (e) { /* 临时文件用完即删 */ }
-  /* 逐条核字段，不只核退出码 */
+  /* 本次自检产出的报告**只能**从这条临时路径读：
+     selftest 带 --json 时只写该路径，不刷新仓库里的 tools/selftest-report.json。
+     旧实现固定去读仓库那份 → 读到的是上一次手工运行的陈货（长期停在 8/8），
+     于是「自检全绿但门禁判 FAIL」。删临时文件必须推迟到核字段之后。 */
+  let selfReport = null;
+  try { selfReport = JSON.parse(fs.readFileSync(tmp, 'utf8')); } catch (e) { selfReport = null; }
+  /* 逐条核字段，不只核退出码。
+     项数契约 = 9（v1.7.4 P4 重标定：T7/T8 改写为破绽口径、新增 T9「改口」⇒ 6 → 9）。
+     这是**项数**重标定，不是判据放宽：仍要求 allPass===true 且 passed===total。 */
+  const EXPECT_SELFTEST_TOTAL = 9;
   try {
-    const st = JSON.parse(fs.readFileSync(path.join(ROOT, 'tools', 'selftest-report.json'), 'utf8'));
-    if (!(st.summary && st.summary.allPass === true && st.summary.passed === 6 && st.summary.total === 6)) {
+    const st = selfReport;
+    if (!st) throw new Error('本次自检未产出报告');
+    if (!(st.summary && st.summary.allPass === true &&
+          st.summary.passed === EXPECT_SELFTEST_TOTAL && st.summary.total === EXPECT_SELFTEST_TOTAL)) {
       report.regression.selftest.pass = false; fails++;
     }
-  } catch (e) { /* 保留 exec 结果 */ }
+  } catch (e) {
+    report.regression.selftest = Object.assign({}, report.regression.selftest,
+      { pass: false, reportError: String(e.message).slice(0, 200) });
+    fails++;
+  }
+  try { fs.unlinkSync(tmp); } catch (e) { /* 临时文件用完即删 */ }
   try {
     const bs = JSON.parse(fs.readFileSync(path.join(ROOT, 'tools', 'browser-smoke-report.json'), 'utf8'));
     if (!(bs.errors && bs.errors.length === 0)) { report.regression.browserSmoke.pass = false; fails++; }
@@ -987,7 +1002,7 @@ function runRegression() {
   }
   report.counters.regressionFailCount = fails;
   caseRecord('D-40/41/42', 'AC-09', '阻断', fails === 0,
-    { selftest: '6/6', browserSmoke: 'errors=0', guideSmoke: '60/60', guideCounters: '9/9 为 0' },
+    { selftest: '9/9', browserSmoke: 'errors=0', guideSmoke: '60/60', guideCounters: '9/9 为 0' },
     report.regression, '核退出码 + 核报告字段 + 核引导域 9 项负向计数的实测值 + 核门禁在交付清单执行链中的位置');
 }
 

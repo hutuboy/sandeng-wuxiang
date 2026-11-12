@@ -22,33 +22,74 @@
   var C = SD.Core;
 
   /* ---------------- 1. 四档的「命格残卷」（题目结构） ----------------
+   * v2 重设计（P4）：残卷不再把式子写给玩家，只写「此人是哪一种说谎的人」；
+   * 判定算子藏在 FLAWS 里，是出题与验收的内部结构，不再显示成符号按钮。
+   *
    * group：算子作用在前几条物证上
    * rest ：其余物证是否按「且」叠进式子。
    *        默认 false —— 式子只落在前两处，柜上多出来的那件是**干扰件**。
    *        理由（实测）：高级档只给 3~4 盏灯，若式子要吃三处 × 三人 = 9 格，
    *        玩家永远问不全，胜负退化成掷骰子（见 docs §9.8 的信息缺口表）。
    *        式子只吃 6 格时，「问谁、问哪一处」才重新变成取舍。
-   * op   ：该档必须用到的算子 —— 这是难度轴，不是装饰
-   * depth：逻辑深度，1=单层∧ / 2=∨ / 3=含¬ / 4=含⊕
+   * op   ：该档的判定结构（玩家看不见算子，只看见「破绽性质」）
+   * depth：逻辑深度，1=一条对比 / 2=两处都要 / 3=反向排除 / 4=恰一
    */
   var PLANS = {
     novice: {
-      group: 2, rest: false, op: 'AND', depth: 1,
-      lead: '此人两处说法，与柜上两件物证都对不上。'
+      group: 2, rest: false, op: 'OR', depth: 1,
+      lead: '此人话里必有一处与柜上物证相悖。',
+      ask: '找那条对不上的'
     },
     basic: {
-      group: 2, rest: false, op: 'OR', depth: 2,
-      lead: '此人两处说法，至少有一处对不上（不要求两处都错）。'
+      group: 2, rest: false, op: 'AND', depth: 2,
+      lead: '此人处处与物证相悖——两处都对不上，才轮到他。',
+      ask: '两处都得对不上'
     },
     intermediate: {
       group: 2, rest: false, op: 'NAND', depth: 3,
-      lead: '此人两处说法并非都对不上（至少有一处相符）。'
+      lead: '此人并非处处对不上——他至少有一处说得圆。',
+      ask: '至少一处说得圆'
     },
     advanced: {
       group: 2, rest: false, op: 'XOR', depth: 4,
-      lead: '此人两处说法恰好只有一处对不上。'
+      lead: '此人只错一处；除那一处，其余滴水不漏。',
+      ask: '恰好一处'
     }
   };
+
+  /* 破绽类型：玩家看到的是「哪一种说谎的人」，引擎看到的是 op。
+   * drift 不占档位，是第三夜叠加的行为破绽（追问就改口）。 */
+  var FLAWS = {
+    substitute: {
+      kind: 'substitute', tier: 'novice', label: '换值', op: 'OR', depth: 1,
+      lead: PLANS.novice.lead, ask: PLANS.novice.ask, tell: '一句对不上便露底'
+    },
+    cumulative: {
+      kind: 'cumulative', tier: 'basic', label: '累积', op: 'AND', depth: 2,
+      lead: PLANS.basic.lead, ask: PLANS.basic.ask, tell: '只错一条的人不是他'
+    },
+    negative: {
+      kind: 'negative', tier: 'intermediate', label: '否定', op: 'NAND', depth: 3,
+      lead: PLANS.intermediate.lead, ask: PLANS.intermediate.ask, tell: '全错的人不是他'
+    },
+    quantify: {
+      kind: 'quantify', tier: 'advanced', label: '恰一', op: 'XOR', depth: 4,
+      lead: PLANS.advanced.lead, ask: PLANS.advanced.ask, tell: '全错、全对都不是他'
+    },
+    drift: {
+      kind: 'drift', tier: 'night3', label: '改口', op: null, depth: 5,
+      lead: '灯过三更，他的说辞会变；先前那句，且记着。',
+      ask: '追问同一处，比两次说法', tell: '两次说法不同'
+    }
+  };
+  var FLAW_ORDER = ['substitute', 'cumulative', 'negative', 'quantify', 'drift'];
+  function flawOf(tier) {
+    var hit = null;
+    FLAW_ORDER.forEach(function (k) { if (FLAWS[k].tier === tier) hit = FLAWS[k]; });
+    return hit || FLAWS.cumulative;
+  }
+  function flawMeta(kind) { return FLAWS[kind] || null; }
+
 
   var OPS = [
     { id: 'AND', sym: '∧', name: '与', gloss: '每条都对不上', form: 'A∧B' },
@@ -241,9 +282,58 @@
     return { score: score, share: share, worlds: total, unknown: unknown.length };
   }
 
+  /* ---------------- 8. 改口（drift）与统一判定 ----------------
+   * drift：无相在第 3 夜会「改口」——同一话题问到第二次，说法与第一次不同。
+   * 清白客人的证词在记忆里恒等（selftest T3 就是这条不变量），于是
+   * 「两次说法不同」这件事本身就是一条**行为破绽**，不依赖任何数值。
+   * 它让 NPC 的信任 / 张力 / 记忆第一次真正承重：压力越大越容易改口。
+   */
+  function driftOf(cs, statements) {
+    var seen = {};
+    (statements || []).forEach(function (s) {
+      if (!s || !s.guestId || !s.topic) return;
+      var k = s.guestId + '|' + s.topic;
+      (seen[k] = seen[k] || []).push(s.value);
+    });
+    var out = [];
+    Object.keys(seen).forEach(function (k) {
+      var uniq = seen[k].filter(function (v, i, a) { return a.indexOf(v) === i; });
+      if (uniq.length > 1) {
+        var gid = k.split('|')[0];
+        if (out.indexOf(gid) < 0) out.push(gid);
+      }
+    });
+    return out;
+  }
+
+  /* judge：不依赖「玩家选了哪个算子」，只按当夜的破绽类型给结论。
+   * 判定的两条来源：① 式子（破绽值）② 改口（行为破绽）。
+   * 两者都指向同一位时，结论才唯一。 */
+  function judge(cs, statements) {
+    var expr = cs.logic && cs.logic.expr;
+    var ev = expr ? evaluateExpr(cs, statements, expr) : { winners: [], result: {}, dev: {} };
+    var drift = driftOf(cs, statements);
+    var byDrift = (cs.drift && drift.length === 1 && drift[0] === cs.drift.guestId) ? drift[0] : null;
+    var winners = ev.winners.slice();
+    if (byDrift && winners.indexOf(byDrift) < 0) winners.push(byDrift);
+    return {
+      kind: (cs.flaw && cs.flaw.kind) || null,
+      expr: expr,
+      ev: ev,
+      drift: drift,
+      byDrift: byDrift,
+      winners: winners,
+      unique: winners.length === 1 && winners[0] === cs.impostorId
+    };
+  }
+
   SD.Logic = {
     OPS: OPS,
     PLANS: PLANS,
+    FLAWS: FLAWS,
+    FLAW_ORDER: FLAW_ORDER,
+    flawOf: flawOf,
+    flawMeta: flawMeta,
     planFor: planFor,
     opMeta: opMeta,
     atoms: atoms,
@@ -258,7 +348,9 @@
     evaluate: evaluate,
     solution: solution,
     uniqueFor: uniqueFor,
-    posterior: posterior
+    posterior: posterior,
+    driftOf: driftOf,
+    judge: judge
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = SD;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
