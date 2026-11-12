@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-11T12:41:10.290Z",
+  "generatedAt": "2026-11-12T04:00:08.912Z",
   "specStatus": "OK",
   "specFiles": [
     "docs/引导-设计案-v1.md",
@@ -421,9 +421,9 @@
         "after": {
           "turn": 2,
           "lamps": 4,
-          "stmts": 1
+          "stmts": 2
         },
-        "statementsObserved": 0,
+        "statementsObserved": 1,
         "evidence": {
           "guideLayers": 0,
           "modalMasks": 0,
@@ -431,7 +431,7 @@
           "toastShown": false,
           "leftCards": 0,
           "lampText": "4 / 6 盏",
-          "stmtCount": "1 条",
+          "stmtCount": "2 条",
           "turnTag": "第 2 回",
           "phase": "playing"
         }
@@ -928,7 +928,7 @@
         "gate": {
           "wiredInto": "docs/交付清单.md 复跑命令：node tools/guide-smoke.cjs",
           "verified": true,
-          "lastRunAt": "2026-11-11T12:41:10.290Z",
+          "lastRunAt": "2026-11-12T04:00:08.912Z",
           "runBy": "tools/guide-smoke.cjs（playwright-core + 本机 Edge headless）"
         },
         "visualFrames": 19,
@@ -979,12 +979,12 @@
       "holeCount": 1,
       "bubbleRect": {
         "x": 535,
-        "y": 349,
+        "y": 318,
         "width": 340,
         "height": 253.359375,
-        "top": 349,
+        "top": 318,
         "right": 875,
-        "bottom": 602.359375,
+        "bottom": 571.359375,
         "left": 535
       }
     },
@@ -995,12 +995,12 @@
       "holeCount": 1,
       "bubbleRect": {
         "x": 792,
-        "y": 437,
+        "y": 430,
         "width": 340,
         "height": 253.359375,
-        "top": 437,
+        "top": 430,
         "right": 1132,
-        "bottom": 690.359375,
+        "bottom": 683.359375,
         "left": 792
       }
     },
@@ -1011,12 +1011,12 @@
       "holeCount": 1,
       "bubbleRect": {
         "x": 535,
-        "y": 483,
+        "y": 476,
         "width": 340,
         "height": 253.359375,
-        "top": 483,
+        "top": 476,
         "right": 875,
-        "bottom": 736.359375,
+        "bottom": 729.359375,
         "left": 535
       }
     },
@@ -1027,12 +1027,12 @@
       "holeCount": 2,
       "bubbleRect": {
         "x": 301,
-        "y": 512,
+        "y": 532,
         "width": 340,
         "height": 253.359375,
-        "top": 512,
+        "top": 532,
         "right": 641,
-        "bottom": 765.359375,
+        "bottom": 785.359375,
         "left": 301
       }
     },
@@ -1078,13 +1078,13 @@
   "humanPath": {
     "recorded": true,
     "watchedBy": "制作人（AI 视觉复核，非真人玩家）",
-    "watchedAt": "2026-11-11T12:41:10.281Z",
+    "watchedAt": "2026-11-12T04:00:08.905Z",
     "hooksUsed": 0
   },
   "gate": {
     "wiredInto": "docs/交付清单.md 复跑命令：node tools/guide-smoke.cjs",
     "verified": true,
-    "lastRunAt": "2026-11-11T12:41:10.290Z",
+    "lastRunAt": "2026-11-12T04:00:08.912Z",
     "runBy": "tools/guide-smoke.cjs（playwright-core + 本机 Edge headless）",
     "exitCode": 0
   },
