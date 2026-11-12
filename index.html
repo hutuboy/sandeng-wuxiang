@@ -20,19 +20,20 @@
     <h1 class="game-title">三更灯</h1>
     <div class="title-rule"><i></i><span>无 相 客 栈</span><i></i></div>
     <p class="intro-lead">一夜三客，一人为<strong>「无相」</strong>。<br />灯不认人，只认破绽。</p>
-    <p class="intro-sub">你说一句话，他们会记住、会掂量、会翻脸，也可能转身就走。<br />三位客人由 AI 决策引擎驱动：量化状态、持久记忆、规则校验，全部在本地实时推演。</p>
+    <!-- 先选难度，再点灯；两行「怎么玩」的描述放到按钮下面 -->
+    <div class="tier-pick" id="tier-pick" role="radiogroup" aria-label="难度">
+      <span class="tier-pick__label">难度</span>
+      <button type="button" class="btn btn-small tier-opt" data-action="set-tier" data-tier="novice" role="radio" aria-checked="false">新手级</button>
+      <button type="button" class="btn btn-small tier-opt is-on" data-action="set-tier" data-tier="basic" role="radio" aria-checked="true">初级</button>
+      <button type="button" class="btn btn-small tier-opt" data-action="set-tier" data-tier="intermediate" role="radio" aria-checked="false">中级</button>
+      <button type="button" class="btn btn-small tier-opt" data-action="set-tier" data-tier="advanced" role="radio" aria-checked="false">高级</button>
+    </div>
     <div class="intro-actions">
       <button class="btn btn-primary" id="btn-start">点灯 · 开始守夜</button>
       <button class="btn" id="btn-continue">续上昨夜</button>
       <button class="btn btn-ghost" id="btn-autopilot">看影子掌柜试玩</button>
-      <div class="tier-pick" id="tier-pick" role="radiogroup" aria-label="难度">
-        <span class="tier-pick__label">难度</span>
-        <button type="button" class="btn btn-small tier-opt" data-action="set-tier" data-tier="novice" role="radio" aria-checked="false">新手级</button>
-        <button type="button" class="btn btn-small tier-opt is-on" data-action="set-tier" data-tier="basic" role="radio" aria-checked="true">初级</button>
-        <button type="button" class="btn btn-small tier-opt" data-action="set-tier" data-tier="intermediate" role="radio" aria-checked="false">中级</button>
-        <button type="button" class="btn btn-small tier-opt" data-action="set-tier" data-tier="advanced" role="radio" aria-checked="false">高级</button>
-      </div>
     </div>
+    <p class="intro-sub">你说一句话，他们会记住、会掂量、会翻脸，也可能转身就走。<br />三位客人由 AI 决策引擎驱动：量化状态、持久记忆、规则校验，全部在本地实时推演。</p>
     <div class="intro-links">
       <button class="linkbtn" data-modal="howto">玩法说明</button>
       <span>·</span>

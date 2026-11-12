@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-12T09:46:45.853Z",
+  "generatedAt": "2026-11-12T11:17:38.937Z",
   "url": "file:///D:/Projects/games/AI造游戏/index.html?guide=0",
   "browser": "Microsoft Edge (headless)",
   "viewport": "1440x900 / 390x844",
@@ -45,6 +45,8 @@
     "acts-m-2-ask.png",
     "acts-m-3-deduce.png",
     "acts-m-4-accuse.png",
+    "cover-d.png",
+    "cover-m.png",
     "difficulty-advanced-night3.png",
     "difficulty-advanced.png",
     "difficulty-basic.png",
@@ -73,6 +75,7 @@
     "guide-replay-menu.png",
     "guide-skip.png",
     "live-v171-ask.png",
+    "live-v172-ask.png",
     "live-verdict.png",
     "promo-cover-vertical.png",
     "stack-d.png",

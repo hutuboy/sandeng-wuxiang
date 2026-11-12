@@ -111,8 +111,9 @@ h1,h2,h3,p{margin:0}
 .title-rule i:last-child{background:linear-gradient(90deg,var(--amber-dk),transparent)}
 .intro-lead{font-family:var(--serif);font-size:clamp(17px,2.4vw,23px);line-height:1.9;color:var(--ink);letter-spacing:.06em}
 .intro-lead strong{color:var(--crimson);font-weight:600}
-.intro-sub{margin:16px auto 0;max-width:640px;color:var(--muted);font-size:13px;line-height:2;letter-spacing:.03em}
-.intro-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:32px 0 18px}
+/* 描述文字现在在按钮下面（难度换到按钮上面），上边距由 .intro-actions 的下边距给 */
+.intro-sub{margin:0 auto;max-width:640px;color:var(--muted);font-size:13px;line-height:2;letter-spacing:.03em}
+.intro-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:16px 0 18px}
 .intro-links{display:flex;gap:12px;justify-content:center;align-items:center;color:var(--dim);font-size:12px}
 .intro-foot{margin-top:34px;display:flex;justify-content:space-between;gap:12px;color:var(--dim);font-size:11px;letter-spacing:.06em;border-top:1px solid rgba(200,170,120,.12);padding-top:14px;flex-wrap:wrap}
 #intro-seed{font-family:ui-monospace,Menlo,Consolas,monospace;color:var(--muted)}
@@ -614,7 +615,8 @@ body.is-guiding #btn-help{border-color:var(--amber);color:var(--amber-lt)}
   *{animation-duration:.01ms !important;transition-duration:.01ms !important}
 }
 /* ================= 四档难度选择（v1.2 追加段，不修改上方任何既有规则） ================= */
-.tier-pick{flex:0 0 100%;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:4px}
+/* 难度选择条已从 .intro-actions 里搬出来，独立占一行、位于「点灯」之上 */
+.tier-pick{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;margin:26px auto 0}
 .tier-pick__label{font-family:var(--serif);font-size:11px;letter-spacing:.18em;color:var(--muted);margin-right:2px}
 .tier-opt{padding:6px 13px;font-size:12px;letter-spacing:.08em;color:var(--muted);border-color:rgba(200,170,120,.18);background:transparent}
 .tier-opt:hover:not(:disabled){border-color:var(--amber);color:var(--amber-lt);transform:none;box-shadow:none}
