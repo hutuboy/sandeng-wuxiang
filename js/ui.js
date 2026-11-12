@@ -247,9 +247,9 @@
       function bar(label, v, cls) {
         return '<div class="sbar"><span>' + label + '</span><div class="track"><div class="fill ' + cls + '" style="width:' + C.round(v, 0) + '%"></div></div><b>' + C.round(v, 0) + '</b></div>';
       }
-      return '<article class="guest-card' + (selected === q.id ? ' selected' : '') + (q.flags.left ? ' left' : '') + '" data-guest="' + q.id + '" data-action="select-guest" tabindex="0">' +
+      return '<article class="guest-card' + (selected === q.id ? ' selected' : '') + (q.flags.left ? ' left' : '') + '" title="' + esc(q.name) + '：' + esc(q.look) + '" data-guest="' + q.id + '" data-action="select-guest" tabindex="0">' +
         '<div class="portrait">' + portrait(q.portraitSeed) + '</div>' +
-        '<div class="guest-meta"><h3>' + esc(q.name) + '</h3><div class="role">' + esc(q.role) + ' · ' + esc(q.archetypeName) + '</div><div class="look">' + esc(q.look) + '</div></div>' +
+        '<div class="guest-meta"><h3>' + esc(q.name) + '</h3><div class="role">' + esc(q.role) + ' · ' + esc(q.archetypeName) + '</div><div class="look" title="' + esc(q.look) + '">' + esc(q.look) + '</div></div>' +
         '<div class="state-bars">' + bar('信任', s.trust, 'trust') + bar('张力', s.tension, 'tension') + bar('疑心', s.suspicion, 'suspicion') + '</div>' +
         '<span class="num" style="position:absolute;top:5px;left:7px;font-size:10px;color:var(--dim);font-family:ui-monospace,monospace">' + (i + 1) + '</span>' +
         '</article>';
