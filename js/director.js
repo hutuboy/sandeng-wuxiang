@@ -151,6 +151,16 @@
           x.surface[mainTopic] = makeSurface(new C.RNG(seed + x.id + mainTopic), mainTopic, x.alibi[mainTopic], 'detail');
         }
       });
+      // 半假红鲱鱼（P1）：让这位清白客人在某一物证话题上「记岔一句」——只错一条。
+      // 于是「∧ 全部不符」筛得掉他（他还对得上别的物证），「∨ 任一不符」会连他一起命中。
+      // 这是让「与」真正有用的关键：玩家要判断「是不是每条都对不上」，而不是「有没有一条对不上」。
+      if (clues.length >= 2) {
+        var mt = rng.pick(clues).topic;
+        var mtExpect = clues.filter(function (c) { return c.topic === mt; })[0].expect;
+        rh.alibi[mt] = otherValue(rng, C.topic(mt), mtExpect);
+        rh.surface[mt] = makeSurface(rng, mt, rh.alibi[mt], 'lie');
+        rh.flubbed = mt;
+      }
     }
 
     return {
@@ -164,21 +174,26 @@
     };
   }
 
-  /* 约束求解：验证案件「可解且唯一」 */
+  /* 约束求解：验证案件「可解且唯一」——以逻辑标准解（∧ 全部不符）为准 */
   function solve(cs) {
     var trace = [];
     cs.clues.forEach(function (clue) {
       var deviants = cs.guests.filter(function (x) { return x.alibi[clue.topic] !== clue.expect; });
       trace.push({
         clue: clue.title, topic: clue.topic, expect: clue.expect,
-        deviants: deviants.map(function (x) { return x.name; }),
-        unique: deviants.length === 1 && deviants[0].id === cs.impostorId
+        deviants: deviants.map(function (x) { return x.name; })
       });
     });
+    // 标准解：无相在【全部】已投放物证上都不符（逻辑式 AND）。
+    // 半假红鲱鱼只错一条 → 不满足 AND，被筛掉；这比「逐条唯一」更贴近真实推理。
+    var winners = cs.guests.filter(function (x) {
+      return cs.clues.every(function (c) { return x.alibi[c.topic] !== c.expect; });
+    });
+    var andUnique = winners.length === 1 && winners[0].id === cs.impostorId;
     var cost = cs.guests.length; // 理想玩家至少问遍三人
     trace.push({ actionBudget: cs.lamps, minActionsNeeded: cost, enough: cs.lamps >= cost });
-    var ok = trace.every(function (t) { return t.unique !== false && t.enough !== false; });
-    return { ok: ok, trace: trace };
+    trace.push({ logic: 'AND', winners: winners.map(function (x) { return x.name; }), unique: andUnique });
+    return { ok: andUnique && cs.lamps >= cost, trace: trace };
   }
 
   function generate(seed, night, tier) {
@@ -189,6 +204,12 @@
       var r = solve(cs);
       cs.solvable = r.ok;
       cs.solverTrace = r.trace;
+      // 逻辑推演层（P1）：用 alibi 真值算标准解（无相在全部物证上都不符），并校验唯一性。
+      // 仅在 logic.js 已加载时挂载，未加载则整局按旧计数法走，零行为变化。
+      if (SD.Logic) {
+        cs.logic = SD.Logic.solution(cs);
+        cs.logicSolvable = cs.logic.unique;
+      }
       last = cs;
       if (r.ok) return cs;
     }

@@ -296,8 +296,58 @@
   }
   function solverHtml(game) {
     var ok = game.cs.solvable;
-    return (ok ? '✓ ' : '! ') + 'AI 导演已校验：矛盾唯一 · ' + game.cs.clues.length + ' 条物证 · 最少 ' + game.guests.length + ' 次问话 / 共 ' + game.lamps + ' 盏灯' +
+    return (ok ? '✓ ' : '! ') + 'AI 导演已校验：标准解唯一（∧ 全部不符） · ' + game.cs.clues.length + ' 条物证 · 最少 ' + game.guests.length + ' 次问话 / 共 ' + game.lamps + ' 盏灯' +
       ' <span style="color:var(--dim)">seed ' + esc(game.seed) + '·n' + game.night + '</span>';
+  }
+
+  /* ---------------- 推演台（逻辑筛人） ---------------- */
+  function logicBoardHtml(cs, statements, op) {
+    var L = SD.Logic;
+    if (!L) return '<p style="color:var(--dim)">逻辑层未加载。</p>';
+    op = op === 'OR' || op === 'XOR' ? op : 'AND';
+    var formula = { op: op, atoms: cs.clues.map(function (c) { return c.topic; }) };
+    var ev = L.evaluate(cs, statements, formula);
+    var guests = cs.guests;
+    var head = '<tr><th>物证 · 真值</th>' + guests.map(function (q) { return '<th>' + esc(q.name) + '</th>'; }).join('') + '</tr>';
+    var rows = cs.clues.map(function (c) {
+      return '<tr><td><b style="color:var(--amber-lt)">' + esc(c.title) + '</b><br /><span style="color:var(--dim);font-size:11px">' +
+        esc(C.topic(c.topic).label) + ' 应为「' + esc(c.expect) + '」</span></td>' +
+        guests.map(function (q) {
+          var d = ev.dev[q.id][c.topic];
+          var cell = d === null ? '<span style="color:var(--dim)">? 未问</span>'
+            : d ? '<span style="color:var(--crimson)">✗ 不符</span>'
+              : '<span style="color:var(--jade)">✓ 相符</span>';
+          return '<td>' + cell + '</td>';
+        }).join('') + '</tr>';
+    }).join('');
+    var resRow = '<tr><td><b>按「' + (op === 'AND' ? '∧' : op === 'OR' ? '∨' : '⊕') + '」判定</b></td>' +
+      guests.map(function (q) {
+        var r = ev.result[q.id];
+        return '<td>' + (r === null ? '<span style="color:var(--dim)">? 未定</span>'
+          : r ? '<span style="color:var(--jade);font-weight:700">✓ 命中</span>'
+            : '<span style="color:var(--dim)">✗</span>') + '</td>';
+      }).join('') + '</tr>';
+    var ops = [['AND', '∧ 全部不符'], ['OR', '∨ 任一不符'], ['XOR', '⊕ 恰一不符']].map(function (p) {
+      var on = op === p[0];
+      return '<button class="mini-btn' + (on ? ' on' : '') + '" data-action="logic-op" data-op="' + p[0] + '" style="margin:0 6px 6px 0' +
+        (on ? ';box-shadow:0 0 0 2px var(--amber);color:var(--amber-lt)' : '') + '">' + p[1] + '</button>';
+    }).join('');
+    var names = ev.winners.map(function (id) {
+      var q = null; guests.forEach(function (x) { if (x.id === id) q = x; }); return q ? q.name : id;
+    });
+    var verdict = ev.winners.length === 1
+      ? '<b style="color:var(--jade)">命中唯一：' + esc(names[0]) + '</b> —— 他即「无相」，可去点灯指认。'
+      : ev.winners.length === 0
+        ? '<b style="color:var(--crimson)">无人命中</b> —— 换个算子，或还有证词没问全。'
+        : '<b style="color:var(--amber-lt)">命中 ' + ev.winners.length + ' 人</b>（' + esc(names.join('、')) + '）—— 范围还不够小。';
+    return '<div class="logic-board">' +
+      '<p>把每位客人在各物证上的「相符 / 不符」摆成一张表，再用<b>逻辑算子</b>筛人：' +
+      '<b>∧</b> 每条物证都要对不上；<b>∨</b> 只要一条对不上；<b>⊕</b> 恰好只有一条对不上。</p>' +
+      '<div style="margin:10px 0">' + ops + '</div>' +
+      '<table class="finale-table logic-table"><thead>' + head + '</thead><tbody>' + rows + resRow + '</tbody></table>' +
+      '<p style="margin-top:10px;line-height:1.9">' + verdict + '</p>' +
+      '<p style="color:var(--dim);font-size:11px">「?」= 那句话还没问到。先回去把物证对应的话题问全，推演台才推得动——问话消耗灯，取舍在你。</p>' +
+      '</div>';
   }
 
   function aiHtml(ctx) {
@@ -472,6 +522,7 @@
     esc: esc, markWords: markWords, portrait: portrait, initCanvas: initCanvas, audio: audio,
     showScreen: showScreen, openModal: openModal, closeModal: closeModal, toast: toast,
     paint: paint, paintResult: paintResult, resultHtml: resultHtml,
+    logicBoardHtml: logicBoardHtml,
     resetCache: function () { _cache = {}; },
     KEY_HINT: KEY_HINT
   };

@@ -5,7 +5,7 @@
 const path = require('path');
 const fs = require('fs');
 const ROOT = path.join(__dirname, '..');
-['core', 'director', 'npc', 'game', 'agent'].forEach(f => require(path.join(ROOT, 'js', f + '.js')));
+['core', 'difficulty', 'logic', 'director', 'npc', 'game', 'agent'].forEach(f => require(path.join(ROOT, 'js', f + '.js')));
 const SD = globalThis.SD;
 
 const args = process.argv.slice(2);
@@ -15,6 +15,29 @@ const jsonOut = arg('--json', '');
 
 const t0 = Date.now();
 const report = SD.Agent.selftest({ seeds: N });
+
+// 逻辑层不变量（P1 追加，不改动既有 T1–T6 口径）：跨档位 × 夜次，标准解必须唯一
+(function () {
+  const D = SD.Difficulty;
+  const tiers = D ? D.IDS : ['basic'];
+  const per = Math.min(N, 60);
+  let checked = 0, bad = 0, firstBad = null;
+  for (const tier of tiers) {
+    for (let s = 0; s < per; s++) {
+      for (let night = 1; night <= 3; night++) {
+        const cs = SD.Director.generate('L' + s, night, tier);
+        checked++;
+        const ok = !!(cs.logic && cs.logic.unique === true && cs.logicSolvable === true);
+        if (!ok) { bad++; if (!firstBad) firstBad = { tier, night, seed: 'L' + s, winners: cs.logic && cs.logic.winners }; }
+      }
+    }
+  }
+  const pass = bad === 0;
+  report.cases.push({ name: 'T7 逻辑标准解唯一（四档 × 三夜）', pass, detail: { checked, bad, firstBad } });
+  report.summary.total += 1;
+  if (pass) report.summary.passed += 1;
+  report.summary.allPass = report.summary.passed === report.summary.total;
+})();
 report.generatedAt = new Date().toISOString();
 report.elapsedMs = Date.now() - t0;
 report.runtime = 'node ' + process.version;

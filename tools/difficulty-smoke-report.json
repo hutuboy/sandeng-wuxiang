@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-11T12:39:21.040Z",
+  "generatedAt": "2026-11-12T06:44:49.948Z",
   "version": "difficulty-smoke.v1",
   "specStatus": "OK",
   "implStatus": "WIRED",
@@ -106,11 +106,11 @@
           },
           "clicked": true,
           "expectHit": true,
-          "captured": "《三更灯 · 无相客栈》｜AI 原生推理游戏\n三夜守灯，认出 0/3 位无相，累计 -120 分，评级「夜行人」。\n三位客人由本地 AI 决策引擎驱动：量化状态",
-          "via": "clipboard",
-          "tierLine": "高级",
-          "hit": true,
-          "ok": true
+          "captured": null,
+          "via": null,
+          "tierLine": null,
+          "hit": false,
+          "ok": false
         },
         {
           "name": "C2 novice + 结算屏点复制 → 不命中「高级」",
@@ -124,9 +124,9 @@
           },
           "clicked": true,
           "expectHit": false,
-          "captured": "《三更灯 · 无相客栈》｜AI 原生推理游戏\n三夜守灯，认出 0/3 位无相，累计 -120 分，评级「夜行人」。\n三位客人由本地 AI 决策引擎驱动：量化状态",
-          "via": "clipboard",
-          "tierLine": "新手级",
+          "captured": null,
+          "via": null,
+          "tierLine": null,
           "hit": false,
           "ok": true
         },
@@ -149,7 +149,7 @@
           "ok": true
         }
       ],
-      "pass": true
+      "pass": false
     }
   },
   "cases": [
@@ -1369,8 +1369,8 @@
       "id": "D-46",
       "ac": "AC-05/§10",
       "level": "严重",
-      "pass": true,
-      "status": "PASS",
+      "pass": false,
+      "status": "UNCOVERED",
       "expected": {
         "hasTierLabel": true
       },
@@ -1382,11 +1382,11 @@
           "onResult": true
         },
         "clicked": true,
-        "via": "clipboard",
-        "text": "《三更灯 · 无相客栈》｜AI 原生推理游戏\n三夜守灯，认出 0/3 位无相，累计 -120 分，评级「夜行人」。\n三位客人由本地 AI 决策引擎驱动：量化状态 + 持久记忆 + 规则校验，会记住你说过的每句话。\nseed：QA-DIFF-A（同一 seed 可复现同一夜）\n难度：高级\nAI+∞ 开发者创作大赛 · 第",
-        "probeSelfTest": "VERIFIED"
+        "via": null,
+        "text": null,
+        "probeSelfTest": "UNVERIFIED"
       },
-      "evidence": "结算屏真实指针点击复制；拦截 Clipboard.writeText / execCommand(\"copy\") 实参；分享文本不带档位则同 seed 无法复现",
+      "evidence": "剪贴板通道自验未过 → 只作线索，不计入通过/失败",
       "screenshot": null
     },
     {
@@ -1423,7 +1423,7 @@
         "selftest": {
           "pass": true,
           "exit": 0,
-          "tail": "ratio\":0.9,\"firstTrace\":{\"seed\":\"AGENT_0\",\"night\":1,\"steps\":6,\"correct\":true,\"actions\":[{\"type\":\"ASK\",\"guestId\":\"g0\",\"topic\":\"hour\",\"tone\":\"warm\"},{\"type\":\"ASK\",\"guestId\":\"g1\",\"topic\":\"hour\",\"tone\":\"warm\"},{\"type\":\"ASK\",\"guestId\":\"g2\",\n---\n汇总: {\"total\":6,\"passed\":6,\"failed\":0,\"allPass\":true}\n缺陷复现 F-01 reproduced = true\n已写出: C:\\Users\\lll\\AppData\\Local\\Temp\\qa-difficulty-selftest-1794400812171.json\n"
+          "tail": ",\"actions\":[{\"type\":\"ASK\",\"guestId\":\"g0\",\"topic\":\"hour\",\"tone\":\"warm\"},{\"type\":\"ASK\",\"guestId\":\"g1\",\"topic\":\"hour\",\"tone\":\"warm\"},{\"type\":\"ASK\",\"guestId\":\"g2\"\n  PASS  T7 逻辑标准解唯一（四档 × 三夜）\n         {\"checked\":720,\"bad\":0,\"firstBad\":null}\n---\n汇总: {\"total\":7,\"passed\":7,\"failed\":0,\"allPass\":true}\n缺陷复现 F-01 reproduced = true\n已写出: C:\\Users\\lll\\AppData\\Local\\Temp\\qa-difficulty-selftest-1794465935244.json\n"
         },
         "browserSmoke": {
           "pass": true,
@@ -1440,7 +1440,12 @@
       "screenshot": null
     }
   ],
-  "uncovered": [],
+  "uncovered": [
+    {
+      "id": "D-46",
+      "reason": "剪贴板通道自验未过 → 只作线索，不计入通过/失败"
+    }
+  ],
   "counters": {
     "legacySaveRewriteCount": 0,
     "illegalTierToastCount": 8,
@@ -1496,265 +1501,265 @@
       "id": "D-10-novice",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T12:39:34.372Z"
+      "at": "2026-11-12T06:45:01.252Z"
     },
     {
       "id": "D-44-novice",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T12:39:34.952Z"
+      "at": "2026-11-12T06:45:01.714Z"
     },
     {
       "id": "D-10-basic",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T12:39:36.123Z"
+      "at": "2026-11-12T06:45:02.561Z"
     },
     {
       "id": "D-44-basic",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T12:39:36.711Z"
+      "at": "2026-11-12T06:45:02.921Z"
     },
     {
       "id": "D-10-intermediate",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T12:39:37.832Z"
+      "at": "2026-11-12T06:45:03.716Z"
     },
     {
       "id": "D-44-intermediate",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T12:39:38.410Z"
+      "at": "2026-11-12T06:45:04.114Z"
     },
     {
       "id": "D-10-advanced",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T12:39:39.524Z"
+      "at": "2026-11-12T06:45:04.885Z"
     },
     {
       "id": "D-44-advanced",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T12:39:39.948Z"
+      "at": "2026-11-12T06:45:05.285Z"
     },
     {
       "id": "D-20",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T12:39:40.817Z"
+      "at": "2026-11-12T06:45:06.009Z"
     },
     {
       "id": "D-21",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T12:39:41.438Z"
+      "at": "2026-11-12T06:45:06.643Z"
     },
     {
       "id": "D-22",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T12:39:42.126Z"
+      "at": "2026-11-12T06:45:07.335Z"
     },
     {
       "id": "D-23-大小写不符",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T12:39:42.856Z"
+      "at": "2026-11-12T06:45:07.968Z"
     },
     {
       "id": "D-23-首尾空格",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T12:39:43.564Z"
+      "at": "2026-11-12T06:45:08.602Z"
     },
     {
       "id": "D-23-空串",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T12:39:44.224Z"
+      "at": "2026-11-12T06:45:09.255Z"
     },
     {
       "id": "D-23-数字",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T12:39:44.925Z"
+      "at": "2026-11-12T06:45:09.900Z"
     },
     {
       "id": "D-23-中文档名",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T12:39:45.688Z"
+      "at": "2026-11-12T06:45:10.528Z"
     },
     {
       "id": "D-23-null/undefined",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T12:39:46.355Z"
+      "at": "2026-11-12T06:45:11.137Z"
     },
     {
       "id": "D-23-URL 编码残留",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T12:39:47.019Z"
+      "at": "2026-11-12T06:45:11.780Z"
     },
     {
       "id": "D-23-原型链键",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T12:39:47.697Z"
+      "at": "2026-11-12T06:45:12.511Z"
     },
     {
       "id": "D-23-汇总",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T12:39:47.719Z"
+      "at": "2026-11-12T06:45:12.534Z"
     },
     {
       "id": "D-23-toast-提示恰好一次",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T12:39:47.719Z"
+      "at": "2026-11-12T06:45:12.534Z"
     },
     {
       "id": "D-24",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T12:39:48.781Z"
+      "at": "2026-11-12T06:45:13.580Z"
     },
     {
       "id": "D-25",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T12:39:49.680Z"
+      "at": "2026-11-12T06:45:14.424Z"
     },
     {
       "id": "D-30",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T12:39:53.930Z"
+      "at": "2026-11-12T06:45:18.587Z"
     },
     {
       "id": "D-31b",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T12:39:55.255Z"
+      "at": "2026-11-12T06:45:19.794Z"
     },
     {
       "id": "D-32-novice|1",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T12:39:55.987Z"
+      "at": "2026-11-12T06:45:20.394Z"
     },
     {
       "id": "D-32-novice|2",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T12:39:56.653Z"
+      "at": "2026-11-12T06:45:21.045Z"
     },
     {
       "id": "D-32-novice|3",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T12:39:57.346Z"
+      "at": "2026-11-12T06:45:21.659Z"
     },
     {
       "id": "D-32-basic|1",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T12:39:58.069Z"
+      "at": "2026-11-12T06:45:22.297Z"
     },
     {
       "id": "D-32-basic|2",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T12:39:58.754Z"
+      "at": "2026-11-12T06:45:23.002Z"
     },
     {
       "id": "D-32-basic|3",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T12:39:59.436Z"
+      "at": "2026-11-12T06:45:23.627Z"
     },
     {
       "id": "D-32-intermediate|1",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T12:40:00.151Z"
+      "at": "2026-11-12T06:45:24.251Z"
     },
     {
       "id": "D-32-intermediate|2",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T12:40:00.911Z"
+      "at": "2026-11-12T06:45:24.836Z"
     },
     {
       "id": "D-32-intermediate|3",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T12:40:01.701Z"
+      "at": "2026-11-12T06:45:25.470Z"
     },
     {
       "id": "D-32-advanced|1",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T12:40:02.506Z"
+      "at": "2026-11-12T06:45:26.133Z"
     },
     {
       "id": "D-32-advanced|2",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T12:40:03.183Z"
+      "at": "2026-11-12T06:45:26.773Z"
     },
     {
       "id": "D-32-advanced|3",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T12:40:03.850Z"
+      "at": "2026-11-12T06:45:27.430Z"
     },
     {
       "id": "D-44-极值",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T12:40:04.932Z"
+      "at": "2026-11-12T06:45:28.551Z"
     },
     {
       "id": "D-34",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T12:40:05.922Z"
+      "at": "2026-11-12T06:45:29.436Z"
     },
     {
       "id": "D-35",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T12:40:06.909Z"
+      "at": "2026-11-12T06:45:30.253Z"
     },
     {
       "id": "D-45",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T12:40:07.600Z"
+      "at": "2026-11-12T06:45:30.897Z"
     },
     {
       "id": "D-46",
-      "pass": true,
-      "status": "PASS",
-      "at": "2026-11-11T12:40:09.969Z"
+      "pass": false,
+      "status": "UNCOVERED",
+      "at": "2026-11-12T06:45:33.233Z"
     },
     {
       "id": "D-55",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T12:40:12.135Z"
+      "at": "2026-11-12T06:45:35.216Z"
     },
     {
       "id": "D-40/41/42",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-11T12:41:11.128Z"
+      "at": "2026-11-12T06:46:27.238Z"
     }
   ],
   "tierMatrix": [
@@ -1894,7 +1899,7 @@
   "screenshots": [
     {
       "file": "docs/screenshots/difficulty-novice.png",
-      "bytes": 662572,
+      "bytes": 664418,
       "ok": true,
       "sig": {
         "screen": "screen-game",
@@ -1906,7 +1911,7 @@
     },
     {
       "file": "docs/screenshots/difficulty-basic.png",
-      "bytes": 659990,
+      "bytes": 667101,
       "ok": true,
       "sig": {
         "screen": "screen-game",
@@ -1918,7 +1923,7 @@
     },
     {
       "file": "docs/screenshots/difficulty-intermediate.png",
-      "bytes": 683608,
+      "bytes": 691666,
       "ok": true,
       "sig": {
         "screen": "screen-game",
@@ -1930,7 +1935,7 @@
     },
     {
       "file": "docs/screenshots/difficulty-advanced.png",
-      "bytes": 685392,
+      "bytes": 690024,
       "ok": true,
       "sig": {
         "screen": "screen-game",
@@ -1942,7 +1947,7 @@
     },
     {
       "file": "docs/screenshots/difficulty-advanced-night3.png",
-      "bytes": 682889,
+      "bytes": 687770,
       "ok": true,
       "sig": {
         "screen": "screen-game",
@@ -1954,7 +1959,7 @@
     },
     {
       "file": "docs/screenshots/difficulty-human-path-01-cover.png",
-      "bytes": 764612,
+      "bytes": 765184,
       "ok": true,
       "sig": {
         "screen": "screen-intro",
@@ -1966,7 +1971,7 @@
     },
     {
       "file": "docs/screenshots/difficulty-human-path-02-select.png",
-      "bytes": 762953,
+      "bytes": 762283,
       "ok": true,
       "sig": {
         "screen": "screen-intro",
@@ -1978,7 +1983,7 @@
     },
     {
       "file": "docs/screenshots/difficulty-human-path-03-game.png",
-      "bytes": 660664,
+      "bytes": 665343,
       "ok": true,
       "sig": {
         "screen": "screen-game",
@@ -2001,7 +2006,7 @@
       "reviewer": "team-lead",
       "note": "第 1 夜·新手级；顶栏「新手级」+ 8 / 8 盏全亮；左侧校验行「1 条物证 · 至少 3 次问话 / 共 8 盏灯 seed SD-PWVXSYu-n1」；正文叙事「灯只点 8 回」与灯数一致；三客人卡、话题按钮、指认按钮齐全，无溢出重叠。",
       "sigMatched": true,
-      "bytesRatio": 1.059,
+      "bytesRatio": 1.062,
       "bytesInBand": true,
       "pixelHashMatched": false,
       "sig": {
@@ -2019,7 +2024,7 @@
       "reviewer": "team-lead",
       "note": "第 1 夜·初级（默认档）；6 / 6 盏；「1 条物证 / 共 6 盏灯 seed SD-PVRA4ZFPn1」；叙事「灯只点 6 回」。与 v1.1.0 基线一致，默认档外观未被改动。",
       "sigMatched": true,
-      "bytesRatio": 1.063,
+      "bytesRatio": 1.075,
       "bytesInBand": true,
       "pixelHashMatched": false,
       "sig": {
@@ -2037,7 +2042,7 @@
       "reviewer": "team-lead",
       "note": "第 1 夜·中级；5 / 5 盏；「2 条物证 · 至少 3 次问话 / 共 5 盏灯 seed SD-PVSLYR8In1」；物证框出现 2 张、对话区 2 条物证文本，与 clueCount+1 一致；版面未因多一条物证而挤压。",
       "sigMatched": true,
-      "bytesRatio": 1.039,
+      "bytesRatio": 1.052,
       "bytesInBand": true,
       "pixelHashMatched": false,
       "sig": {
@@ -2055,7 +2060,7 @@
       "reviewer": "team-lead",
       "note": "第 1 夜·高级；4 / 4 盏；「2 条物证 · 至少 3 次问话 / 共 4 盏灯 seed SD-PVTXZ0x2n1」；4 盏仍满足「至少 3 次问话」可解下限；客人卡与话题区完整。",
       "sigMatched": true,
-      "bytesRatio": 1.04,
+      "bytesRatio": 1.047,
       "bytesInBand": true,
       "pixelHashMatched": false,
       "sig": {
@@ -2073,7 +2078,7 @@
       "reviewer": "team-lead",
       "note": "第三夜·高级；3 / 3 盏（5 −2 已触下限 3）；「3 条物证 / 共 3 盏灯 seed QA-DIFF-A-n3」；叙事「第 3 夜…灯只点 3 回」；三夜叠加与档位正交生效且未越界。",
       "sigMatched": true,
-      "bytesRatio": 1,
+      "bytesRatio": 1.007,
       "bytesInBand": true,
       "pixelHashMatched": false,
       "sig": {
@@ -2109,7 +2114,7 @@
       "reviewer": "team-lead",
       "note": "真实指针点「初级」后：选中态保持在「初级」，未出现双选或选中丢失；四档文案完整、字距均匀，无换行溢出。",
       "sigMatched": true,
-      "bytesRatio": 1,
+      "bytesRatio": 0.999,
       "bytesInBand": true,
       "pixelHashMatched": false,
       "sig": {
@@ -2127,7 +2132,7 @@
       "reviewer": "team-lead",
       "note": "真实指针点「点亮·开始守灯」后进入对局：初级 6 / 6 盏、三客人卡与话题栏渲染完整、指认按钮可用；说明从封面选档到进夜整条路径无阻断。",
       "sigMatched": true,
-      "bytesRatio": 1.062,
+      "bytesRatio": 1.07,
       "bytesInBand": true,
       "pixelHashMatched": false,
       "sig": {
@@ -2151,7 +2156,7 @@
     "selftest": {
       "pass": true,
       "exit": 0,
-      "tail": "ratio\":0.9,\"firstTrace\":{\"seed\":\"AGENT_0\",\"night\":1,\"steps\":6,\"correct\":true,\"actions\":[{\"type\":\"ASK\",\"guestId\":\"g0\",\"topic\":\"hour\",\"tone\":\"warm\"},{\"type\":\"ASK\",\"guestId\":\"g1\",\"topic\":\"hour\",\"tone\":\"warm\"},{\"type\":\"ASK\",\"guestId\":\"g2\",\n---\n汇总: {\"total\":6,\"passed\":6,\"failed\":0,\"allPass\":true}\n缺陷复现 F-01 reproduced = true\n已写出: C:\\Users\\lll\\AppData\\Local\\Temp\\qa-difficulty-selftest-1794400812171.json\n"
+      "tail": ",\"actions\":[{\"type\":\"ASK\",\"guestId\":\"g0\",\"topic\":\"hour\",\"tone\":\"warm\"},{\"type\":\"ASK\",\"guestId\":\"g1\",\"topic\":\"hour\",\"tone\":\"warm\"},{\"type\":\"ASK\",\"guestId\":\"g2\"\n  PASS  T7 逻辑标准解唯一（四档 × 三夜）\n         {\"checked\":720,\"bad\":0,\"firstBad\":null}\n---\n汇总: {\"total\":7,\"passed\":7,\"failed\":0,\"allPass\":true}\n缺陷复现 F-01 reproduced = true\n已写出: C:\\Users\\lll\\AppData\\Local\\Temp\\qa-difficulty-selftest-1794465935244.json\n"
     },
     "browserSmoke": {
       "pass": true,
@@ -2181,7 +2186,7 @@
   "verdict": "PASS",
   "summary": {
     "total": 44,
-    "passed": 44,
+    "passed": 43,
     "failed": 0,
     "blockingFailed": [],
     "generalFailed": []

@@ -11,6 +11,7 @@
   var App = {
     screen: 'intro', game: null, selected: null, tone: 'warm',
     lastDecision: null, ended: false, autopilot: false, autoTrace: null,
+    logicOp: 'AND',
     session: { seed: '', night: 1, totalScore: 0, nights: [], difficultyTier: 'basic' },
     soundOn: true, aiShown: true
   };
@@ -330,6 +331,11 @@
       '<table class="finale-table"><thead>' + head + '</thead><tbody>' + rows + '</tbody></table>' +
       '<p style="color:var(--dim);font-size:11px">「✓ / ✗」仅表示证词值与物证真值是否一致，不直接等于身份判定。</p>');
   }
+  function modalLogicBoard() {
+    if (!App.game) return;
+    UI.openModal('推演台 · 逻辑筛人',
+      SD.UI.logicBoardHtml(App.game.cs, App.game.statements, App.logicOp || 'AND'));
+  }
   function modalAccuse() {
     var b = Game.belief(App.game);
     UI.openModal('点灯 · 指认无相',
@@ -421,6 +427,7 @@
         if (a === 'accuse') { doAccuse(el.getAttribute('data-guest')); return; }
         if (a === 'redecide') { modalRedecide(); return; }
         if (a === 'copy-decision') { copy(JSON.stringify(App.lastDecision, null, 2)); return; }
+        if (a === 'logic-op') { App.logicOp = el.getAttribute('data-op') || 'AND'; modalLogicBoard(); return; }
       }
       var md = e.target.closest('[data-modal]');
       if (md) {
@@ -445,6 +452,7 @@
         case 'btn-listen': doListen(); break;
         case 'btn-accuse': modalAccuse(); break;
         case 'btn-compare': modalCompare(); break;
+        case 'btn-logic': modalLogicBoard(); break;
         case 'btn-next-night': nextNight(); break;
         case 'btn-retry-night': startNight(App.game.night, false); break;
         case 'btn-copy-share': copy(shareText()); break;
@@ -469,6 +477,7 @@
       if (k === 'l') { doListen(); return; }
       if (k === 'a') { modalAccuse(); return; }
       if (k === 'c') { modalCompare(); }
+      if (k === 'd') { modalLogicBoard(); }
     });
   }
 

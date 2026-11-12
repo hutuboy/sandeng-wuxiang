@@ -463,3 +463,13 @@ body.is-guiding #btn-help{border-color:var(--amber);color:var(--amber-lt)}
   .tier-pick{gap:6px}
   .tier-opt{padding:6px 9px;font-size:11px}
 }
+
+/* ================= 推演台 · 逻辑筛人（P1 追加段，不修改上方任何既有规则） ================= */
+.logic-board p{font-size:12.5px;line-height:1.9;color:var(--muted)}
+.logic-board b{color:var(--amber-lt)}
+.logic-table{width:100%;font-size:12px}
+.logic-table th,.logic-table td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:center;white-space:nowrap}
+.logic-table th:first-child,.logic-table td:first-child{text-align:left}
+.logic-table tbody tr:last-child td{border-top:1px solid rgba(232,164,92,.28);border-bottom:none;padding-top:9px}
+.mini-btn.on{color:var(--amber-lt)}
+#btn-logic{margin-top:6px}
