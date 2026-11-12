@@ -274,7 +274,7 @@
   var ACTS = [
     { id: 'lamp', num: '壹', name: '点灯', tip: '客人到齐，先清点柜上物证' },
     { id: 'ask', num: '贰', name: '问询', tip: '点谁问谁，问一句灭一盏灯' },
-    { id: 'deduce', num: '叁', name: '推演', tip: '把物证与证词摊开，用 ∧ ∨ ¬ ⊕ 筛人' },
+    { id: 'deduce', num: '叁', name: '推演', tip: '把物证与证词摊开，按残卷的破绽筛人' },
     { id: 'accuse', num: '肆', name: '指认', tip: '点灯，说出那个名字' },
     { id: 'verdict', num: '伍', name: '结案', tip: '天亮，真相摊开' }
   ];
@@ -334,12 +334,18 @@
      状态若只挂在 DOM 的 class 上，问一句话就被重绘抹掉。 */
   var openClues = {};
   function cluesHtml(game) {
+    var canConfront = game.lampsLeft > 0 && game.phase === 'playing';
     return game.cs.clues.map(function (c) {
       var open = !!openClues[c.id];
       return '<div class="clue' + (open ? ' open' : '') + '" data-action="clue-toggle" data-clue-id="' + esc(c.id) + '"' +
         ' aria-expanded="' + (open ? 'true' : 'false') + '" title="' + esc(c.text) + '">' +
         '<div class="clue-top"><b>◈ ' + esc(c.title) + '</b>' +
-        '<span class="clue-val">' + esc(C.topic(c.topic).label) + ' 应为「' + esc(c.expect) + '」</span></div>' +
+        '<span class="clue-val">' + esc(C.topic(c.topic).label) + ' 应为「' + esc(c.expect) + '」</span>' +
+        /* 对簿：把这一件物证摊到桌上，三人同时开口（1 灯换至多 3 格） */
+        '<button class="clue-confront" data-action="confront" data-topic="' + esc(c.topic) + '"' +
+        (canConfront ? '' : ' disabled') +
+        ' title="就这一件物证当众对簿：三个人同时开口，耗 1 盏灯">对簿<em>1 灯</em></button>' +
+        '</div>' +
         '<p class="clue-txt">' + esc(c.text) + '</p></div>';
     }).join('');
   }
@@ -355,6 +361,7 @@
     return game.statements.map(function (s) {
       return '<div class="stmt"><span class="who">' + esc(s.guestName) + '</span><span class="topic">' + esc(C.topic(s.topic).label) + '</span>' +
         (s.byGift ? '<span class="extra">［交付］</span>' : s.byConfide ? '<span class="extra">［交心］</span>' : '') +
+        (s.byConfront ? '<span class="extra">［对簿］</span>' : '') +
         markWords(s.surface || s.value, Object.keys(vals)) + '</div>';
     }).join('');
   }
@@ -370,126 +377,169 @@
         '<span class="glyph">' + TOPIC_GLYPH[t.id] + '</span><span class="name">' + t.label + '</span><span class="hint">' + t.hint + '</span></button>';
     }).join('');
   }
+  /* 问询幕下方那行小字：只说「这一夜找什么破绽」与物件数/灯数，不报算子（P5） */
   function solverHtml(game) {
     var ok = game.cs.solvable && game.cs.logicSolvable !== false;
-    var lg = game.cs.logic;
-    var meta = lg && SD.Logic ? SD.Logic.opMeta(lg.op) : null;
-    var rule = meta ? meta.sym + ' ' + meta.name : '∧ 全部不符';
-    return (ok ? '✓ ' : '! ') + '残卷式唯一（' + rule + '）· ' + game.cs.clues.length + ' 件物证 · ' + game.lamps + ' 盏灯';
+    var flaw = flawOfCase(game.cs);
+    var rule = flaw ? flaw.label : '破绽';
+    return (ok ? '✓ ' : '! ') + '这一夜找的破绽：' + rule + ' · ' + game.cs.clues.length + ' 件物证 · ' + game.lamps + ' 盏灯';
   }
 
-  /* ---------------- 推演台（逻辑筛人）：弹窗与第三幕共用同一份渲染 ----------------
-   * v2：式子是可嵌套的表达式树 —— 残卷上的算子只作用在前 group 格物证，
-   *     其余物证固定按 ∧ 叠加上去（如「(A⊕B) ∧ C」）。
-   *     残卷给出的那条式子才是当夜的答案；换算子会换出别人，正是这一层要教的。
+  /* ---------------- 推演台（第三幕）----------------
+   * P5：只给「这一夜该找什么样的破绽」，不给式子、不给算子按钮。
+   *   旧版把式子（如 ⊕(信物,时辰)）直接印在残卷上，玩家做的就是照式子填表 —— 那是执行，不是推理。
+   *   现在残卷只说性质（「此人只错一处；除那一处，其余滴水不漏」），玩家要自己把它翻成对表的筛选。
    */
-  function logicCoreHtml(cs, statements, op, opt) {
-    opt = opt || {};
+  function flawOfCase(cs) {
     var L = SD.Logic;
-    if (!L) return '<p style="color:var(--dim)">逻辑层未加载。</p>';
-    var OPS = L.OPS || [{ id: 'AND', sym: '∧', name: '与', gloss: '每条都对不上', form: 'A∧B' }];
-    var lg = cs.logic || null;
-    var scrollOp = (lg && lg.op) || 'AND';
-    var plan = (lg && lg.plan) || null;
-    var okOp = false;
-    OPS.forEach(function (o) { if (o.id === op) okOp = true; });
-    if (!okOp) op = scrollOp;
+    if (cs && cs.flaw) return cs.flaw;
+    return (L && L.flawOf && cs && cs.difficulty) ? L.flawOf(cs.difficulty.tier) : null;
+  }
 
-    var expr = L.buildFormula(cs, op);
-    var ev = L.evaluateExpr(cs, statements, expr);
-    var scrollExpr = (lg && lg.expr) || L.buildFormula(cs, scrollOp);
+  /* 当夜残卷卡：只有一句话 + 破绽类型，没有式子 */
+  function scrollCardHtml(cs) {
+    var flaw = flawOfCase(cs);
+    if (!flaw) return '';
+    return '<div class="lg-scroll">' +
+      '<span class="lg-tag">当夜残卷</span>' +
+      '<span class="lg-kind">' + esc(flaw.label) + '</span>' +
+      '<b class="lg-expr">' + esc(flaw.lead) + '</b>' +
+      '</div>';
+  }
+
+  /* 事实表：物证 × 三人，✓ 相符 / ✗ 不符 / ? 未问，末行数「不符处数」 */
+  function logicTableHtml(cs, dev) {
     var guests = cs.guests;
-
-    var head = '<tr><th>物证 · 真值</th>' + guests.map(function (q) { return '<th>' + esc(q.name) + '</th>'; }).join('') + '</tr>';
     var unasked = 0;
+    var head = '<tr><th class="lg-th">物证 · 真值</th>' +
+      guests.map(function (q) { return '<th>' + esc(q.name) + '</th>'; }).join('') + '</tr>';
     var rows = cs.clues.map(function (c) {
       return '<tr><td><b style="color:var(--amber-lt)">' + esc(c.title) + '</b><br /><span class="lg-dim">' +
         esc(C.topic(c.topic).label) + ' 应为「' + esc(c.expect) + '」</span></td>' +
         guests.map(function (q) {
-          var d = ev.dev[q.id][c.topic];
-          if (d === null) unasked++;
-          var cell = d === null ? '<span class="lg-dim">? 未问</span>'
-            : d ? '<span style="color:var(--crimson)">✗ 不符</span>'
-              : '<span style="color:var(--jade)">✓ 相符</span>';
-          return '<td>' + cell + '</td>';
+          var d = (dev[q.id] || {})[c.topic];
+          if (d === undefined || d === null) {
+            unasked++;
+            return '<td><span class="lg-dim">? 未问</span></td>';
+          }
+          return '<td>' + (d ? '<span style="color:var(--crimson)">✗ 不符</span>'
+            : '<span style="color:var(--jade)">✓ 相符</span>') + '</td>';
         }).join('') + '</tr>';
     }).join('');
-
-    var cur = L.opMeta(op);
-    var resRow = '<tr><td><b>按「' + (cur ? cur.sym + ' ' + cur.name : op) + '」判定</b><br /><span class="lg-dim">' +
-      esc(L.formulaText(expr, cs)) + '</span></td>' +
+    /* 「只错一处」「处处相悖」这类性质都要先数出来才用得上，所以把数摆在表尾 */
+    var countRow = '<tr class="lg-count"><td><span class="lg-dim">不符处数</span></td>' +
       guests.map(function (q) {
-        var r = ev.result[q.id];
-        return '<td>' + (r === null ? '<span class="lg-dim">? 未定</span>'
-          : r ? '<span style="color:var(--jade);font-weight:700">✓ 命中</span>'
-            : '<span class="lg-dim">✗</span>') + '</td>';
+        var n = 0, asked = 0, unknown = 0;
+        cs.clues.forEach(function (c) {
+          var d = (dev[q.id] || {})[c.topic];
+          if (d === undefined || d === null) unknown++;
+          else { asked++; if (d) n++; }
+        });
+        var known = unknown < cs.clues.length;
+        var cell = known
+          ? '<b>' + n + '</b><span class="lg-dim"> / ' + asked + '</span>'
+          : '<span class="lg-dim">—</span>';
+        return '<td>' + cell + (unknown ? '<br /><span class="lg-dim">' + unknown + ' 格未问</span>' : '') + '</td>';
       }).join('') + '</tr>';
+    return {
+      html: '<table class="finale-table logic-table"><thead>' + head + '</thead><tbody>' + rows + countRow + '</tbody></table>',
+      unasked: unasked
+    };
+  }
 
-    var ops = OPS.map(function (o) {
-      var on = op === o.id;
-      return '<button class="opbtn' + (on ? ' on' : '') + '" data-action="logic-op" data-op="' + o.id + '" title="' + esc(o.gloss) + '">' +
-        '<b>' + o.sym + '</b><span>' + o.name + '</span></button>';
-    }).join('');
+  function logicCoreHtml(cs, statements, op, opt) {
+    opt = opt || {};
+    var L = SD.Logic;
+    if (!L) return '<p style="color:var(--dim)">逻辑层未加载。</p>';
+    var flaw = flawOfCase(cs);
+    var expr = cs.logic && cs.logic.expr;
+    var j = (L.judge && expr) ? L.judge(cs, statements) : null;
+    var ev = j ? j.ev : (expr ? L.evaluateExpr(cs, statements, expr) : { dev: {}, result: {}, winners: [] });
+    var dev = ev.dev || {}, res = ev.result || {};
 
-    var names = ev.winners.map(function (id) {
-      var q = null; guests.forEach(function (x) { if (x.id === id) q = x; }); return q ? q.name : id;
+    var table = logicTableHtml(cs, dev);
+    var winners = j ? j.winners.slice() : (ev.winners || []).slice();
+    var names = winners.map(function (id) {
+      var q = null;
+      cs.guests.forEach(function (x) { if (x.id === id) q = x; });
+      return q ? q.name : id;
     });
-    var isScroll = op === scrollOp;
-    var scrollSym = L.opMeta(scrollOp) ? L.opMeta(scrollOp).sym : '∧';
-    // 「?」不是「否」——有格子没问，式子就落在未定上，不能报成「无人命中」
-    var undet = guests.filter(function (q) { return ev.result[q.id] === null; }).length;
+    var undet = cs.guests.filter(function (q) { return res[q.id] === null || res[q.id] === undefined; }).length;
+
+    /* 结论：只说「这条性质筛出谁 / 为什么还判不了」，不复述式子 */
     var verdict;
-    if (ev.winners.length === 1) {
-      verdict = '<b style="color:var(--jade)">命中唯一：' + esc(names[0]) + '</b>' +
-        (isScroll ? ' —— 与残卷同一条式子，可以去点灯指认。'
-          : ' —— 但残卷上是「' + scrollSym + '」，换个算子也许就指到别人；先按残卷验一遍。');
-    } else if (ev.winners.length > 1) {
-      verdict = '<b style="color:var(--amber-lt)">命中 ' + ev.winners.length + ' 人</b>（' + esc(names.join('、')) + '）' +
-        (isScroll ? ' —— 范围还没缩到一人：也许有人只「记岔」了一条，也许还有话没问全。'
-          : ' —— 换个算子，别只信一种问法。');
+    if (winners.length === 1) {
+      verdict = '<b style="color:var(--jade)">收口了：' + esc(names[0]) + '</b>' +
+        ' —— 表里只有他合这条性质，可以去点灯指认。';
+    } else if (winners.length > 1) {
+      verdict = '<b style="color:var(--amber-lt)">' + winners.length + ' 人同时合这条性质</b>（' + esc(names.join('、')) + '）' +
+        ' —— 范围还没缩到一人：要么还有话没问全，要么有人只是「记岔」了一处。';
     } else if (undet > 0) {
-      verdict = '<b>还判不了</b> —— ' + (undet === guests.length ? '三位客人' : undet + ' 位客人') +
-        '还有格子空着（共 ' + unasked + ' 格），式子落在「?」上就是未定。' +
-        (isScroll ? '' : '残卷上用的是「' + scrollSym + '」。');
+      verdict = '<b>还判不了</b> —— ' + (undet === cs.guests.length ? '三位客人都' : undet + ' 位客人') +
+        '有格子空着（共 ' + table.unasked + ' 格）。空格既不算相符也不算不符，性质就落不下来。';
     } else {
-      verdict = '<b style="color:var(--crimson)">无人命中</b> —— ' +
-        (isScroll ? '这六格全问到了，仍没人的说法同时踩中这条式子：换回别的算子看看。'
-          : '残卷上不是这个算子，换回「' + scrollSym + '」再看。');
+      verdict = '<b style="color:var(--crimson)">没有人合这条性质</b> —— 表里的格子都对上了，' +
+        '要么这一夜的性质你读错了方向，要么有人还不止说错一处。';
     }
 
-    var legend = OPS.map(function (o) {
-      return '<li' + (o.id === op ? ' class="on"' : '') + '><b>' + o.sym + '</b> ' + esc(o.gloss) + '</li>';
-    }).join('');
-
-    var scrollLine = '<div class="lg-scroll">' +
-      '<span class="lg-tag">当夜残卷</span>' +
-      '<b class="lg-expr">' + esc(L.formulaText(scrollExpr, cs)) + '</b>' +
-      (plan && plan.lead ? '<span class="lg-gloss">' + esc(plan.lead) + '</span>' : '') +
-      '</div>';
-    var warn = isScroll ? ''
-      : '<p class="lg-warn">你把算子换成了「' + (cur ? cur.sym : op) + '」—— 式子变了，筛出来的人也会变。</p>';
-    var gcount = (plan && plan.group) || cs.clues.length;
-    var overlay = '';
-    if (cs.clues.length > gcount) {
-      overlay = plan && plan.rest
-        ? '<p class="lg-dim lg-foot">式子只套在前 ' + gcount + ' 格上，其余物证固定按 ∧ 叠在后面（写成「(…)∧C」）。</p>'
-        : '<p class="lg-dim lg-foot">式子只落在前 ' + gcount + ' 件物证上；柜上另外 ' + (cs.clues.length - gcount) + ' 件与本案无涉 —— 问它只是费灯。</p>';
-    }
+    var hint = table.unasked > 0
+      ? '<p class="lg-foot2">空格太多时，可以用柜上物证的「<b>对簿</b>」：一盏灯，三个人同时就那一件开口。</p>'
+      : '';
 
     return '<div class="logic-board">' +
-      (opt.hideIntro ? '' : '<p>把每位客人在各物证上的「<span style="color:var(--jade)">相符</span> / <span style="color:var(--crimson)">不符</span>」摆成一张表，再用逻辑算子筛人。' +
-        '表里每个「不符」都是一次<span class="lg-em">¬</span>——「他的话不是真的」。</p>') +
-      scrollLine +
-      '<div class="oprow">' + ops + '</div>' +
-      '<ul class="op-legend">' + legend + '</ul>' +
-      '<table class="finale-table logic-table"><thead>' + head + '</thead><tbody>' + rows + resRow + '</tbody></table>' +
+      (opt.hideIntro ? '' : '<p>把每位客人在各物证上的「<span style="color:var(--jade)">相符</span> / <span style="color:var(--crimson)">不符</span>」摆成一张表。' +
+        '残卷只告诉你这一夜找的是<b>什么样的破绽</b>，怎么从表里把它挑出来，是你的事。</p>') +
+      scrollCardHtml(cs) +
+      table.html +
       '<p class="logic-verdict">' + verdict + '</p>' +
-      warn + overlay +
+      hint +
       '<p class="lg-dim lg-foot">「?」= 那句话还没问到。问话消耗灯，取舍在你。</p>' +
       '</div>';
   }
-  function logicBoardHtml(cs, statements, op) { return logicCoreHtml(cs, statements, op); }
-  function logicStageHtml(game, op) { return logicCoreHtml(game.cs, game.statements, op, {}); }
+
+  /* AI 掌柜 · 审计（点开才显示）：把判定过程摊开，但仍不给式子 —— 给的是「凭什么这么说」 */
+  function auditHtml(game) {
+    var L = SD.Logic;
+    if (!game || !L) return '<p style="color:var(--dim)">暂无可以审计的一夜。</p>';
+    var cs = game.cs, statements = game.statements || [];
+    var flaw = flawOfCase(cs);
+    var expr = cs.logic && cs.logic.expr;
+    var j = (L.judge && expr) ? L.judge(cs, statements) : null;
+    var post = (L.posterior && expr) ? L.posterior(cs, statements, expr) : null;
+    var need = cs.clues.length * cs.guests.length;
+    var got = statements.filter(function (s, i, arr) {
+      return arr.findIndex(function (x) { return x.guestId === s.guestId && x.topic === s.topic; }) === i;
+    }).length;
+
+    function bar(name, pct, hot) {
+      return '<div class="au-row' + (hot ? ' hot' : '') + '"><span class="au-nm">' + esc(name) + '</span>' +
+        '<div class="au-bar"><i style="width:' + Math.max(2, Math.round(pct * 100)) + '%"></i></div>' +
+        '<span class="au-pct">' + Math.round(pct * 100) + '%</span></div>';
+    }
+
+    var shareHtml = post ? cs.guests.map(function (q) {
+      var p = post.share[q.id] || 0;
+      return bar(q.name, p, p === Math.max.apply(null, cs.guests.map(function (x) { return post.share[x.id] || 0; })));
+    }).join('') : '<p class="lg-dim">尚无证词，后验还没法算。</p>';
+
+    var kv = function (k, v) { return '<div class="kv"><span class="k">' + k + '</span><span>' + v + '</span></div>'; };
+    var drift = j && j.drift && j.drift.length ? j.drift : [];
+
+    return '<p>这一栏是「掌柜怎么想的」——点开才看见，不看也能玩。</p>' +
+      kv('这一夜找的破绽', '<b>' + esc(flaw ? flaw.label : '未知') + '</b>　' + esc(flaw ? flaw.lead : '')) +
+      kv('判据', '把「谁在哪件物证上说的对不上」摆成表，再用这条性质去筛。' +
+        '若同一个人对同一件事前后说法不同，那条也算破绽。') +
+      kv('已问到', got + ' / ' + need + ' 格　·　灯 ' + game.lampsLeft + ' / ' + game.lamps + ' 盏') +
+      kv('当前结论', j ? (j.unique ? '<b style="color:var(--jade)">收口：唯一</b>'
+        : (j.winners.length ? '命中 ' + j.winners.length + ' 人（未唯一）' : '还判不了')) : '—') +
+      (drift.length ? kv('改口', drift.map(function (id) {
+        var q = null; cs.guests.forEach(function (x) { if (x.id === id) q = x; }); return q ? q.name : id;
+      }).join('、') + ' 的说辞变过') : '') +
+      '<div class="au-block"><h4>后验：谁更像无相 <span>未问格按五五开枚举</span></h4>' + shareHtml + '</div>' +
+      '<p class="lg-dim lg-foot">「后验」不是答案，是「按已有证词，各人合这条性质的比例」；' +
+      '空格没问之前，它天然趋向平均。</p>';
+  }
+
 
   function aiHtml(ctx) {
     var d = ctx.lastDecision;
@@ -530,9 +580,24 @@
       '<div class="ai-block"><h4>规则层校验 <span>legal mask</span></h4>' + notes + '</div>' +
       '<div class="ai-block"><h4>状态回写 <span>state delta</span></h4><div class="delta">' + delta + '</div></div>' +
       '<div class="ai-block"><h4>持久记忆 <span>last 3</span></h4>' + mem + '</div>' +
+      /* 对簿一次落三条决策：面板只画其中一个的完整推理，其余两人的结论在这里补一行，免得不留痕 */
+      (function () {
+        var all = ctx.lastDecisions;
+        if (!all || all.length < 2) return '';
+        return '<div class="ai-block"><h4>本轮三人同答 <span>对簿</span></h4>' +
+          all.map(function (x) {
+            return '<div class="au-row"><span class="au-nm">' + esc(x.guestName) + '</span>' +
+              '<span style="flex:1;font-size:11px;color:var(--label)">' + esc(x.actionLabel) + '</span>' +
+              '<span class="au-pct">' + (x.revealed ? '已开口' : '未开口') + '</span></div>';
+          }).join('') + '</div>';
+      })() +
       '<div class="ai-btns"><button class="mini-btn" data-action="redecide" style="margin:0;flex:1">重新决策对比</button>' +
       '<button class="mini-btn" data-action="copy-decision" style="margin:0;flex:1">复制决策 JSON</button></div>';
   }
+
+  /* 两个入口：第三幕用 logicStageHtml，弹窗用 auditHtml（P5 起不再共用「带式子的板子」） */
+  function logicStageHtml(game) { return logicCoreHtml(game.cs, game.statements, null, {}); }
+  function logicBoardHtml(cs, statements, op) { return logicCoreHtml(cs, statements, op); }
 
   /* ---------------- 整屏绘制 ---------------- */
   var _cache = {};
@@ -579,7 +644,7 @@
     set('tone-group', toneHtml(ctx.tone));
 
     /* 第三 / 四幕 */
-    set('logic-stage', logicStageHtml(game, ctx.logicOp));
+    set('logic-stage', logicStageHtml(game));
     set('accuse-stage', accuseStageHtml(game));
 
     /* 常驻栏 */
@@ -691,7 +756,7 @@
     esc: esc, markWords: markWords, portrait: portrait, initCanvas: initCanvas, audio: audio,
     showScreen: showScreen, openModal: openModal, closeModal: closeModal, toast: toast,
     paint: paint, paintResult: paintResult, resultHtml: resultHtml,
-    logicBoardHtml: logicBoardHtml, logicStageHtml: logicStageHtml, ACTS: ACTS,
+    logicBoardHtml: logicBoardHtml, logicStageHtml: logicStageHtml, auditHtml: auditHtml, ACTS: ACTS,
     toggleClue: toggleClue,
     /* 换夜/换局时一并清掉物证展开状态：物证 id 是 clue_<话题>，跨夜会重名 */
     resetCache: function () { _cache = {}; openClues = {}; },

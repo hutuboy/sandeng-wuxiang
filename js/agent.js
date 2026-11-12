@@ -36,7 +36,8 @@
     game.statements.forEach(function (s) { have[s.guestId + '|' + s.topic] = s; });
     game.decisions.forEach(function (d) {
       if (!d.playerAction) return;
-      var k = d.playerAction.guestId + '|' + d.playerAction.topic;
+      var pa = d.playerAction;
+      var k = pa.type === 'CONFRONT' ? ('CONFRONT|' + pa.topic) : (pa.guestId + '|' + pa.topic);
       attempts[k] = (attempts[k] || 0) + 1;
     });
 
@@ -55,6 +56,22 @@
         cands.push({ action: { type: 'ASK', guestId: q.id, topic: t, tone: tone }, gain: gain, covered: covered, key: key });
       });
     });
+
+    /* 对簿：一盏灯换「三人同时就同一件物证开口」。缺 2 格以上才划算（只缺 1 格直接问更省）。
+       疑心接近遁走阈值时不用 —— 三人当众被问一遍，疑心涨得比一对一快。 */
+    var presentG = game.guests.filter(function (q) { return !q.flags.left; });
+    var fleeAt = game.cs.difficulty.fleeSuspicionAt;
+    var nearFlee = game.guests.some(function (q) { return q.state.suspicion >= fleeAt - 12; });
+    if (presentG.length >= 2 && game.lampsLeft >= 2 && !nearFlee) {
+      /* 只对簿「柜上有物证」的话题：非物证话题落进表里也是空格，纯烧灯 */
+      clueTopics.forEach(function (tid) {
+        var missing = presentG.filter(function (q) { return !have[q.id + '|' + tid]; });
+        if (missing.length < 2) return;
+        var gain = missing.length * 1.05 + (tid === game.cs.lieTopic ? 0.9 : 0)
+          - (attempts['CONFRONT|' + tid] || 0) * 1.8;
+        cands.push({ action: { type: 'CONFRONT', topic: tid }, gain: gain, covered: missing.length, key: 'CONFRONT|' + tid });
+      });
+    }
 
     if (!cands.length) return { type: 'ACCUSE', guestId: bestGuess() };
     cands.sort(function (a, b2) { return (b2.gain - a.gain) || (a.covered - b2.covered); });
@@ -87,6 +104,11 @@
         npcText: res.decision ? res.decision.text : '',
         ruleNotes: res.decision ? res.decision.ruleNotes : [],
         revealed: res.decision && res.decision.revealed ? res.decision.revealed.value : null,
+        /* 对簿一次可能开三张口：把「问了几人 / 落了几个格」一并留痕 */
+        confront: res.decisions ? {
+          asked: res.decisions.length,
+          opened: res.decisions.filter(function (d) { return !!d.revealed; }).length
+        } : undefined,
         lampsLeft: game.lampsLeft
       });
     }
@@ -187,10 +209,12 @@
       { checked: total5, distributionChanged: changed, top1Changed: topChanged,
         avgL1: C.round(l1sum / total5, 4), perturbation: '信任 −30 / 张力 +30' });
 
-    // T6 自动试玩 Agent 通关率（P2：四档各跑一遍）
-    //    底线按「灯够不够把式子要的格子问全」定：初级/基础档 6~8 盏灯问 4~6 格，
-    //    通得过；中级/高级档只有 3~5 盏灯，问不全六格，通关率必然贴着随机线（见 docs §9.8）。
-    var FLOOR = { novice: 0.7, basic: 0.7, intermediate: 0.28, advanced: 0.28 };
+    // T6 自动试玩 Agent 通关率（四档各跑一遍）
+    //    底线 = 重设计方案 §五 的通关率目标（不是"当前实测值 - 一点余量"，是验收线）：
+    //    新手 ≥95% / 初级 ≥85% / 中级 ≥70% / 高级 ≥60%，且最高档要离随机线（1/3）≥ 25pp。
+    //    P5 引入「对簿」（1 灯换至多 3 格）之前，中/高级档实测只有 0.350 / 0.333，贴随机线；
+    //    引入后 0.883 / 0.833 —— 底线从此固定在这条技能梯度上，回退会被 T6 拦住。
+    var FLOOR = { novice: 0.95, basic: 0.85, intermediate: 0.70, advanced: 0.60 };
     var tiers6 = (SD.Difficulty && SD.Difficulty.IDS) ? SD.Difficulty.IDS : ['basic'];
     var M = Math.min(N, 60), sample6 = null, tierStat = {};
     tiers6.forEach(function (tier) {
@@ -203,9 +227,12 @@
       tierStat[tier] = { wins: w6, checked: M, ratio: C.round(w6 / M, 3), floor: FLOOR[tier] || 0.35 };
     });
     var wins6 = tiers6.reduce(function (s, t) { return s + tierStat[t].wins; }, 0);
-    var ok6 = tiers6.every(function (t) { return tierStat[t].ratio >= tierStat[t].floor; });
-    add('T6 影子掌柜自动试玩通关率（四档，按档设底线）', ok6,
-      { total: C.round(wins6 / (M * tiers6.length), 3), tierStat: tierStat, firstTrace: sample6 });
+    /* 技能梯度而不是运气：最高档必须离「随机指认」的 1/3 拉开 25pp 以上 */
+    var top = tierStat.advanced || tierStat[tiers6[tiers6.length - 1]];
+    var skillGap = C.round(top.ratio - 1 / 3, 3);
+    var ok6 = tiers6.every(function (t) { return tierStat[t].ratio >= tierStat[t].floor; }) && skillGap >= 0.25;
+    add('T6 影子掌柜自动试玩通关率（四档，按档设底线 + 离随机线 ≥25pp）', ok6,
+      { total: C.round(wins6 / (M * tiers6.length), 3), tierStat: tierStat, skillGap: skillGap, firstTrace: sample6 });
 
     report.summary = { total: report.cases.length, passed: report.cases.length - fails, failed: fails, allPass: fails === 0 };
     return report;

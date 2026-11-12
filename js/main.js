@@ -11,8 +11,7 @@
   var App = {
     screen: 'intro', game: null, selected: null, tone: 'warm',
     lastDecision: null, ended: false, autopilot: false, autoTrace: null,
-    // logicOp = null 表示「还没动过算子」→ 推演台默认落在当夜残卷给的那个算子上
-    logicOp: null, act: 'lamp',
+    act: 'lamp',
     session: { seed: '', night: 1, totalScore: 0, nights: [], difficultyTier: 'basic' },
     soundOn: true, aiShown: true
   };
@@ -85,8 +84,6 @@
       tierId: D ? D.normalize(App.session.difficultyTier) : 'basic'
     });
     App.selected = App.game.guests[0].id;
-    // 每一夜都从「残卷给的算子」起手，别把上一夜的选择带过来
-    App.logicOp = null;
     App.lastDecision = null;
     App.ended = false;
     App.act = (opts && opts.skipLamp) ? 'ask' : 'lamp';
@@ -140,8 +137,18 @@
   /* ---------------- 动作 ---------------- */
   function afterDispatch(res) {
     if (!res || res.ok === false) { UI.toast(res && res.error ? res.error : '这一步走不通'); UI.audio.sfx('bad'); return; }
-    if (res.decision) App.lastDecision = res.decision;
-    UI.audio.sfx(res.decision && res.decision.revealed ? 'reveal' : 'lantern');
+    /* 对簿一次落三条决策：AI 面板显示「首个开口的那位」，但三条都要留痕（行为可校验） */
+    if (res.decisions && res.decisions.length) {
+      App.lastDecisions = res.decisions;
+      App.lastDecision = res.decisions.filter(function (d) { return d.revealed; })[0] || res.decisions[0];
+    } else {
+      App.lastDecisions = null;
+      if (res.decision) App.lastDecision = res.decision;
+    }
+    var opened = App.lastDecisions
+      ? App.lastDecisions.some(function (d) { return !!d.revealed; })
+      : !!(res.decision && res.decision.revealed);
+    UI.audio.sfx(opened ? 'reveal' : 'lantern');
     UI.paint(App);
     save();
     l2Polish(res);
@@ -180,6 +187,15 @@
     if (App.act !== 'ask') App.act = 'ask';
     UI.audio.sfx('click');
     afterDispatch(Game.dispatch(App.game, { type: 'LISTEN' }));
+  }
+  /* 对簿：一盏灯，三人同时就这一件物证开口（不必先点客人 —— 这正是它和「问一句」的区别） */
+  function doConfront(topic) {
+    if (App.autopilot) { UI.toast('影子掌柜正在试玩，稍等一下'); return; }
+    if (!topic) { UI.toast('先挑一件物证'); return; }
+    if (App.game.phase !== 'playing') return;
+    if (App.act !== 'ask') App.act = 'ask';
+    UI.audio.sfx('lantern');
+    afterDispatch(Game.dispatch(App.game, { type: 'CONFRONT', topic: topic }));
   }
   function doAccuse(guestId) {
     UI.closeModal();
@@ -280,14 +296,17 @@
       '<p>每夜三位客人投宿，其中一位是<strong>「无相」</strong>——他的证词与柜上物证对不上。天亮前把他认出来。</p>' +
       '<h4>五步走完，结论自然出来</h4>' +
       '<ul><li><b>① 点灯</b>：三位客人到齐，柜上物证的真值先摆出来，你手上几盏灯一清二楚。</li>' +
-      '<li><b>② 问询</b>：三位客人自上而下排开，一人一行（立绘在左、五维在右），点谁问谁。选语气（温问 / 逼问 / 示物），点话头（来路 / 时辰 / 同行 / 行囊 / 信物）——问一句灭一盏灯。</li>' +
-      '<li><b>③ 推演</b>：把「物证 × 客人」的相符 / 不符摆成一张表，用四个逻辑算子筛人：' +
-      '<code>∧</code> 全部不符（标准解）、<code>∨</code> 任一不符、<code>¬</code> 并非全部不符、<code>⊕</code> 恰好一条不符。</li>' +
+      '<li><b>② 问询</b>：三位客人自上而下排开，一人一行（立绘在左、五维在右），点谁问谁。选语气（温问 / 逼问 / 示物），点话头（来路 / 时辰 / 同行 / 行囊 / 信物）——问一句灭一盏灯。' +
+      '灯的账不划算时，可以用柜上物证的「<b>对簿</b>」：同样一盏灯，让三个人<strong>同时</strong>就那一件物证开口，一次最多换三格。</li>' +
+      '<li><b>③ 推演</b>：把「物证 × 客人」的相符 / 不符摆成一张表，表尾替你数好每人「不符几处」。' +
+      '当夜残卷只交代<strong>这一夜找什么样的破绽</strong>（如「此人只错一处；除那一处，其余滴水不漏」），' +
+      '式子不给你——把它翻成一句对表的筛选，是你自己的事。</li>' +
       '<li><b>④ 指认</b>：选一位，点灯。选错，灯灭人走。</li>' +
       '<li><b>⑤ 结案</b>：真相摊开，附复盘卡——你漏掉了哪条物证、哪句自相矛盾、离最高结局还差几条证据。</li></ul>' +
-      '<h4>为什么 ∧ 才是标准解</h4>' +
-      '<p>无相在<strong>每一条</strong>物证上都对不上；清白的客人至多「记岔一句」。所以只用 <code>∨</code> 会把记岔的人也网进来，' +
-      '只有 <code>∧</code> 能把范围压到一个人。推演台上四个算子可以随便切，切错了会看到命中两人以上——那就是提示。</p>' +
+      '<h4>为什么不能数一数就完事</h4>' +
+      '<p>每档要找的破绽不一样：新手「有一处对不上」、初级「处处都对不上」、中级「并非处处对不上」、高级「恰好只错一处」。' +
+      '后面两档光看「谁错得多」会指错人——错得最多的往往是被记岔了的清白客。<strong>先读准残卷那句话，再看表。</strong>' +
+      '第三夜还多一条行为破绽：同一个人对同一件事前后说辞变了，那条也算数。</p>' +
       '<h4>他们不是剧本</h4>' +
       '<p>每位客人是一套 <code>量化状态 × 人格权重 → softmax 决策 → 规则掩码校验 → 状态回写</code> 的本地推理引擎。' +
       '信任低了会拒绝交付物件，张力高了会拂袖离店，第三夜疑心过高时无相甚至会趁夜遁走；重复提问会被记住并写进措辞。' +
@@ -359,10 +378,10 @@
       '<table class="finale-table"><thead>' + head + '</thead><tbody>' + rows + '</tbody></table>' +
       '<p style="color:var(--dim);font-size:11px">「✓ / ✗」仅表示证词值与物证真值是否一致，不直接等于身份判定。</p>');
   }
-  function modalLogicBoard() {
+  /* AI 掌柜 · 审计：点开才显示（不改玩法，只是把「凭什么这么说」摊开） */
+  function modalAudit() {
     if (!App.game) return;
-    UI.openModal('推演台 · 逻辑筛人',
-      SD.UI.logicBoardHtml(App.game.cs, App.game.statements, App.logicOp));
+    UI.openModal('AI 掌柜 · 审计', SD.UI.auditHtml(App.game));
   }
   function modalAccuse() {
     var b = Game.belief(App.game);
@@ -450,6 +469,7 @@
           return;
         }
         if (a === 'ask') { doAsk(el.getAttribute('data-topic')); return; }
+        if (a === 'confront') { doConfront(el.getAttribute('data-topic')); return; }
         if (a === 'close-modal') { UI.closeModal(); return; }
         if (a === 'guide-replay') {
           /* 设计案 3.3：先关菜单，下一帧再从 G1 起播，禁止两层遮罩并存 */
@@ -469,12 +489,6 @@
           el.classList.toggle('open', on);
           el.setAttribute('aria-expanded', on ? 'true' : 'false');
           UI.audio.sfx('click');
-          return;
-        }
-        if (a === 'logic-op') {
-          App.logicOp = el.getAttribute('data-op') || 'AND';
-          UI.audio.sfx('click'); UI.paint(App);
-          if (document.querySelector('.modal-mask')) modalLogicBoard();  /* 弹窗开着就同步刷新 */
           return;
         }
       }
@@ -501,7 +515,7 @@
         case 'btn-listen': doListen(); break;
         case 'btn-accuse': setAct('accuse'); break;
         case 'btn-compare': modalCompare(); break;
-        case 'btn-logic': modalLogicBoard(); break;
+        case 'btn-logic': modalAudit(); break;
         /* ---- 五幕导航 ---- */
         case 'btn-act-start': UI.audio.sfx('click'); setAct('ask'); break;
         case 'btn-act-deduce': UI.audio.sfx('click'); setAct('deduce'); break;

@@ -958,9 +958,9 @@ function runRegression() {
   let selfReport = null;
   try { selfReport = JSON.parse(fs.readFileSync(tmp, 'utf8')); } catch (e) { selfReport = null; }
   /* 逐条核字段，不只核退出码。
-     项数契约 = 9（v1.7.4 P4 重标定：T7/T8 改写为破绽口径、新增 T9「改口」⇒ 6 → 9）。
+     项数契约 = 10（P4：T7/T8 改写、T9 新增 ⇒ 9；P5：T10「对簿」新增 ⇒ 10）。
      这是**项数**重标定，不是判据放宽：仍要求 allPass===true 且 passed===total。 */
-  const EXPECT_SELFTEST_TOTAL = 9;
+  const EXPECT_SELFTEST_TOTAL = 10;
   try {
     const st = selfReport;
     if (!st) throw new Error('本次自检未产出报告');
@@ -1002,7 +1002,7 @@ function runRegression() {
   }
   report.counters.regressionFailCount = fails;
   caseRecord('D-40/41/42', 'AC-09', '阻断', fails === 0,
-    { selftest: '9/9', browserSmoke: 'errors=0', guideSmoke: '60/60', guideCounters: '9/9 为 0' },
+    { selftest: '10/10', browserSmoke: 'errors=0', guideSmoke: '60/60', guideCounters: '9/9 为 0' },
     report.regression, '核退出码 + 核报告字段 + 核引导域 9 项负向计数的实测值 + 核门禁在交付清单执行链中的位置');
 }
 

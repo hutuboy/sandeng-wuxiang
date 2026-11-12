@@ -98,7 +98,8 @@
       topicClue: isClue ? 1 : 0,
       toneWarm: act.tone === 'warm' ? 1 : 0,
       tonePress: act.tone === 'press' ? 1 : 0,
-      toneShow: act.tone === 'show' ? 1 : 0,
+      /* 对簿 = 把物证摊到桌上当众一问：决策权重同「示物」，但状态增量更轻（见 apply） */
+      toneShow: (act.tone === 'show' || act.tone === 'confront') ? 1 : 0,
       evadeBoost: d.evadeBoost,
       hasMemory: q.memory.length > 0 ? 1 : 0
     };
@@ -214,6 +215,9 @@
     // 逼问也会累积疑心：追问太急，无相会察觉自己已被盯上（原实现只有「示物」加疑心 → 遁走路径过窄）
     if (tone === 'press') { s.tension += 9; s.trust -= 3; s.suspicion += 14 * sg; }
     if (tone === 'show') { s.tension += 5; s.suspicion += 16 * sg; s.trust -= 1; }
+    /* 对簿：三人同时被摆到台面上，压力分摊、故比逐个「示物」轻；
+       但疑心照涨 —— 当众被问过的人，知道自己被盯上了。 */
+    if (tone === 'confront') { s.tension += 3; s.suspicion += 6 * sg; s.trust -= 1; }
 
     switch (decision.chosen) {
       case 'ANSWER_TRUE':

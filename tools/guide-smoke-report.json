@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-12T13:30:50.488Z",
+  "generatedAt": "2026-11-12T14:07:29.196Z",
   "specStatus": "OK",
   "specFiles": [
     "docs/引导-设计案-v1.md",
@@ -930,7 +930,7 @@
         "gate": {
           "wiredInto": "docs/交付清单.md 复跑命令：node tools/guide-smoke.cjs",
           "verified": true,
-          "lastRunAt": "2026-11-12T13:30:50.488Z",
+          "lastRunAt": "2026-11-12T14:07:29.196Z",
           "runBy": "tools/guide-smoke.cjs（playwright-core + 本机 Edge headless）"
         },
         "visualFrames": 19,
@@ -1029,12 +1029,12 @@
       "holeCount": 2,
       "bubbleRect": {
         "x": 535,
-        "y": 512,
+        "y": 513,
         "width": 340,
         "height": 253.359375,
-        "top": 512,
+        "top": 513,
         "right": 875,
-        "bottom": 765.359375,
+        "bottom": 766.359375,
         "left": 535
       }
     },
@@ -1080,13 +1080,13 @@
   "humanPath": {
     "recorded": true,
     "watchedBy": "制作人（AI 视觉复核，非真人玩家）",
-    "watchedAt": "2026-11-12T13:30:50.479Z",
+    "watchedAt": "2026-11-12T14:07:29.189Z",
     "hooksUsed": 0
   },
   "gate": {
     "wiredInto": "docs/交付清单.md 复跑命令：node tools/guide-smoke.cjs",
     "verified": true,
-    "lastRunAt": "2026-11-12T13:30:50.488Z",
+    "lastRunAt": "2026-11-12T14:07:29.196Z",
     "runBy": "tools/guide-smoke.cjs（playwright-core + 本机 Edge headless）",
     "exitCode": 0
   },

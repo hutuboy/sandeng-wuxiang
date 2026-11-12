@@ -55,6 +55,10 @@
       });
     });
     out.push({ type: 'LISTEN' });
+    /* 对簿：一盏灯，三人同时就同一件物证开口（在座不足两人则无从对簿） */
+    if (game.guests.filter(function (q) { return !q.flags.left; }).length >= 2) {
+      C.TOPICS.forEach(function (t) { out.push({ type: 'CONFRONT', topic: t.id }); });
+    }
     game.guests.forEach(function (q) { out.push({ type: 'ACCUSE', guestId: q.id }); });
     return out;
   }
@@ -120,6 +124,51 @@
       pushLog(game, 'system', '你添了一轮茶。灯影稳了些，众人紧绷的肩松下来，话也好问了。');
       result.events.push({ type: 'CALM', text: '全场张力 −20，信任 +8，接下来 2 次问话不会被打岔' });
       if (game.lampsLeft <= 0) conclude(game, 'lamps');
+      return result;
+    }
+
+    /* ---- 对簿：一盏灯换「三人同时就同一件物证开口」----
+     * 灯只有那么几盏，而式子常要吃「2 处 × 3 人 = 6 格」；只靠一对一地问，中/高级档永远问不全。
+     * 对簿把「一盏灯换一格」变成「一盏灯换至多三格」，代价是：①话题由你选、问谁不由你选（可能补到已知的格）；
+     * ②三人当众被摆上台面，疑心照涨 —— 高级档疑心阈值低，连对两场簿可能把无相逼走。
+     * 每人仍各自走 NPC.decide / NPC.apply（行为可校验），只有语气固定为 'confront'。
+     */
+    if (action.type === 'CONFRONT') {
+      var ct = C.topic(action.topic);
+      if (!ct) return { ok: false, error: '非法的对簿话题' };
+      if (game.lampsLeft <= 0) return { ok: false, error: '灯已燃尽' };
+      var present = game.guests.filter(function (q) { return !q.flags.left; });
+      if (present.length < 2) return { ok: false, error: '在座不足两人，无从对簿' };
+
+      game.turn++; game.lampsLeft--;
+      pushLog(game, 'ask', '【你】把「' + ct.label + '」的物证摊到桌上，请三位当众开口');
+      var decided = [], got = [];
+      present.forEach(function (q) {
+        var act = { guestId: q.id, topic: action.topic, tone: 'confront' };
+        var d = NPC.decide(game, act, {});
+        NPC.apply(game, act, d);
+        d.playerAction = { type: 'CONFRONT', topic: action.topic };
+        game.decisions.push(d);
+        decided.push(d);
+        if (d.revealed) { d.revealed.byConfront = true; game.statements.push(d.revealed); got.push(d.revealed); }
+        pushLog(game, 'npc', '【' + q.name + '·' + d.actionLabel + '】' + d.text);
+      });
+      if (game.calmTurns > 0) game.calmTurns--;
+
+      result.decisions = decided;
+      result.decision = decided.filter(function (d) { return d.revealed; })[0] || decided[0] || null;
+      result.events.push({ type: 'CONFRONT', text: '当众对簿 · ' + ct.label, opened: got.length, asked: present.length });
+      if (got.length) result.events.push({ type: 'STATEMENTS', data: got });
+      decided.forEach(function (d) {
+        result.events = result.events.concat(d.effects.map(function (e) { return { type: 'EFFECT', text: d.guestName + '：' + e }; }));
+      });
+
+      if (decided.some(function (d) { return d.chosen === 'FLEE'; })) {
+        conclude(game, 'flee');
+        result.events.push({ type: 'END', text: '无相趁夜遁走' });
+      } else if (game.lampsLeft <= 0) {
+        conclude(game, 'lamps');
+      }
       return result;
     }
 

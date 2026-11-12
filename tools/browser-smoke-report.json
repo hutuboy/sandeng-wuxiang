@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-11-12T13:30:02.921Z",
+  "generatedAt": "2026-11-12T14:07:53.001Z",
   "url": "file:///D:/Projects/games/AI造游戏/index.html?guide=0",
   "browser": "Microsoft Edge (headless)",
   "viewport": "1440x900 / 390x844",
   "api": {
     "hasState": true,
     "stateSchema": "sandeng.state.v1",
-    "actionCount": 49,
+    "actionCount": 54,
     "selftest": {
       "total": 6,
       "passed": 6,
@@ -85,6 +85,14 @@
     "logicv2-m-adv.png",
     "logicv2-modal.png",
     "logicv2-novice-hit.png",
+    "p5-advanced-deduce.png",
+    "p5-after-confront.png",
+    "p5-ask-confront.png",
+    "p5-audit.png",
+    "p5-basic-deduce.png",
+    "p5-intermediate-deduce.png",
+    "p5-m-adv.png",
+    "p5-novice-deduce.png",
     "promo-cover-vertical.png",
     "stack-d.png",
     "stack-m.png"
