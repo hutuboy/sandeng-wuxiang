@@ -460,6 +460,14 @@
         }
         if (a === 'redecide') { modalRedecide(); return; }
         if (a === 'copy-decision') { copy(JSON.stringify(App.lastDecision, null, 2)); return; }
+        if (a === 'clue-toggle') {
+          /* 展开状态存在 UI 内部（每次 paint 会重写 innerHTML），这里只同步当前节点 */
+          var on = UI.toggleClue(el.getAttribute('data-clue-id'));
+          el.classList.toggle('open', on);
+          el.setAttribute('aria-expanded', on ? 'true' : 'false');
+          UI.audio.sfx('click');
+          return;
+        }
         if (a === 'logic-op') {
           App.logicOp = el.getAttribute('data-op') || 'AND';
           UI.audio.sfx('click'); UI.paint(App);

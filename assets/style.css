@@ -148,17 +148,26 @@ h1,h2,h3,p{margin:0}
 .section-hint{display:flex;justify-content:space-between;gap:10px;font-size:11px;color:var(--muted);padding:0 4px;letter-spacing:.04em}
 .kbd-hint{color:var(--dim);font-family:ui-monospace,monospace}
 
-/* 物证 */
-.clue-list{padding:10px 12px;display:flex;flex-direction:column;gap:9px;max-height:210px;overflow:auto}
+/* 柜上物证 · 精简条：一行一件，全文点开（压在「灯下对话」之上） */
+.clue-strip{flex:0 0 auto}
+.clue-strip .panel-head{justify-content:flex-start;gap:8px;padding:8px 13px}
+.clue-hint{font-size:9.5px;color:var(--dim);margin-left:auto;letter-spacing:.04em}
+.clue-list{display:flex;flex-wrap:wrap;gap:6px;padding:8px 11px 2px}
 .clue{
-  border:1px solid rgba(232,164,92,.28);background:linear-gradient(135deg,rgba(232,164,92,.09),rgba(232,164,92,.02));
-  padding:9px 11px;border-radius:2px;position:relative;
+  flex:1 1 0;min-width:170px;position:relative;cursor:pointer;
+  border:1px solid rgba(232,164,92,.26);border-radius:3px;padding:5px 9px 5px 11px;
+  background:linear-gradient(135deg,rgba(232,164,92,.08),rgba(232,164,92,.015));transition:.16s;
 }
 .clue::before{content:"";position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--amber)}
-.clue h3{font-family:var(--serif);font-size:13px;color:var(--amber-lt);letter-spacing:.12em;margin-bottom:4px}
-.clue p{font-size:12px;color:var(--label);line-height:1.75}
-.clue .expect{display:inline-block;margin-top:6px;font-size:11px;color:var(--jade);border:1px solid rgba(95,209,178,.3);padding:1px 7px;border-radius:2px}
-.solver-note{padding:8px 12px;border-top:1px solid var(--line);font-size:10.5px;color:var(--jade);letter-spacing:.03em}
+.clue:hover{border-color:rgba(232,164,92,.5);background:linear-gradient(135deg,rgba(232,164,92,.12),rgba(232,164,92,.03))}
+.clue-top{display:flex;align-items:baseline;gap:7px;flex-wrap:wrap}
+.clue-top b{font-family:var(--serif);font-size:12px;font-weight:400;letter-spacing:.08em;color:var(--amber-lt);white-space:nowrap}
+.clue-val{font-size:10px;color:var(--jade);border:1px solid rgba(95,209,178,.32);padding:0 5px;border-radius:2px;white-space:nowrap}
+.clue-txt{margin:2px 0 0;font-size:10.5px;color:var(--dim);line-height:1.55;
+  display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+.clue.open{flex:1 1 100%}
+.clue.open .clue-txt{display:block;-webkit-line-clamp:unset;color:var(--label)}
+.solver-note{padding:6px 12px 8px;font-size:10px;color:var(--jade);letter-spacing:.02em;line-height:1.6}
 
 /* 证词簿 */
 .statement-list{flex:1;min-height:0;overflow:auto;padding:9px 11px;display:flex;flex-direction:column;gap:7px}
@@ -463,8 +472,12 @@ h1,h2,h3,p{margin:0}
   .col{overflow:visible;flex:0 0 auto}
   .col-left{flex-direction:row;gap:9px}
   .col-left .panel{flex:1;min-width:0}
-  .clue-list{max-height:150px}
   .statement-list{max-height:150px}
+  .clue{min-width:150px;padding:4px 7px 4px 9px}
+  .clue-top{gap:4px}
+  .clue-top b{font-size:11px}
+  .clue-val{font-size:9px;padding:0 3px}
+  .clue-txt{font-size:10px}
   .col-center{gap:9px}
   .guest-row{gap:6px}
   .guest-card{min-height:158px}
@@ -519,7 +532,7 @@ h1,h2,h3,p{margin:0}
 }
 @media (max-width:400px){
   .col-left{flex-direction:column}
-  .clue-list,.statement-list{max-height:120px}
+  .statement-list{max-height:120px}
   .guest-card{min-height:142px}
   .portrait{height:58px}
   .act-step{padding:1px 4px}

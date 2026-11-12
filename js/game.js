@@ -29,7 +29,7 @@
       auto: !!opts.auto
     };
     pushLog(game, 'system', '第 ' + game.night + ' 夜。三客投宿，一人为「无相」。灯只够点 ' + game.lamps + ' 回。');
-    cs.clues.forEach(function (c) { pushLog(game, 'clue', c.title + '：' + c.text); });
+    /* 物证原文只在「柜上物证」条里看，不再灌进灯下对话（重复且占掉对话区） */
     return game;
   }
 

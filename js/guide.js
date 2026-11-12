@@ -37,9 +37,9 @@
     { id: 'G4', anchor: '#topic-row', fallback: '.action-dock', secondary: null,
       title: '点话头，就是开口',
       body: '五张话头，点一张便是问一句、灭一盏灯。等下由你亲手点。' },
-    { id: 'G5', anchor: '#statement-list', fallback: '.col-left', secondary: '#clue-list',
+    { id: 'G5', anchor: '#clue-list', fallback: '#statement-list', secondary: '#statement-list',
       title: '话落在簿上',
-      body: '他答的话记进证词簿，拿去对柜上物证，破绽才现形。' },
+      body: '他答的话记进左边证词簿；再拿去对柜上物证，破绽才现形。' },
     { id: 'G6', anchor: '.topbar', fallback: '.tb-center', secondary: null,
       title: '该你开口了',
       body: '灯在顶栏，「AI」摊开客人的心思，灯尽前点灯指认。现在，点张话头，问出第一句吧。' }
@@ -305,7 +305,12 @@
       { top: cy, left: main.right + gap, placement: 'left' },       // 右侧
       { top: cy, left: main.left - gap - bw, placement: 'right' },  // 左侧
       { top: minTop, left: cx, placement: 'bottom' },               // 贴顶
-      { top: maxTop, left: cx, placement: 'top' }                   // 贴底（操作台上方）
+      { top: maxTop, left: cx, placement: 'top' },                  // 贴底（操作台上方）
+      /* 主锚是「整列高」的面板时（如证词簿占满左栏），上下左右四个候选全压在它身上，
+         只能退到重叠最小 —— 于是气泡会落在该列垂直居中处，正好撞上中栏的物证条。
+         补两个「右侧 + 贴顶 / 贴底」的候选：横向让开主锚，纵向让开中栏。 */
+      { top: minTop, left: main.right + gap, placement: 'left' },
+      { top: maxTop, left: main.right + gap, placement: 'left' }
     ];
 
     var chosen = null, minArea = Infinity;

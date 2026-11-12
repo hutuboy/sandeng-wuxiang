@@ -32,10 +32,10 @@ const EXPECT_STEP_COPY = [                       // 逐字抄设计案第二章
   ['先相中一位', '三位客人都到了。灯下这扇窗一次只开一位，上方换人；第一位已替你相中。'],
   ['同一句，三种问法', '温问养信任，逼问要真话，示物压伪饰。语气随你，先不定也成。'],
   ['点话头，就是开口', '五张话头，点一张便是问一句、灭一盏灯。等下由你亲手点。'],
-  ['话落在簿上', '他答的话记进证词簿，拿去对柜上物证，破绽才现形。'],
+  ['话落在簿上', '他答的话记进左边证词簿；再拿去对柜上物证，破绽才现形。'],
   ['该你开口了', '灯在顶栏，「AI」摊开客人的心思，灯尽前点灯指认。现在，点张话头，问出第一句吧。']
 ];
-const EXPECT_ANCHORS = [null, '#guest-switch', '#tone-group', '#topic-row', '#statement-list', '.topbar'];
+const EXPECT_ANCHORS = [null, '#guest-switch', '#tone-group', '#topic-row', '#clue-list', '.topbar'];
 const SEL = {
   root: '#guide-layer', bubble: '#guide-bubble', mask: '#guide-mask', hole: '.guide-hole',
   next: '#btn-guide-next', prev: '#btn-guide-prev', skip: '#btn-guide-skip',
@@ -445,16 +445,28 @@ async function runNegative() {
     check('G-21', 'AC-05', '阻断', hit !== 'guide-layer' && hit === 'topic-row',
       '命中 #topic-row 内元素', hit, 'elementFromPoint + 真实点击');
 
-    /* G-19 真实问话仍可用 */
-    await h.page.click('[data-guest="g0"]');
-    await h.page.click('[data-topic="hour"]');
-    await h.page.waitForTimeout(300);
-    const t2 = await snapshot(h);
+    /* G-19 真实问话仍可用。
+       Q-02（本用例原先的隐性 flaky）：灯/回合是 Game.dispatch 无条件执行量，可作 oracle；
+       但「证词 +1」取决于 NPC 是否 revealed（softmax 抽样，可能 EVADE/COUNTER/REFUSE），
+       单次采样不成立。改为原地换话题重试至多 3 次，断言「灯 −n ∧ 回合 +n ∧ 证词至少 +1」，
+       与 G-51 的 Q-01 口径一致——不拿抽样结果当确定性判据。 */
+    const topicsTry = ['hour', 'origin', 'companion'];
+    let t2 = await snapshot(h), added = 0, asked = 0;
+    for (const tp of topicsTry) {
+      const before = await snapshot(h);
+      await h.page.click('[data-guest="g0"]');
+      await h.page.click('[data-topic="' + tp + '"]');
+      await h.page.waitForTimeout(260);
+      t2 = await snapshot(h);
+      asked++;
+      added += t2.statements - before.statements;
+      if (added > 0) break;
+    }
     check('G-19', 'AC-08', '阻断',
-      t2.lamps === t1.lamps - 1 && t2.statements === t1.statements + 1 && t2.turn === t1.turn + 1,
-      '灯 −1 / 证词 +1 / 回合 +1',
-      { before: [t1.lamps, t1.statements, t1.turn], after: [t2.lamps, t2.statements, t2.turn] },
-      '真实 UI 路径，不用 API.dispatch');
+      t2.lamps === t1.lamps - asked && t2.turn === t1.turn + asked && added >= 1,
+      '灯 −' + asked + ' / 回合 +' + asked + ' / 证词至少 +1（至多 3 次问话内）',
+      { asked, added, before: [t1.lamps, t1.statements, t1.turn], after: [t2.lamps, t2.statements, t2.turn] },
+      '真实 UI 路径，不用 API.dispatch；证词入簿次数取决于 NPC 决策，按「至少一次」判定');
 
     /* G-51 释放回归：q 键仍触发真实 ASK。
        Q-01：oracle 用确定性状态量 turn+1 ∧ lamps−1（Game.dispatch 无条件执行）；

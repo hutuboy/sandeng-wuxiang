@@ -47,7 +47,7 @@ python -m http.server 8000
 | 幕 | 你要做的事 | 窗里有什么 |
 | --- | --- | --- |
 | **① 点灯** | 认人、清点物证 | 三位客人到齐，柜上物证的真值先摆出来，几盏灯一清二楚 |
-| **② 问询** | 一次只问一位 | 单客窗（立绘 + 信任/好感/张力/疑心/定力五维 + 已问话头），上方换人条；选语气、点话头，问一句灭一盏灯 |
+| **② 问询** | 一次只问一位 | 单客窗（立绘 + 信任/好感/张力/疑心/定力五维 + 已问话头），上方换人条；下面一条**精简物证带**（一行一件，点开看全文）压在「灯下对话」之上；选语气、点话头，问一句灭一盏灯 |
 | **③ 推演** | 把表摊开 | 「物证 × 客人」的相符 / 不符表，四个逻辑算子实时切换 |
 | **④ 指认** | 点头认人 | 三位并列，点谁就点灯。选错，灯灭人走 |
 | **⑤ 结案** | 看真相 | 真相摊开 + 复盘卡（漏掉的物证 / 自相矛盾 / 离最高结局差几条证据） |
@@ -172,6 +172,8 @@ node tools/selftest.cjs --seeds 200 --demo --json tools/selftest-report.json
 node tools/browser-smoke.cjs          # 需要 .tooling/playwright-core + 本机 Edge
 node tools/guide-smoke.cjs            # 新用户引导 60 项门禁（含几何断洞）
 QA_DIFFICULTY_RUN=1 node tools/difficulty-smoke.cjs   # 四档难度 44 项
+node tools/clue-toggle-probe.cjs      # 物证条展开态：问话重绘后不丢、换局复位
+node tools/g5-geom.cjs                # 引导 G5 气泡与两处高亮洞的重叠面积应为 0
 node tools/make-demo.cjs              # 重新录制演示视频（需要 ffmpeg）
 ```
 

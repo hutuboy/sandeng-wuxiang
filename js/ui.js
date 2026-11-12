@@ -339,11 +339,24 @@
       return '<div class="dline npc">' + esc(l.text) + '</div>';
     }).join('');
   }
+  /* 精简版物证：一行「名称 + 真值」，正文只留一行，点开看全文（全文也在 title 里）。
+     展开状态必须存在模块里：每次 paint 都会重写 #clue-list 的 innerHTML，
+     状态若只挂在 DOM 的 class 上，问一句话就被重绘抹掉。 */
+  var openClues = {};
   function cluesHtml(game) {
     return game.cs.clues.map(function (c) {
-      return '<div class="clue"><h3>◈ ' + esc(c.title) + '</h3><p>' + esc(c.text) + '</p>' +
-        '<span class="expect">真值 · ' + esc(C.topic(c.topic).label) + ' = ' + esc(c.expect) + '</span></div>';
+      var open = !!openClues[c.id];
+      return '<div class="clue' + (open ? ' open' : '') + '" data-action="clue-toggle" data-clue-id="' + esc(c.id) + '"' +
+        ' aria-expanded="' + (open ? 'true' : 'false') + '" title="' + esc(c.text) + '">' +
+        '<div class="clue-top"><b>◈ ' + esc(c.title) + '</b>' +
+        '<span class="clue-val">' + esc(C.topic(c.topic).label) + ' 应为「' + esc(c.expect) + '」</span></div>' +
+        '<p class="clue-txt">' + esc(c.text) + '</p></div>';
     }).join('');
+  }
+  function toggleClue(id) {
+    if (!id) return false;
+    openClues[id] = !openClues[id];
+    return openClues[id];
   }
   function statementsHtml(game) {
     if (!game.statements.length) return '<div class="empty-note">还没有人开口。<br />选一位客人，点一张话头，灯就少一盏。</div>';
@@ -368,9 +381,8 @@
     }).join('');
   }
   function solverHtml(game) {
-    var ok = game.cs.solvable;
-    return (ok ? '✓ ' : '! ') + 'AI 导演已校验：标准解唯一（∧ 全部不符） · ' + game.cs.clues.length + ' 条物证 · 最少 ' + game.guests.length + ' 次问话 / 共 ' + game.lamps + ' 盏灯' +
-      ' <span style="color:var(--dim)">seed ' + esc(game.seed) + '·n' + game.night + '</span>';
+    var ok = game.cs.solvable && game.cs.logicSolvable !== false;
+    return (ok ? '✓ ' : '! ') + '标准解唯一（∧ 全部不符）· ' + game.cs.clues.length + ' 件物证 · ' + game.lamps + ' 盏灯';
   }
 
   /* ---------------- 推演台（逻辑筛人）：弹窗与第三幕共用同一份渲染 ---------------- */
@@ -636,7 +648,9 @@
     showScreen: showScreen, openModal: openModal, closeModal: closeModal, toast: toast,
     paint: paint, paintResult: paintResult, resultHtml: resultHtml,
     logicBoardHtml: logicBoardHtml, logicStageHtml: logicStageHtml, ACTS: ACTS,
-    resetCache: function () { _cache = {}; },
+    toggleClue: toggleClue,
+    /* 换夜/换局时一并清掉物证展开状态：物证 id 是 clue_<话题>，跨夜会重名 */
+    resetCache: function () { _cache = {}; openClues = {}; },
     KEY_HINT: KEY_HINT
   };
 })(typeof globalThis !== 'undefined' ? globalThis : this);

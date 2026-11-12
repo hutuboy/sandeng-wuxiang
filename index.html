@@ -74,13 +74,8 @@
   </nav>
 
   <div class="game-grid" id="act-stage" data-act="lamp">
-    <!-- 左：物证 / 证词簿（五幕常驻，随时可对） -->
+    <!-- 左：证词簿（五幕常驻，随时可对） -->
     <aside class="col col-left">
-      <div class="panel">
-        <div class="panel-head"><h2>柜上物证</h2><span class="tag" id="clue-count">1 件</span></div>
-        <div id="clue-list" class="clue-list"></div>
-        <div class="solver-note" id="solver-note"></div>
-      </div>
       <div class="panel grow">
         <div class="panel-head"><h2>证词簿</h2><span class="tag" id="stmt-count">0 条</span></div>
         <div id="statement-list" class="statement-list"></div>
@@ -112,6 +107,13 @@
         <div class="section-hint"><span id="guest-hint">先点一位客人，再点一张话头</span><span class="kbd-hint">1/2/3 换人 · Q W E R T 问话</span></div>
         <div id="guest-switch" class="guest-switch"></div>
         <div id="guest-row" class="guest-row solo"></div>
+
+        <!-- 柜上物证：精简一行一件，压在对话之上（全文点开看） -->
+        <div class="panel clue-strip">
+          <div class="panel-head"><h2>柜上物证</h2><span class="tag" id="clue-count">1 件</span><span class="clue-hint">点一件看全文</span></div>
+          <div id="clue-list" class="clue-list"></div>
+          <div class="solver-note" id="solver-note"></div>
+        </div>
 
         <div class="dialogue-wrap panel">
           <div class="panel-head"><h2>灯下对话</h2><span class="tag" id="turn-tag">第 0 回</span></div>
