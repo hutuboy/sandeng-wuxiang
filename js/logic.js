@@ -6,7 +6,8 @@
  *
  * 设计边界（P1）：
  *   - 原子命题：某客在{话题}上的说法 ≠ 物证真值（true=不符 / false=相符 / null=未问）
- *   - 复合公式：{ op:'AND'|'OR'|'XOR', atoms:[topic...] }
+ *     注：命题本身即「相符」的否定（¬），故每个 true 都已含一次「非」
+ *   - 复合公式：{ op:'AND'|'OR'|'XOR'|'NAND', atoms:[topic...] }
  *   - 标准解：无相在「全部已投放物证」上都不符（AND），由 alibi 真值判定
  *   - 本层不改任何游戏状态，只读 cs + statements
  * ===================================================================== */
@@ -43,14 +44,29 @@
     return out;
   }
 
-  /* 对单个客人的偏差向量求值；有未问项则返回 null（未定） */
+  /* 对单个客人的偏差向量求值；有未问项则返回 null（未定）
+   *   AND  A∧B∧C  每条物证都要对不上（标准解：无相）
+   *   OR   A∨B∨C  只要一条对不上
+   *   XOR  A⊕B⊕C  恰好只有一条对不上
+   *   NAND ¬(A∧B∧C) 并非全部对不上 —— 至少有一条咬得住（「非」的显式用法）
+   */
   function evalGuest(dev, formula) {
     var vals = (formula.atoms || []).map(function (t) { return dev ? dev[t] : null; });
     if (!vals.length || vals.some(function (v) { return v === null; })) return null;
-    if (formula.op === 'OR') return vals.some(Boolean);
-    if (formula.op === 'XOR') return vals.filter(Boolean).length === 1;
+    var op = formula.op || 'AND';
+    if (op === 'OR') return vals.some(Boolean);
+    if (op === 'XOR') return vals.filter(Boolean).length === 1;
+    if (op === 'NAND') return !vals.every(Boolean);   // ¬(全部不符)
     return vals.every(Boolean); // AND（默认）
   }
+
+  /* 算子元数据：符号 / 名称 / 一句话释义 / 展开式。界面与自检共用同一份，避免两处措辞。 */
+  var OPS = [
+    { id: 'AND', sym: '∧', name: '与', gloss: '每条物证都对不上（标准解）', form: 'A∧B' },
+    { id: 'OR', sym: '∨', name: '或', gloss: '只要一条对不上', form: 'A∨B' },
+    { id: 'NAND', sym: '¬', name: '非', gloss: '并非全部对不上（至少一条相符）', form: '¬(A∧B)' },
+    { id: 'XOR', sym: '⊕', name: '异或', gloss: '恰好只有一条对不上', form: 'A⊕B' }
+  ];
 
   /* 对三位客人群求值：返回偏差表、逐客结果、命中者 */
   function evaluate(cs, statements, formula) {
@@ -79,6 +95,7 @@
   }
 
   SD.Logic = {
+    OPS: OPS,
     atoms: atoms,
     deviations: deviations,
     evalGuest: evalGuest,

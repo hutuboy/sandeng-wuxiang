@@ -47,7 +47,7 @@
   </div>
 </section>
 
-<!-- ======================= 游戏主屏 ======================= -->
+<!-- ======================= 游戏主屏 · 五幕分步 ======================= -->
 <section id="screen-game" class="screen">
   <header class="topbar">
     <div class="tb-left">
@@ -67,8 +67,14 @@
     </div>
   </header>
 
-  <div class="game-grid">
-    <!-- 左：物证 / 证词簿 -->
+  <!-- 步骤条：五幕导航（点灯 → 问询 → 推演 → 指认 → 结案） -->
+  <nav class="act-bar" id="act-bar" aria-label="守夜步骤">
+    <ol class="act-steps" id="act-steps"></ol>
+    <div class="act-bar__tip" id="act-tip"></div>
+  </nav>
+
+  <div class="game-grid" id="act-stage" data-act="lamp">
+    <!-- 左：物证 / 证词簿（五幕常驻，随时可对） -->
     <aside class="col col-left">
       <div class="panel">
         <div class="panel-head"><h2>柜上物证</h2><span class="tag" id="clue-count">1 件</span></div>
@@ -83,27 +89,74 @@
       </div>
     </aside>
 
-    <!-- 中：客人 / 对话 / 操作 -->
-    <main class="col col-center">
-      <div class="section-hint"><span id="guest-hint">先点一位客人，再点一张话头</span><span class="kbd-hint">1/2/3 选人 · Q W E R T 问话</span></div>
-      <div id="guest-row" class="guest-row"></div>
+    <!-- 中：四扇窗，一次只开一扇 -->
+    <main class="col col-center" id="act-windows" data-act="lamp">
 
-      <div class="dialogue-wrap panel">
-        <div class="panel-head"><h2>灯下对话</h2><span class="tag" id="turn-tag">第 0 回</span></div>
-        <div id="dialogue" class="dialogue" aria-live="polite"></div>
-      </div>
+      <!-- 第一幕 · 点灯 -->
+      <section class="act" data-act="lamp">
+        <div class="act-card">
+          <div class="act-eyebrow">第 一 步 · 点 灯</div>
+          <h2 class="act-title" id="lamp-title">第一夜 · 三客投宿</h2>
+          <p class="act-lead" id="lamp-lead"></p>
+          <div class="lamp-roster" id="lamp-roster"></div>
+          <ul class="lamp-brief" id="lamp-brief"></ul>
+          <div class="act-actions">
+            <button class="btn btn-primary" id="btn-act-start">点灯 · 请第一位开口</button>
+          </div>
+          <p class="act-foot">问一句灭一盏，灯尽会自动结算；主动指认更稳。</p>
+        </div>
+      </section>
 
-      <div class="action-dock panel">
-        <div class="dock-head">
-          <span class="dock-label">话头</span>
-          <div class="tone-group" id="tone-group"></div>
+      <!-- 第二幕 · 逐客问询（一次只开一位客人） -->
+      <section class="act" data-act="ask">
+        <div class="section-hint"><span id="guest-hint">先点一位客人，再点一张话头</span><span class="kbd-hint">1/2/3 换人 · Q W E R T 问话</span></div>
+        <div id="guest-switch" class="guest-switch"></div>
+        <div id="guest-row" class="guest-row solo"></div>
+
+        <div class="dialogue-wrap panel">
+          <div class="panel-head"><h2>灯下对话</h2><span class="tag" id="turn-tag">第 0 回</span></div>
+          <div id="dialogue" class="dialogue" aria-live="polite"></div>
         </div>
-        <div id="topic-row" class="topic-row"></div>
-        <div class="dock-foot">
-          <button class="btn btn-small" id="btn-listen">添茶 · 缓一口气 <em>耗 1 灯</em></button>
-          <button class="btn btn-small btn-danger" id="btn-accuse">点灯 · 指认无相</button>
+
+        <div class="action-dock panel">
+          <div class="dock-head">
+            <span class="dock-label">话头</span>
+            <div class="tone-group" id="tone-group"></div>
+          </div>
+          <div id="topic-row" class="topic-row"></div>
+          <div class="dock-foot">
+            <button class="btn btn-small" id="btn-listen">添茶 · 缓一口气 <em>耗 1 灯</em></button>
+            <button class="btn btn-small" id="btn-act-deduce">问完了 · 去推演</button>
+            <button class="btn btn-small btn-danger" id="btn-accuse">点灯 · 指认无相</button>
+          </div>
         </div>
-      </div>
+      </section>
+
+      <!-- 第三幕 · 推演 -->
+      <section class="act" data-act="deduce">
+        <div class="act-card wide">
+          <div class="act-eyebrow">第 三 步 · 推 演</div>
+          <h2 class="act-title">把物证与证词摊开</h2>
+          <div id="logic-stage" class="logic-stage"></div>
+          <div class="act-actions">
+            <button class="btn" id="btn-act-back-ask">回去再问两句</button>
+            <button class="btn btn-primary" id="btn-act-to-accuse">锁定了 · 去指认</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 第四幕 · 指认 -->
+      <section class="act" data-act="accuse">
+        <div class="act-card wide">
+          <div class="act-eyebrow">第 四 步 · 指 认</div>
+          <h2 class="act-title">灯一亮，就收不回来了</h2>
+          <p class="act-lead">选一位。选错，灯灭人走。</p>
+          <div id="accuse-stage" class="accuse-stage"></div>
+          <div class="act-actions">
+            <button class="btn" id="btn-act-back-deduce">再想想</button>
+          </div>
+        </div>
+      </section>
     </main>
 
     <!-- 右：AI 决策透明面板 -->

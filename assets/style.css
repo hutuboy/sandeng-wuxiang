@@ -235,6 +235,132 @@ h1,h2,h3,p{margin:0}
 .topic-card .num{position:absolute;top:2px;left:4px;font-size:9px;color:var(--dim);font-family:ui-monospace,monospace}
 .dock-foot{display:flex;gap:8px;justify-content:space-between;margin-top:9px;flex-wrap:wrap}
 
+/* ================= 五幕分步外壳（P0） ================= */
+/* 步骤条：顶栏之下一条窄带，五拍走完才出结论 */
+.act-bar{
+  flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:7px 16px;border-bottom:1px solid var(--line);background:rgba(16,13,22,.62);z-index:4;
+}
+.act-steps{list-style:none;display:flex;align-items:center;gap:4px;margin:0;padding:0;flex-wrap:wrap}
+.act-step{display:flex;align-items:center;gap:5px;padding:2px 10px 2px 6px;border-radius:2px;font-size:11.5px;color:var(--dim);position:relative}
+.act-step i{font-style:normal;font-family:var(--serif);font-size:12px;width:17px;height:17px;display:grid;place-items:center;
+  border:1px solid rgba(200,170,120,.24);border-radius:50%;color:var(--dim);line-height:1}
+.act-step b{font-weight:400;letter-spacing:.08em}
+.act-step.done{color:var(--jade)}
+.act-step.done i{border-color:rgba(95,209,178,.5);color:var(--jade);background:rgba(95,209,178,.10)}
+.act-step.on{color:var(--amber-lt);background:rgba(232,164,92,.10)}
+.act-step.on i{border-color:var(--amber);color:#241608;background:linear-gradient(180deg,#ffc98a,#c9853f)}
+.act-step.on b{letter-spacing:.14em}
+.act-bar__tip{font-size:10.5px;color:var(--dim);letter-spacing:.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* 舞台：一次只开一扇窗 */
+#act-windows>.act{display:none}
+#act-windows[data-act="lamp"]>.act[data-act="lamp"],
+#act-windows[data-act="ask"]>.act[data-act="ask"],
+#act-windows[data-act="deduce"]>.act[data-act="deduce"],
+#act-windows[data-act="accuse"]>.act[data-act="accuse"]{
+  display:flex;flex-direction:column;gap:10px;flex:1;min-height:0;overflow:auto;animation:actIn .26s ease;
+}
+/* 注意：这里不能写 animation-fill-mode:both —— 动画填充期内的 transform 会让 .act
+   成为 fixed 后代的包含块，窄屏吸底操作台（.action-dock）会被错误地钉在 .act 底部。 */
+/* 只做淡入，绝不动 transform：一旦 .act 带 transform，它会变成 fixed 后代的包含块，
+   窄屏吸底操作台会跟着 .act 跑，每次切幕都跳一下。 */
+@keyframes actIn{from{opacity:0}to{opacity:1}}
+
+/* 一幕之「窗」：带自己的标题与前后步 */
+.act-card{
+  margin:auto;width:100%;max-width:640px;padding:24px 26px 20px;border:1px solid rgba(200,170,120,.20);border-radius:4px;
+  background:linear-gradient(180deg,rgba(34,28,44,.92),rgba(15,12,21,.95));box-shadow:0 18px 50px rgba(0,0,0,.5);
+}
+.act-card.wide{max-width:820px}
+.act-eyebrow{font-size:10.5px;letter-spacing:.30em;color:var(--amber);margin-bottom:8px}
+.act-title{font-family:var(--serif);font-size:21px;letter-spacing:.10em;color:var(--ink);margin-bottom:10px}
+.act-lead{font-size:12.5px;color:var(--label);line-height:1.95;margin-bottom:14px}
+.act-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:16px}
+.act-foot{font-size:10.5px;color:var(--dim);line-height:1.9;margin-top:12px;border-top:1px dashed var(--line);padding-top:9px}
+
+/* 第一幕 · 点灯 */
+.lamp-roster{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0}
+.lamp-guest{border:1px solid var(--line);border-radius:3px;padding:9px 6px;text-align:center;background:rgba(255,255,255,.02)}
+.lamp-guest .lg-p{height:74px;display:grid;place-items:center;overflow:hidden}
+.lamp-guest .lg-p svg{height:100%;width:auto;filter:drop-shadow(0 4px 10px rgba(0,0,0,.5))}
+.lamp-guest b{display:block;font-family:var(--serif);font-size:14px;letter-spacing:.10em;color:var(--ink);margin-top:4px}
+.lamp-guest span{display:block;font-size:10px;color:var(--amber);letter-spacing:.08em;margin-top:2px}
+.lamp-brief{list-style:none;margin:0;padding:0;font-size:11.5px;color:var(--label);line-height:1.95}
+.lamp-brief li{border-left:2px solid rgba(232,164,92,.3);padding:3px 0 3px 9px;margin-bottom:5px;background:rgba(255,255,255,.02)}
+.lamp-brief li b{color:var(--amber-lt);font-family:var(--serif);letter-spacing:.06em}
+.lamp-brief li.lb-head{border-left-color:rgba(95,209,178,.45);color:var(--jade);font-size:10.5px}
+
+/* 第二幕 · 单客窗 + 换人条 */
+.guest-switch{display:flex;gap:6px;flex:0 0 auto}
+.gsw{
+  flex:1;min-width:0;display:flex;align-items:center;gap:6px;padding:6px 9px;border:1px solid var(--line);border-radius:3px;
+  background:rgba(255,255,255,.02);color:var(--muted);font-size:11px;transition:.18s;text-align:left;
+}
+.gsw i{font-style:normal;font-family:ui-monospace,monospace;font-size:9px;color:var(--dim);border:1px solid var(--line);
+  width:14px;height:14px;display:grid;place-items:center;border-radius:2px;flex:0 0 14px}
+.gsw b{font-family:var(--serif);font-size:12.5px;letter-spacing:.08em;font-weight:400;color:var(--ink);white-space:nowrap}
+.gsw span{font-size:9.5px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-left:auto}
+.gsw:hover{border-color:rgba(232,164,92,.5);color:var(--ink)}
+.gsw.on{border-color:var(--amber);background:rgba(232,164,92,.12)}
+.gsw.on i{background:var(--amber-lt);color:#241608;border-color:var(--amber-lt)}
+.gsw.on b{color:var(--amber-lt)}
+.gsw.left{opacity:.45;cursor:not-allowed}
+.guest-row.solo{grid-template-columns:1fr}
+.guest-card.focus{flex-direction:row;align-items:stretch;min-height:0;cursor:default}
+.guest-card.focus .portrait{height:auto;width:104px;flex:0 0 104px}
+.guest-card.focus .portrait svg{height:100%;width:auto}
+.guest-card.focus .guest-meta{text-align:left;padding:10px 12px 6px;flex:1;min-width:0}
+.guest-card.focus .guest-meta h3{font-size:17px}
+.guest-card.focus .guest-meta .look{white-space:normal}
+.guest-card.focus .state-bars{width:154px;flex:0 0 154px;padding:10px 12px;margin:0;justify-content:center}
+.guest-card.focus .num{position:absolute;top:5px;left:7px;font-size:10px;color:var(--dim);font-family:ui-monospace,monospace}
+.askchips{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+.askchip{font-size:10px;border:1px solid var(--line);border-radius:2px;padding:1px 6px;color:var(--dim);letter-spacing:.04em}
+.askchip.on{border-color:rgba(95,209,178,.42);color:#a8f0da;background:rgba(95,209,178,.10)}
+.askchip em{font-style:normal;color:var(--jade);margin-left:4px}
+
+/* 第三幕 · 推演台（内联） */
+.logic-stage{min-height:0}
+.logic-board p{font-size:12px;color:var(--label);line-height:1.9}
+.lg-dim{color:var(--dim);font-size:11px}
+.lg-em{color:var(--amber-lt);font-family:var(--serif)}
+.lg-foot{margin-top:6px;font-size:10.5px}
+.oprow{display:flex;gap:7px;margin:12px 0 8px;flex-wrap:wrap}
+.opbtn{
+  display:flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid var(--line);border-radius:3px;
+  background:rgba(255,255,255,.02);color:var(--muted);transition:.18s;
+}
+.opbtn b{font-family:var(--serif);font-size:17px;line-height:1;color:var(--amber-lt)}
+.opbtn span{font-size:11px;letter-spacing:.1em}
+.opbtn:hover{border-color:rgba(232,164,92,.55);color:var(--ink)}
+.opbtn.on{border-color:var(--amber);background:rgba(232,164,92,.14);box-shadow:0 0 0 1px rgba(232,164,92,.35)}
+.opbtn.on span{color:var(--amber-lt)}
+.op-legend{list-style:none;margin:0 0 10px;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:3px 14px;font-size:10.5px;color:var(--dim)}
+.op-legend li b{color:var(--muted);font-family:var(--serif)}
+.op-legend li.on{color:var(--muted)}
+.op-legend li.on b{color:var(--amber-lt)}
+.logic-table{width:100%;border-collapse:collapse;font-size:11.5px;margin-top:6px}
+.logic-table th,.logic-table td{border:1px solid rgba(200,170,120,.16);padding:6px 8px;text-align:left;vertical-align:top}
+.logic-table th{background:rgba(232,164,92,.08);color:var(--amber-lt);font-size:11px;letter-spacing:.08em;font-weight:400}
+.logic-table tbody tr:last-child{background:rgba(155,143,216,.07)}
+.logic-verdict{margin-top:12px;font-size:12.5px;line-height:1.9}
+
+/* 第四幕 · 指认 */
+.accuse-stage{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0 0}
+.accuse-card{
+  border:1px solid var(--line);border-radius:3px;padding:10px 8px;text-align:center;background:rgba(255,255,255,.02);
+  transition:.18s;color:var(--muted);
+}
+.accuse-card:hover:not(:disabled){border-color:var(--crimson);background:rgba(216,83,79,.10);transform:translateY(-3px)}
+.accuse-card .ac-p{height:82px;display:grid;place-items:center;overflow:hidden}
+.accuse-card .ac-p svg{height:100%;width:auto;filter:drop-shadow(0 4px 10px rgba(0,0,0,.5))}
+.accuse-card b{display:block;font-family:var(--serif);font-size:15px;letter-spacing:.12em;color:var(--ink);margin-top:5px}
+.accuse-card span{display:block;font-size:10px;color:var(--amber);letter-spacing:.08em;margin-top:2px}
+.accuse-card em{display:block;font-style:normal;font-size:10px;color:var(--violet);margin-top:5px;font-family:ui-monospace,monospace}
+.accuse-card:disabled{opacity:.4;cursor:not-allowed}
+.accuse-note{grid-column:1/-1;font-size:10.5px;color:var(--dim);line-height:1.9}
+
 /* AI 决策面板 */
 .ai-panel{flex:1;min-height:0;display:flex;flex-direction:column}
 .ai-panel-body{flex:1;min-height:0;overflow:auto;padding:10px 12px 16px}
@@ -354,8 +480,10 @@ h1,h2,h3,p{margin:0}
   .tone{padding:3px 7px;font-size:11px}
   .tone small{display:none}
   .dock-foot .btn{flex:1;font-size:12px;padding:8px 6px}
-  .game-grid{padding-bottom:132px}
-  .action-dock{position:fixed;left:8px;right:8px;bottom:8px;z-index:8;background:rgba(20,17,28,.97);box-shadow:0 -10px 30px rgba(0,0,0,.62)}
+  /* 第三颗按钮（去推演）让吸底操作台高了一截，垫高留白避免压住对话 */
+  .game-grid{padding-bottom:206px}
+  .action-dock{position:fixed;left:8px;right:8px;bottom:8px;z-index:8;background:rgba(20,17,28,.97);box-shadow:0 -10px 30px rgba(0,0,0,.62);padding:8px 9px 9px}
+  .dock-foot{gap:6px;margin-top:7px}
   .dialogue-wrap{min-height:120px;max-height:230px}
   .dialogue{max-height:185px}
   .result-wrap{padding:22px 16px}
@@ -363,12 +491,40 @@ h1,h2,h3,p{margin:0}
   .intro-wrap{padding:16px 14px}
   .intro-sub{font-size:12px}
   .intro-actions .btn{padding:10px 14px;font-size:13px}
+  /* 五幕外壳 · 窄屏 */
+  .act-bar{padding:6px 9px;gap:6px}
+  .act-bar__tip{display:none}
+  .act-steps{gap:2px}
+  .act-step{padding:2px 6px 2px 4px;font-size:10.5px}
+  .act-step b{display:none}
+  .act-step.on b{display:inline}
+  #act-windows>.act{overflow:visible;flex:0 0 auto}
+  #act-windows[data-act="ask"]>.act[data-act="ask"]{flex:1 1 auto}
+  /* 窄屏先看见当前这一幕，物证/证词簿排到后面（仍随屏可取） */
+  #act-windows{order:-1}
+  .col-left{order:1}
+  #act-stage:not([data-act="ask"]){padding-bottom:9px}
+  .act-card{padding:16px 14px}
+  .act-title{font-size:17px}
+  .guest-card.focus{flex-direction:column;min-height:0}
+  .guest-card.focus .portrait{height:60px;width:auto;flex:0 0 auto}
+  .guest-card.focus .guest-meta{padding:4px 9px 2px;text-align:center}
+  .guest-card.focus .guest-meta h3{font-size:15px;margin-bottom:0}
+  .guest-card.focus .state-bars{width:auto;flex:0 0 auto;padding:4px 9px 6px;gap:2px}
+  .askchips{margin-top:5px;gap:3px}
+  .askchip{font-size:9.5px;padding:0 4px}
+  .lamp-roster,.accuse-stage{gap:6px}
+  .lamp-guest .lg-p,.accuse-card .ac-p{height:62px}
+  .op-legend{grid-template-columns:1fr}
 }
 @media (max-width:400px){
   .col-left{flex-direction:column}
   .clue-list,.statement-list{max-height:120px}
   .guest-card{min-height:142px}
   .portrait{height:58px}
+  .act-step{padding:1px 4px}
+  .gsw span{display:none}
+  .lamp-roster,.accuse-stage{grid-template-columns:1fr 1fr}
 }
 /* ================= 新用户操作指引（v1.1 追加段，不修改上方任何既有规则） ================= */
 :root{

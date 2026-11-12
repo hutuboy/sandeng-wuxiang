@@ -28,9 +28,9 @@
     { id: 'G1', anchor: null, fallback: null, secondary: null,
       title: '掌柜手札 · 今夜',
       body: '一夜三客，一人是无相。六盏灯，问一句灭一盏，灯尽前认出他。' },
-    { id: 'G2', anchor: '#guest-row', fallback: '.col-center', secondary: null,
+    { id: 'G2', anchor: '#guest-switch', fallback: '#guest-row', secondary: null,
       title: '先相中一位',
-      body: '三位客人都到了。等下点谁，话就问给谁听；第一位已替你相中。' },
+      body: '三位客人都到了。灯下这扇窗一次只开一位，上方换人；第一位已替你相中。' },
     { id: 'G3', anchor: '#tone-group', fallback: '.action-dock', secondary: null,
       title: '同一句，三种问法',
       body: '温问养信任，逼问要真话，示物压伪饰。语气随你，先不定也成。' },
@@ -349,6 +349,10 @@
     var step = STEPS[stepIdx], n = stepIdx + 1;
 
     root.setAttribute('data-guide-step', step.id);
+    /* 先广播步号、让应用把对应的幕切上来，再量锚点几何（P0 五幕改造）。
+       顺序不可互换：若先量几何，G2–G6 会量到未显示的窗口 → 洞数为 0。 */
+    try { document.dispatchEvent(new CustomEvent('guide:step', { detail: { stepNo: n, stepId: step.id } })); }
+    catch (e) { /* 忽略 */ }
     E.label.textContent = '操作指引 · 第 ' + n + ' / ' + TOTAL + ' 步';
     E.title.textContent = step.title;
     E.body.textContent = step.body;
@@ -374,9 +378,6 @@
       recompute();
       try { E.bubble.focus({ preventScroll: true }); } catch (e) { /* 忽略 */ }
     });
-
-    try { document.dispatchEvent(new CustomEvent('guide:step', { detail: { stepNo: n, stepId: step.id } })); }
-    catch (e) { /* 忽略 */ }
   }
 
   function goPrev() { if (active && stepIdx > 0) setStep(stepIdx - 1); }

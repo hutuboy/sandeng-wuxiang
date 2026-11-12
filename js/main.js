@@ -11,11 +11,21 @@
   var App = {
     screen: 'intro', game: null, selected: null, tone: 'warm',
     lastDecision: null, ended: false, autopilot: false, autoTrace: null,
-    logicOp: 'AND',
+    logicOp: 'AND', act: 'lamp',
     session: { seed: '', night: 1, totalScore: 0, nights: [], difficultyTier: 'basic' },
     soundOn: true, aiShown: true
   };
   g.SANDENG_APP = App;
+
+  /* 五幕顺序：点灯 → 问询 → 推演 → 指认 →（结案 = 结算屏） */
+  var ACT_ORDER = ['lamp', 'ask', 'deduce', 'accuse'];
+  function setAct(act) {
+    if (ACT_ORDER.indexOf(act) < 0) return;
+    if (App.act === act) return;
+    App.act = act;
+    UI.paint(App);
+    save();
+  }
 
   function q(id) { return document.getElementById(id); }
   function randSeed() {
@@ -31,7 +41,7 @@
   function save() {
     try {
       localStorage.setItem(SAVE_KEY, JSON.stringify({
-        v: 2, session: App.session, game: App.game, selected: App.selected, tone: App.tone, ended: App.ended
+        v: 2, session: App.session, game: App.game, selected: App.selected, tone: App.tone, ended: App.ended, act: App.act
       }));
     } catch (e) { /* file:// 或隐私模式下 localStorage 不可用，保留内存态即可 */ }
     refreshContinue();
@@ -58,14 +68,16 @@
   }
 
   /* ---------------- 会话 ---------------- */
-  function newRun(seed, night, tierId) {
+  function newRun(seed, night, tierId, opts) {
     var D = SD.Difficulty;
     var prevTier = App.session ? App.session.difficultyTier : null;
     var tier = D ? D.normalize(tierId == null ? prevTier : tierId) : 'basic';
     App.session = { seed: seed || randSeed(), night: night || 1, totalScore: 0, nights: [], difficultyTier: tier };
-    startNight(App.session.night, true);
+    startNight(App.session.night, true, opts);
   }
-  function startNight(night, fresh) {
+  /* opts.skipLamp：从封面「点灯 · 开始守夜」进来时，点灯幕已由封面承担，直接入问询幕；
+     第二/三夜从结算屏「接着守下一夜」进来时走完整五幕，先看这一夜的客人。 */
+  function startNight(night, fresh, opts) {
     App.session.night = night;
     var D = SD.Difficulty;
     App.game = Game.create(App.session.seed, night, {
@@ -74,6 +86,7 @@
     App.selected = App.game.guests[0].id;
     App.lastDecision = null;
     App.ended = false;
+    App.act = (opts && opts.skipLamp) ? 'ask' : 'lamp';
     UI.resetCache();
     UI.showScreen('screen-game');
     App.screen = 'game';
@@ -90,13 +103,17 @@
       // localStorage 不可用时，直接恢复内存中的这一局
       UI.resetCache();
       if (App.ended || App.game.phase === 'ended') { UI.paintResult(App); UI.showScreen('screen-result'); App.screen = 'result'; }
-      else { UI.paint(App); UI.showScreen('screen-game'); App.screen = 'game'; }
+      else { if (App.act === 'lamp' && App.game.turn > 0) App.act = 'ask'; UI.paint(App); UI.showScreen('screen-game'); App.screen = 'game'; }
       UI.toast('已续上第 ' + App.game.night + ' 夜');
       return;
     }
     if (!s || !s.game) { UI.toast('没有找到存档，先点灯吧'); return; }
     App.session = s.session; App.game = s.game; App.selected = s.selected || App.game.guests[0].id;
     App.tone = s.tone || 'warm'; App.ended = !!s.ended; App.lastDecision = null;
+    /* 五幕位置随存档恢复；已开过口的夜不再停在「点灯」幕 */
+    var savedAct = ACT_ORDER.indexOf(s.act) >= 0 ? s.act : 'ask';
+    if (savedAct === 'lamp' && (App.game.turn > 0)) savedAct = 'ask';
+    App.act = savedAct;
     /* 老存档兼容：忽略 URL；缺字段一律按 basic 契约值在内存补齐，不改写存档 */
     var D = SD.Difficulty;
     var tier = D ? D.normalize(App.session.difficultyTier) : 'basic';
@@ -150,11 +167,14 @@
     if (App.game.phase !== 'playing') return;
     var guest = Game.guest(App.game, App.selected);
     if (!guest || guest.flags.left) { UI.toast('这位客人已不在座'); return; }
+    /* 快捷键可能在「点灯 / 推演 / 指认」幕里按下 —— 先落回问询幕，别让灯灭了却看不见对话 */
+    if (App.act !== 'ask') App.act = 'ask';
     UI.audio.sfx('click');
     afterDispatch(Game.dispatch(App.game, { type: 'ASK', guestId: App.selected, topic: topic, tone: App.tone }));
   }
   function doListen() {
     if (App.autopilot) return;
+    if (App.act !== 'ask') App.act = 'ask';
     UI.audio.sfx('click');
     afterDispatch(Game.dispatch(App.game, { type: 'LISTEN' }));
   }
@@ -210,6 +230,7 @@
       newRun('AUTO-' + Date.now().toString(36).toUpperCase(), 1);
     }
     App.autopilot = true;
+    App.act = 'ask';   /* 影子掌柜不需要「点灯」幕，直接进问询 */
     App.autoTrace = { seed: App.game.seed, night: App.game.night, initial: Game.snapshot(App.game), actions: [] };
     UI.toast('影子掌柜接手 · 只通过结构化状态与动作接口决策');
     UI.audio.sfx('click');
@@ -254,21 +275,25 @@
     UI.openModal('玩法说明 · 掌柜手札',
       '<h4>你要做的事</h4>' +
       '<p>每夜三位客人投宿，其中一位是<strong>「无相」</strong>——他的证词与柜上物证对不上。天亮前把他认出来。</p>' +
-      '<h4>一轮怎么做</h4>' +
-      '<ul><li><b>选客人</b>：点卡片（或按 1 / 2 / 3）。</li>' +
-      '<li><b>选语气</b>：温问养信任、逼问要真话但涨张力、示物压伪饰却会推高疑心。</li>' +
-      '<li><b>点话头</b>：来路 / 时辰 / 同行 / 行囊 / 信物（Q W E R T）。每问一句消耗一盏灯。</li>' +
-      '<li><b>读证词</b>：左侧「证词簿」记下每个人说过的话，高亮处是可用于比对的值。</li>' +
-      '<li><b>点灯指认</b>：灯尽会自动按已有证词结算，但主动指认更稳。</li></ul>' +
+      '<h4>五步走完，结论自然出来</h4>' +
+      '<ul><li><b>① 点灯</b>：三位客人到齐，柜上物证的真值先摆出来，你手上几盏灯一清二楚。</li>' +
+      '<li><b>② 问询</b>：一次只开一位客人的窗，点上方姓名换人。选语气（温问 / 逼问 / 示物），点话头（来路 / 时辰 / 同行 / 行囊 / 信物）——问一句灭一盏灯。</li>' +
+      '<li><b>③ 推演</b>：把「物证 × 客人」的相符 / 不符摆成一张表，用四个逻辑算子筛人：' +
+      '<code>∧</code> 全部不符（标准解）、<code>∨</code> 任一不符、<code>¬</code> 并非全部不符、<code>⊕</code> 恰好一条不符。</li>' +
+      '<li><b>④ 指认</b>：选一位，点灯。选错，灯灭人走。</li>' +
+      '<li><b>⑤ 结案</b>：真相摊开，附复盘卡——你漏掉了哪条物证、哪句自相矛盾、离最高结局还差几条证据。</li></ul>' +
+      '<h4>为什么 ∧ 才是标准解</h4>' +
+      '<p>无相在<strong>每一条</strong>物证上都对不上；清白的客人至多「记岔一句」。所以只用 <code>∨</code> 会把记岔的人也网进来，' +
+      '只有 <code>∧</code> 能把范围压到一个人。推演台上四个算子可以随便切，切错了会看到命中两人以上——那就是提示。</p>' +
       '<h4>他们不是剧本</h4>' +
       '<p>每位客人是一套 <code>量化状态 × 人格权重 → softmax 决策 → 规则掩码校验 → 状态回写</code> 的本地推理引擎。' +
       '信任低了会拒绝交付物件，张力高了会拂袖离店，第三夜疑心过高时无相甚至会趁夜遁走；重复提问会被记住并写进措辞。' +
       '右侧「AI 决策轨迹」把每一步打分与校验全部摊开给你看。</p>' +
       '<h4>可复现</h4>' +
       '<p>每一夜由 <code>seed</code> 决定，地址栏加 <code>?seed=你的种子&amp;night=2</code> 可重开同一局；' +
-      '<code>?autopilot=1</code> 直接看影子掌柜试玩。工程自检会跨 200 组种子验证案件可解性、记忆一致性与规则闭环。</p>' +
+      '<code>?autopilot=1</code> 直接看影子掌柜试玩。工程自检会跨 200 组种子验证案件可解性、逻辑标准解唯一、记忆一致性与规则闭环。</p>' +
       '<h4>快捷键</h4>' +
-      '<p><code>1/2/3</code> 选人 · <code>Q W E R T</code> 五个话头 · <code>L</code> 添茶 · <code>A</code> 指认 · <code>Esc</code> 关闭弹窗</p>');
+      '<p><code>1/2/3</code> 换人 · <code>Q W E R T</code> 五个话头 · <code>L</code> 添茶 · <code>A</code> 指认 · <code>D</code> 推演 · <code>C</code> 摊开比对 · <code>Esc</code> 关闭弹窗</p>');
   }
   function modalSelftest() {
     var rep = Agent.selftest({ seeds: 60 });
@@ -341,7 +366,7 @@
     UI.openModal('点灯 · 指认无相',
       '<p>灯一亮，就收不回来了。选一位：</p>' +
       App.game.guests.map(function (x) {
-        return '<button class="btn" style="display:block;width:100%;margin:8px 0;text-align:left" data-action="accuse" data-guest="' + x.id + '">' +
+        return '<button class="btn" style="display:block;width:100%;margin:8px 0;text-align:left" data-action="accuse" data-accuse-guest="' + x.id + '">' +
           '<b style="font-family:var(--serif);font-size:15px">' + UI.esc(x.name) + '</b>　<span style="color:var(--muted);font-size:11px">' + UI.esc(x.role) + '</span>' +
           '<span style="float:right;color:var(--violet);font-size:11px">置信 ' + (b[x.id] * 100).toFixed(0) + '%</span></button>';
       }).join('') +
@@ -398,7 +423,12 @@
       var el = e.target.closest('[data-action]');
       if (el) {
         var a = el.getAttribute('data-action');
-        if (a === 'select-guest') { App.selected = el.getAttribute('data-guest'); UI.audio.sfx('click'); UI.paint(App); return; }
+        if (a === 'select-guest') {
+          var gid = el.getAttribute('data-guest');
+          App.selected = gid;
+          UI.audio.sfx('click');
+          UI.paint(App); save(); return;
+        }
         if (a === 'set-tone') { App.tone = el.getAttribute('data-tone'); UI.audio.sfx('click'); UI.paint(App); save(); return; }
         if (a === 'set-tier') {
           /* 档位选择只在封面生效；局内不出现切换控件 */
@@ -424,10 +454,18 @@
           requestAnimationFrame(function () { if (SD.Guide) SD.Guide.start({ replay: true }); });
           return;
         }
-        if (a === 'accuse') { doAccuse(el.getAttribute('data-guest')); return; }
+        if (a === 'accuse') {
+          doAccuse(el.getAttribute('data-accuse-guest') || el.getAttribute('data-guest'));
+          return;
+        }
         if (a === 'redecide') { modalRedecide(); return; }
         if (a === 'copy-decision') { copy(JSON.stringify(App.lastDecision, null, 2)); return; }
-        if (a === 'logic-op') { App.logicOp = el.getAttribute('data-op') || 'AND'; modalLogicBoard(); return; }
+        if (a === 'logic-op') {
+          App.logicOp = el.getAttribute('data-op') || 'AND';
+          UI.audio.sfx('click'); UI.paint(App);
+          if (document.querySelector('.modal-mask')) modalLogicBoard();  /* 弹窗开着就同步刷新 */
+          return;
+        }
       }
       var md = e.target.closest('[data-modal]');
       if (md) {
@@ -442,7 +480,7 @@
         var btn = e.target.closest('button'); id = btn ? btn.id : '';
       }
       switch (id) {
-        case 'btn-start': UI.audio.startAmbient(); newRun(params().seed || randSeed(), 1); break;
+        case 'btn-start': UI.audio.startAmbient(); newRun(params().seed || randSeed(), 1, null, { skipLamp: true }); break;
         case 'btn-continue': continueRun(); break;
         case 'btn-autopilot': UI.audio.startAmbient(); startAutopilot(); break;
         case 'btn-home': UI.showScreen('screen-intro'); App.screen = 'intro'; break;
@@ -450,9 +488,15 @@
         case 'btn-help': modalHelpMenu(); break;
         case 'btn-ai-toggle': App.aiShown = !App.aiShown; applyAIVis(); break;
         case 'btn-listen': doListen(); break;
-        case 'btn-accuse': modalAccuse(); break;
+        case 'btn-accuse': setAct('accuse'); break;
         case 'btn-compare': modalCompare(); break;
         case 'btn-logic': modalLogicBoard(); break;
+        /* ---- 五幕导航 ---- */
+        case 'btn-act-start': UI.audio.sfx('click'); setAct('ask'); break;
+        case 'btn-act-deduce': UI.audio.sfx('click'); setAct('deduce'); break;
+        case 'btn-act-back-ask': setAct('ask'); break;
+        case 'btn-act-to-accuse': setAct('accuse'); break;
+        case 'btn-act-back-deduce': setAct('deduce'); break;
         case 'btn-next-night': nextNight(); break;
         case 'btn-retry-night': startNight(App.game.night, false); break;
         case 'btn-copy-share': copy(shareText()); break;
@@ -475,9 +519,19 @@
       var idx = 'qwert'.indexOf(k);
       if (idx >= 0 && k.length === 1) { doAsk(C.TOPICS[idx].id); return; }
       if (k === 'l') { doListen(); return; }
-      if (k === 'a') { modalAccuse(); return; }
+      if (k === 'a') { setAct('accuse'); return; }
       if (k === 'c') { modalCompare(); }
-      if (k === 'd') { modalLogicBoard(); }
+      if (k === 'd') { setAct('deduce'); }
+    });
+
+    /* 引导步进 → 切换五幕窗口：G1 停在「点灯」，G2 起进「问询」。
+       引导层只广播步号，由应用侧决定切哪一幕（引导不改游戏状态、不清灯、不落证词）。 */
+    document.addEventListener('guide:step', function (e) {
+      var id = e.detail && e.detail.stepId;
+      if (App.screen !== 'game' || !App.game) return;
+      if (id === 'G1') App.act = 'lamp';
+      else if (id) App.act = 'ask';
+      UI.paint(App);
     });
   }
 
@@ -495,7 +549,7 @@
       getState: function () { return App.game ? Game.snapshot(App.game) : null; },
       listActions: function () { return App.game ? Game.listActions(App.game) : []; },
       dispatch: function (action) { var r = App.game ? Game.dispatch(App.game, action) : { ok: false, error: 'no game' }; afterDispatch(r); return r; },
-      newRun: function (seed, night, tierId) { newRun(seed || randSeed(), night || 1, tierId); return this.getState(); },
+      newRun: function (seed, night, tierId) { newRun(seed || randSeed(), night || 1, tierId, { skipLamp: true }); return this.getState(); },
       /* 裁决 K：13 项运行期参数的只读观测通道；返回深拷贝而非 cs.difficulty 引用，不缓存、不写全局 */
       getDifficulty: function () {
         var D = SD.Difficulty;
@@ -518,6 +572,9 @@
         };
       },
       create: Game.create, dispatchPure: Game.dispatch, belief: Game.belief,
+      /* 五幕外壳的只读/只切界面通道：不改灯数、不改证词，仅供验收脚本与调试 */
+      act: function () { return App.act; },
+      setAct: function (a) { setAct(a); return App.act; },
       Director: SD.Director, NPC: NPC, Agent: Agent, Game: Game, Core: C,
       selftest: function (n) { return Agent.selftest({ seeds: n || 200 }); },
       defectDemo: Agent.defectDemo,
@@ -558,7 +615,7 @@
     }
 
     if (p.autopilot === '1') { setTimeout(startAutopilot, 260); }
-    else if (!guideForced && p.seed && p.night) { newRun(p.seed, parseInt(p.night, 10) || 1, bootTier); }
+    else if (!guideForced && p.seed && p.night) { newRun(p.seed, parseInt(p.night, 10) || 1, bootTier, { skipLamp: true }); }
     /* 可复跑验收入口：?guide=1 强制进入第 1 夜并从 G1 起播，全程不改写标记 */
     if (guideForced) {
       setTimeout(function () {

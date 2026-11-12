@@ -241,19 +241,92 @@
     for (var i = 0; i < game.lamps; i++) out += '<i class="lamp ' + (i < game.lampsLeft ? 'on' : '') + '"></i>';
     return out;
   }
-  function guestHtml(game, selected) {
-    return game.guests.map(function (q, i) {
-      var s = q.state;
-      function bar(label, v, cls) {
-        return '<div class="sbar"><span>' + label + '</span><div class="track"><div class="fill ' + cls + '" style="width:' + C.round(v, 0) + '%"></div></div><b>' + C.round(v, 0) + '</b></div>';
-      }
-      return '<article class="guest-card' + (selected === q.id ? ' selected' : '') + (q.flags.left ? ' left' : '') + '" data-guest="' + q.id + '" data-action="select-guest" tabindex="0">' +
-        '<div class="portrait">' + portrait(q.portraitSeed) + '</div>' +
-        '<div class="guest-meta"><h3>' + esc(q.name) + '</h3><div class="role">' + esc(q.role) + ' · ' + esc(q.archetypeName) + '</div><div class="look">' + esc(q.look) + '</div></div>' +
-        '<div class="state-bars">' + bar('信任', s.trust, 'trust') + bar('张力', s.tension, 'tension') + bar('疑心', s.suspicion, 'suspicion') + '</div>' +
-        '<span class="num" style="position:absolute;top:5px;left:7px;font-size:10px;color:var(--dim);font-family:ui-monospace,monospace">' + (i + 1) + '</span>' +
-        '</article>';
+  function guestFocusHtml(game, selected) {
+    var q = null;
+    game.guests.forEach(function (x) { if (x.id === selected) q = x; });
+    if (!q) q = game.guests[0];
+    var s = q.state;
+    function bar(label, v, cls) {
+      return '<div class="sbar"><span>' + label + '</span><div class="track"><div class="fill ' + cls + '" style="width:' + C.round(v, 0) + '%"></div></div><b>' + C.round(v, 0) + '</b></div>';
+    }
+    /* 这一位已被问到哪些话头 —— 让你一眼看出还缺哪一格 */
+    var asked = {};
+    game.statements.forEach(function (st) { if (st.guestId === q.id) asked[st.topic] = st; });
+    var chips = C.TOPICS.map(function (t) {
+      var got = asked[t.id];
+      return '<span class="askchip' + (got ? ' on' : '') + '">' + t.label + (got ? '<em>' + esc(got.value) + '</em>' : '') + '</span>';
     }).join('');
+    var n = 0; game.guests.forEach(function (x, i) { if (x.id === q.id) n = i; });
+    return '<article class="guest-card focus' + (q.flags.left ? ' left' : '') + '">' +
+      '<div class="portrait">' + portrait(q.portraitSeed) + '</div>' +
+      '<div class="guest-meta">' +
+        '<h3>' + esc(q.name) + '</h3>' +
+        '<div class="role">' + esc(q.role) + ' · ' + esc(q.archetypeName) + '</div>' +
+        '<div class="look">' + esc(q.look) + '</div>' +
+        '<div class="askchips">' + chips + '</div>' +
+      '</div>' +
+      '<div class="state-bars">' + bar('信任', s.trust, 'trust') + bar('好感', s.affinity, 'trust') + bar('张力', s.tension, 'tension') + bar('疑心', s.suspicion, 'suspicion') + bar('定力', s.calm, 'suspicion') + '</div>' +
+      '<span class="num">' + (n + 1) + '</span>' +
+      '</article>';
+  }
+  /* 客人切换条：一次只开一扇窗，这里换人 */
+  function guestSwitchHtml(game, selected) {
+    return game.guests.map(function (q, i) {
+      var cnt = game.statements.filter(function (st) { return st.guestId === q.id; }).length;
+      return '<button class="gsw' + (selected === q.id ? ' on' : '') + (q.flags.left ? ' left' : '') + '"' +
+        ' data-guest="' + q.id + '" data-action="select-guest" ' + (q.flags.left ? 'disabled ' : '') + '>' +
+        '<i>' + (i + 1) + '</i><b>' + esc(q.name) + '</b>' +
+        '<span>' + (q.flags.left ? '已离店' : '问过 ' + cnt + ' 句') + '</span></button>';
+    }).join('');
+  }
+
+  /* ---------------- 五幕：步骤条 / 点灯 / 推演 / 指认 ---------------- */
+  var ACTS = [
+    { id: 'lamp', num: '壹', name: '点灯', tip: '客人到齐，先清点柜上物证' },
+    { id: 'ask', num: '贰', name: '问询', tip: '一次只问一位客人，问一句灭一盏灯' },
+    { id: 'deduce', num: '叁', name: '推演', tip: '把物证与证词摊开，用 ∧ ∨ ¬ ⊕ 筛人' },
+    { id: 'accuse', num: '肆', name: '指认', tip: '点灯，说出那个名字' },
+    { id: 'verdict', num: '伍', name: '结案', tip: '天亮，真相摊开' }
+  ];
+  function actBarHtml(act) {
+    var at = 0;
+    ACTS.forEach(function (a, i) { if (a.id === act) at = i; });
+    var steps = ACTS.map(function (a, i) {
+      var cls = i < at ? 'done' : (i === at ? 'on' : 'todo');
+      return '<li class="act-step ' + cls + '" data-act-id="' + a.id + '"' + (i === at ? ' aria-current="step"' : '') + '>' +
+        '<i>' + a.num + '</i><b>' + a.name + '</b></li>';
+    }).join('');
+    var cur = ACTS[at] || ACTS[0];
+    return { steps: steps, tip: '第 ' + (at + 1) + ' / 5 步 · ' + cur.tip };
+  }
+  function lampHtml(game, session) {
+    var D = SD.Difficulty;
+    var tier = D ? D.label(D.normalize(session && session.difficultyTier)) : '初级';
+    var roster = game.guests.map(function (q) {
+      return '<div class="lamp-guest"><div class="lg-p">' + portrait(q.portraitSeed) + '</div>' +
+        '<b>' + esc(q.name) + '</b><span>' + esc(q.role) + '</span></div>';
+    }).join('');
+    var brief = game.cs.clues.map(function (c) {
+      return '<li><b>' + esc(c.title) + '</b>　' + esc(C.topic(c.topic).label) + ' 应为「' + esc(c.expect) + '」</li>';
+    }).join('');
+    return {
+      title: '第 ' + ['一', '二', '三'][game.night - 1] + ' 夜 · 三客投宿',
+      lead: '灯只有 ' + game.lamps + ' 盏。问一句灭一盏，天亮前把「无相」认出来。',
+      roster: roster,
+      brief: '<li class="lb-head">柜上 ' + game.cs.clues.length + ' 件物证（真值已给出，等证词来对）· 难度 ' + esc(tier) + '</li>' + brief
+    };
+  }
+  /* 指认幕：三位并列，点即点灯 */
+  function accuseStageHtml(game) {
+    var b = Game.belief(game);
+    return game.guests.map(function (q) {
+      return '<button class="accuse-card' + (q.flags.left ? ' left' : '') + '" data-action="accuse" data-accuse-guest="' + q.id + '"' + (q.flags.left ? ' disabled' : '') + '>' +
+        '<div class="ac-p">' + portrait(q.portraitSeed) + '</div>' +
+        '<b>' + esc(q.name) + '</b><span>' + esc(q.role) + '</span>' +
+        '<em>嫌疑度 ' + (b[q.id] * 100).toFixed(0) + '%</em>' +
+        '</button>';
+    }).join('') +
+      '<p class="accuse-note">「嫌疑度」= 已收集证词里，这一位与物证对不上的比重，不是答案。灯一亮就收不回来。</p>';
   }
   function dialogueHtml(game) {
     var lines = game.log.slice(-14);
@@ -300,55 +373,69 @@
       ' <span style="color:var(--dim)">seed ' + esc(game.seed) + '·n' + game.night + '</span>';
   }
 
-  /* ---------------- 推演台（逻辑筛人） ---------------- */
-  function logicBoardHtml(cs, statements, op) {
+  /* ---------------- 推演台（逻辑筛人）：弹窗与第三幕共用同一份渲染 ---------------- */
+  function logicCoreHtml(cs, statements, op, opt) {
+    opt = opt || {};
     var L = SD.Logic;
     if (!L) return '<p style="color:var(--dim)">逻辑层未加载。</p>';
-    op = op === 'OR' || op === 'XOR' ? op : 'AND';
+    var OPS = L.OPS || [{ id: 'AND', sym: '∧', name: '与', gloss: '每条都对不上' }];
+    var ok = false;
+    OPS.forEach(function (o) { if (o.id === op) ok = true; });
+    if (!ok) op = 'AND';
     var formula = { op: op, atoms: cs.clues.map(function (c) { return c.topic; }) };
     var ev = L.evaluate(cs, statements, formula);
     var guests = cs.guests;
     var head = '<tr><th>物证 · 真值</th>' + guests.map(function (q) { return '<th>' + esc(q.name) + '</th>'; }).join('') + '</tr>';
     var rows = cs.clues.map(function (c) {
-      return '<tr><td><b style="color:var(--amber-lt)">' + esc(c.title) + '</b><br /><span style="color:var(--dim);font-size:11px">' +
+      return '<tr><td><b style="color:var(--amber-lt)">' + esc(c.title) + '</b><br /><span class="lg-dim">' +
         esc(C.topic(c.topic).label) + ' 应为「' + esc(c.expect) + '」</span></td>' +
         guests.map(function (q) {
           var d = ev.dev[q.id][c.topic];
-          var cell = d === null ? '<span style="color:var(--dim)">? 未问</span>'
+          var cell = d === null ? '<span class="lg-dim">? 未问</span>'
             : d ? '<span style="color:var(--crimson)">✗ 不符</span>'
               : '<span style="color:var(--jade)">✓ 相符</span>';
           return '<td>' + cell + '</td>';
         }).join('') + '</tr>';
     }).join('');
-    var resRow = '<tr><td><b>按「' + (op === 'AND' ? '∧' : op === 'OR' ? '∨' : '⊕') + '」判定</b></td>' +
+    var cur = null; OPS.forEach(function (o) { if (o.id === op) cur = o; });
+    var resRow = '<tr><td><b>按「' + (cur ? cur.sym + ' ' + cur.name : op) + '」判定</b><br /><span class="lg-dim">' +
+      (cur ? esc(cur.form) : '') + '</span></td>' +
       guests.map(function (q) {
         var r = ev.result[q.id];
-        return '<td>' + (r === null ? '<span style="color:var(--dim)">? 未定</span>'
+        return '<td>' + (r === null ? '<span class="lg-dim">? 未定</span>'
           : r ? '<span style="color:var(--jade);font-weight:700">✓ 命中</span>'
-            : '<span style="color:var(--dim)">✗</span>') + '</td>';
+            : '<span class="lg-dim">✗</span>') + '</td>';
       }).join('') + '</tr>';
-    var ops = [['AND', '∧ 全部不符'], ['OR', '∨ 任一不符'], ['XOR', '⊕ 恰一不符']].map(function (p) {
-      var on = op === p[0];
-      return '<button class="mini-btn' + (on ? ' on' : '') + '" data-action="logic-op" data-op="' + p[0] + '" style="margin:0 6px 6px 0' +
-        (on ? ';box-shadow:0 0 0 2px var(--amber);color:var(--amber-lt)' : '') + '">' + p[1] + '</button>';
+    var ops = OPS.map(function (o) {
+      var on = op === o.id;
+      return '<button class="opbtn' + (on ? ' on' : '') + '" data-action="logic-op" data-op="' + o.id + '" title="' + esc(o.gloss) + '">' +
+        '<b>' + o.sym + '</b><span>' + o.name + '</span></button>';
     }).join('');
     var names = ev.winners.map(function (id) {
       var q = null; guests.forEach(function (x) { if (x.id === id) q = x; }); return q ? q.name : id;
     });
+    var isStd = op === 'AND';
     var verdict = ev.winners.length === 1
-      ? '<b style="color:var(--jade)">命中唯一：' + esc(names[0]) + '</b> —— 他即「无相」，可去点灯指认。'
+      ? '<b style="color:var(--jade)">命中唯一：' + esc(names[0]) + '</b>' + (isStd ? ' —— 他即「无相」，可去点灯指认。' : ' —— 换个算子再看，别只信一种问法。')
       : ev.winners.length === 0
         ? '<b style="color:var(--crimson)">无人命中</b> —— 换个算子，或还有证词没问全。'
-        : '<b style="color:var(--amber-lt)">命中 ' + ev.winners.length + ' 人</b>（' + esc(names.join('、')) + '）—— 范围还不够小。';
+        : '<b style="color:var(--amber-lt)">命中 ' + ev.winners.length + ' 人</b>（' + esc(names.join('、')) + '）—— 范围还不够小' +
+          (isStd ? '，说明有人只「记岔」了一条。' : '。');
+    var legend = OPS.map(function (o) {
+      return '<li' + (o.id === op ? ' class="on"' : '') + '><b>' + o.sym + '</b> ' + esc(o.gloss) + '</li>';
+    }).join('');
     return '<div class="logic-board">' +
-      '<p>把每位客人在各物证上的「相符 / 不符」摆成一张表，再用<b>逻辑算子</b>筛人：' +
-      '<b>∧</b> 每条物证都要对不上；<b>∨</b> 只要一条对不上；<b>⊕</b> 恰好只有一条对不上。</p>' +
-      '<div style="margin:10px 0">' + ops + '</div>' +
+      (opt.hideIntro ? '' : '<p>把每位客人在各物证上的「<span style="color:var(--jade)">相符</span> / <span style="color:var(--crimson)">不符</span>」摆成一张表，再用逻辑算子筛人。' +
+        '表里每个「不符」都是一次<span class="lg-em">¬</span>——「他的话不是真的」。</p>') +
+      '<div class="oprow">' + ops + '</div>' +
+      '<ul class="op-legend">' + legend + '</ul>' +
       '<table class="finale-table logic-table"><thead>' + head + '</thead><tbody>' + rows + resRow + '</tbody></table>' +
-      '<p style="margin-top:10px;line-height:1.9">' + verdict + '</p>' +
-      '<p style="color:var(--dim);font-size:11px">「?」= 那句话还没问到。先回去把物证对应的话题问全，推演台才推得动——问话消耗灯，取舍在你。</p>' +
+      '<p class="logic-verdict">' + verdict + '</p>' +
+      '<p class="lg-dim lg-foot">「?」= 那句话还没问到。问话消耗灯，取舍在你。</p>' +
       '</div>';
   }
+  function logicBoardHtml(cs, statements, op) { return logicCoreHtml(cs, statements, op); }
+  function logicStageHtml(game, op) { return logicCoreHtml(game.cs, game.statements, op, {}); }
 
   function aiHtml(ctx) {
     var d = ctx.lastDecision;
@@ -413,19 +500,45 @@
     var tierEl = document.getElementById('tb-tier');
     if (tierEl) tierEl.setAttribute('data-difficulty-tier', tierId);
     set('tb-phase', game.lampsLeft <= 1 ? '灯将尽，该决断了' : '掌柜，客人都到齐了');
-    set('guest-row', guestHtml(game, ctx.selected));
+
+    /* 五幕外壳：把当前幕写到两个容器上，CSS 据此只显示一扇窗 */
+    var act = ctx.act || 'lamp';
+    var stage = document.getElementById('act-stage');
+    var wins = document.getElementById('act-windows');
+    if (stage) stage.setAttribute('data-act', act);
+    if (wins) wins.setAttribute('data-act', act);
+    var bar = actBarHtml(act);
+    set('act-steps', bar.steps);
+    set('act-tip', bar.tip);
+
+    /* 第一幕 */
+    var lp = lampHtml(game, ctx.session);
+    set('lamp-title', lp.title);
+    set('lamp-lead', lp.lead);
+    set('lamp-roster', lp.roster);
+    set('lamp-brief', lp.brief);
+
+    /* 第二幕 */
+    set('guest-row', guestFocusHtml(game, ctx.selected));
+    set('guest-switch', guestSwitchHtml(game, ctx.selected));
     set('dialogue', dialogueHtml(game));
-    set('clue-list', cluesHtml(game));
-    set('statement-list', statementsHtml(game));
     set('topic-row', topicHtml());
     set('tone-group', toneHtml(ctx.tone));
+
+    /* 第三 / 四幕 */
+    set('logic-stage', logicStageHtml(game, ctx.logicOp || 'AND'));
+    set('accuse-stage', accuseStageHtml(game));
+
+    /* 常驻栏 */
+    set('clue-list', cluesHtml(game));
+    set('statement-list', statementsHtml(game));
     set('ai-panel', aiHtml(ctx));
     set('solver-note', solverHtml(game));
     set('turn-tag', '第 ' + game.turn + ' 回');
     set('clue-count', game.cs.clues.length + ' 件');
     set('stmt-count', game.statements.length + ' 条');
     var sel = ctx.selected ? Game.guest(game, ctx.selected) : null;
-    set('guest-hint', sel ? '已选 ' + esc(sel.name) + ' · 点一张话头发问' : '先点一位客人，再点一张话头');
+    set('guest-hint', sel ? '灯下是 ' + esc(sel.name) + ' · 点一张话头发问' : '先点一位客人，再点一张话头');
     var dlg = document.getElementById('dialogue'); if (dlg) dlg.scrollTop = dlg.scrollHeight;
   }
 
@@ -522,7 +635,7 @@
     esc: esc, markWords: markWords, portrait: portrait, initCanvas: initCanvas, audio: audio,
     showScreen: showScreen, openModal: openModal, closeModal: closeModal, toast: toast,
     paint: paint, paintResult: paintResult, resultHtml: resultHtml,
-    logicBoardHtml: logicBoardHtml,
+    logicBoardHtml: logicBoardHtml, logicStageHtml: logicStageHtml, ACTS: ACTS,
     resetCache: function () { _cache = {}; },
     KEY_HINT: KEY_HINT
   };
