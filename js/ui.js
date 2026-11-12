@@ -259,7 +259,8 @@
     var lines = game.log.slice(-14);
     return lines.map(function (l) {
       if (l.type === 'system') return '<div class="dline sys">· ' + esc(l.text) + '</div>';
-      if (l.type === 'clue') return '<div class="dline clue">◈ ' + esc(l.text) + '</div>';
+      /* T1：物证全文已在左栏「柜上物证」逐字展示，此处只留一行提示（不删节点、不改 class） */
+      if (l.type === 'clue') return '<div class="dline clue">◈ 新物证入册 · 见左栏「柜上物证」</div>';
       if (l.type === 'ask') return '<div class="dline ask"><span class="who">掌柜</span>' + esc(l.text.replace(/^【你】/, '')) + '</div>';
       var m = /^【(.+?)·(.+?)】(.+)$/.exec(l.text);
       if (m) return '<div class="dline npc"><span class="act">' + esc(m[2]) + '</span><span class="who">' + esc(m[1]) + '</span>' + esc(m[3]) + '</div>';
@@ -273,7 +274,7 @@
     }).join('');
   }
   function statementsHtml(game) {
-    if (!game.statements.length) return '<div class="empty-note">还没有人开口。<br />选一位客人，点一张话头，灯就少一盏。</div>';
+    if (!game.statements.length) return '<div class="empty-note">还没有人开口。</div>';
     var vals = {};
     C.TOPICS.forEach(function (t) { t.values.forEach(function (v) { vals[v] = 1; }); });
     return game.statements.map(function (s) {
@@ -296,14 +297,15 @@
   }
   function solverHtml(game) {
     var ok = game.cs.solvable;
-    return (ok ? '✓ ' : '! ') + 'AI 导演已校验：矛盾唯一 · ' + game.cs.clues.length + ' 条物证 · 最少 ' + game.guests.length + ' 次问话 / 共 ' + game.lamps + ' 盏灯' +
+    /* T2：压短为一行，保留「矛盾唯一 / 物证数 / 灯数」三项取证信息与 seed（W7 载体） */
+    return (ok ? '✓ ' : '! ') + '矛盾唯一 · ' + game.cs.clues.length + ' 件物证 · ' + game.lamps + ' 盏灯' +
       ' <span style="color:var(--dim)">seed ' + esc(game.seed) + '·n' + game.night + '</span>';
   }
 
   function aiHtml(ctx) {
     var d = ctx.lastDecision;
     if (!d) {
-      return '<div class="ai-empty">这一栏是 NPC 的「脑子」。<br />每问一句话，这里会实时展开：<br />特征向量 → 效用打分 → 规则掩码 → 实际动作 → 状态回写。<br /><br />所有推理在本地完成，<br />同一 seed 可完整复现。</div>';
+      return '<div class="ai-empty">这里是 NPC 的决策过程。<br />问一句，就展开一次。</div>';
     }
     var q = null;
     ctx.game.guests.forEach(function (x) { if (x.id === d.guestId) q = x; });
@@ -332,13 +334,13 @@
     return '<div class="ai-block"><h4>本轮决策 <span>' + esc(d.guestName) + ' · T' + (q ? q.memory.length : 0) + '</span></h4>' +
       '<span class="chosen-badge">' + esc(d.actionLabel) + '</span>' +
       '<p style="font-size:11px;color:var(--label);margin-top:8px;line-height:1.8">「' + esc(d.text) + '」</p></div>' +
-      '<div class="ai-block"><h4>量化角色状态 <span>state vector</span></h4><div class="chiprow">' +
+      '<div class="ai-block"><h4>量化角色状态</h4><div class="chiprow">' +
         chip('信任', s.trust) + chip('好感', s.affinity) + chip('张力', s.tension, s.tension > 60) + chip('疑心', s.suspicion) + chip('定力', s.calm) +
       '</div></div>' +
-      '<div class="ai-block"><h4>特征 → 效用打分 <span>softmax T=' + d.temperature + '</span></h4>' + utils + '</div>' +
-      '<div class="ai-block"><h4>规则层校验 <span>legal mask</span></h4>' + notes + '</div>' +
-      '<div class="ai-block"><h4>状态回写 <span>state delta</span></h4><div class="delta">' + delta + '</div></div>' +
-      '<div class="ai-block"><h4>持久记忆 <span>last 3</span></h4>' + mem + '</div>' +
+      '<div class="ai-block"><h4>特征 → 效用打分 <span>T=' + d.temperature + '</span></h4>' + utils + '</div>' +
+      '<div class="ai-block"><h4>规则层校验</h4>' + notes + '</div>' +
+      '<div class="ai-block"><h4>状态回写</h4><div class="delta">' + delta + '</div></div>' +
+      '<div class="ai-block"><h4>持久记忆</h4>' + mem + '</div>' +
       '<div class="ai-btns"><button class="mini-btn" data-action="redecide" style="margin:0;flex:1">重新决策对比</button>' +
       '<button class="mini-btn" data-action="copy-decision" style="margin:0;flex:1">复制决策 JSON</button></div>';
   }
@@ -402,11 +404,11 @@
     }).join('');
     return {
       ornament: r.correct ? '◈' : '✕',
-      eyebrow: '第 ' + ['一', '二', '三'][night - 1] + ' 夜 · 结 局',
+      eyebrow: '第 ' + ['一', '二', '三'][night - 1] + ' 夜 · 结局',
       title: r.ending, desc: desc, score: r.score,
-      reveal: '<div style="font-size:11px;color:var(--muted);letter-spacing:.14em;margin-bottom:6px">真 相 摊 开</div>' +
+      reveal: '<div style="font-size:11px;color:var(--muted);margin-bottom:6px">真相摊开</div>' +
         '<div class="reveal-row"><div class="k">无相</div><div class="v"><i>' + esc(r.impostor) + '</i>　·　你指认了 ' + esc(r.accused || '（无人）') + '</div></div>' + reveal,
-      belief: '<div style="font-size:11px;color:var(--muted);letter-spacing:.14em;margin:6px 0">掌 柜 的 判 断（证词推理置信度）</div>' + belief,
+      belief: '<div style="font-size:11px;color:var(--muted);margin:6px 0">掌柜的判断</div>' + belief,
       review: r.review || null,
       chain: r.chain,
       foot: '证据链 ' + r.chain + ' 条 · 余灯 ' + r.lampsLeft + ' 盏 · 平均信任 ' + r.avgTrust + '　|　seed ' + esc(game.seed)
@@ -419,7 +421,7 @@
     var rows = [];
 
     if (rv.missed.length) {
-      rows.push('<div class="rv-h">你 漏 掉 的 物 证</div>' + rv.missed.map(function (m) {
+      rows.push('<div class="rv-h">你漏掉的物证</div>' + rv.missed.map(function (m) {
         return '<div class="rv-row"><span class="rv-k">' + esc(m.clue) + '</span>' +
           '<span class="rv-v">「' + esc(m.topic) + '」没问到：' + esc(m.guests.join('、')) + '</span></div>';
       }).join(''));
@@ -428,7 +430,7 @@
     }
 
     if (rv.contradictions.length) {
-      rows.push('<div class="rv-h">自 相 矛 盾</div>' + rv.contradictions.map(function (c) {
+      rows.push('<div class="rv-h">自相矛盾</div>' + rv.contradictions.map(function (c) {
         return '<div class="rv-row"><span class="rv-k">' + esc(c.guest) + '</span>' +
           '<span class="rv-v"><i>' + esc(c.topic) + '</i> 说「' + esc(c.said) + '」，' +
           '与事实「' + esc(c.expect) + '」不符</span></div>';
