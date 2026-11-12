@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-12T09:09:14.301Z",
+  "generatedAt": "2026-11-12T09:47:27.001Z",
   "specStatus": "OK",
   "specFiles": [
     "docs/引导-设计案-v1.md",
@@ -285,7 +285,7 @@
       "expected": "逐字等于设计案第二章",
       "actual": [
         "掌柜手札 · 今夜 | 一夜三客，一人是无相。六盏灯，问一句灭一盏，灯尽前认出他。",
-        "先相中一位 | 三位客人都到了。灯下这扇窗一次只开一位，上方换人；第一位已替你相中。",
+        "三人一行，点谁问谁 | 三客自上而下排开：立绘在左，信任 / 好感 / 张力 / 疑心 / 定力在右。点谁，下一句就问谁；第一位已替你点上。",
         "同一句，三种问法 | 温问养信任，逼问要真话，示物压伪饰。语气随你，先不定也成。",
         "点话头，就是开口 | 五张话头，点一张便是问一句、灭一盏灯。等下由你亲手点。",
         "话落在簿上 | 他答的话记进左边证词簿；再拿去对柜上物证，破绽才现形。",
@@ -930,7 +930,7 @@
         "gate": {
           "wiredInto": "docs/交付清单.md 复跑命令：node tools/guide-smoke.cjs",
           "verified": true,
-          "lastRunAt": "2026-11-12T09:09:14.301Z",
+          "lastRunAt": "2026-11-12T09:47:27.001Z",
           "runBy": "tools/guide-smoke.cjs（playwright-core + 本机 Edge headless）"
         },
         "visualFrames": 19,
@@ -981,12 +981,12 @@
       "holeCount": 1,
       "bubbleRect": {
         "x": 535,
-        "y": 187,
+        "y": 402,
         "width": 340,
-        "height": 253.359375,
-        "top": 187,
+        "height": 277.15625,
+        "top": 402,
         "right": 875,
-        "bottom": 440.359375,
+        "bottom": 679.15625,
         "left": 535
       }
     },
@@ -1029,12 +1029,12 @@
       "holeCount": 2,
       "bubbleRect": {
         "x": 535,
-        "y": 431,
+        "y": 512,
         "width": 340,
         "height": 253.359375,
-        "top": 431,
+        "top": 512,
         "right": 875,
-        "bottom": 684.359375,
+        "bottom": 765.359375,
         "left": 535
       }
     },
@@ -1080,13 +1080,13 @@
   "humanPath": {
     "recorded": true,
     "watchedBy": "制作人（AI 视觉复核，非真人玩家）",
-    "watchedAt": "2026-11-12T09:09:14.296Z",
+    "watchedAt": "2026-11-12T09:47:26.998Z",
     "hooksUsed": 0
   },
   "gate": {
     "wiredInto": "docs/交付清单.md 复跑命令：node tools/guide-smoke.cjs",
     "verified": true,
-    "lastRunAt": "2026-11-12T09:09:14.301Z",
+    "lastRunAt": "2026-11-12T09:47:27.001Z",
     "runBy": "tools/guide-smoke.cjs（playwright-core + 本机 Edge headless）",
     "exitCode": 0
   },

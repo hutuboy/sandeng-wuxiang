@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-12T09:08:34.754Z",
+  "generatedAt": "2026-11-12T09:46:45.853Z",
   "url": "file:///D:/Projects/games/AI造游戏/index.html?guide=0",
   "browser": "Microsoft Edge (headless)",
   "viewport": "1440x900 / 390x844",
@@ -72,8 +72,11 @@
     "guide-replay-after-end.png",
     "guide-replay-menu.png",
     "guide-skip.png",
+    "live-v171-ask.png",
     "live-verdict.png",
-    "promo-cover-vertical.png"
+    "promo-cover-vertical.png",
+    "stack-d.png",
+    "stack-m.png"
   ],
   "errors": [],
   "logs": []

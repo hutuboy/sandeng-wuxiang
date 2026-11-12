@@ -29,13 +29,13 @@ const EXPECT_STEP_SEQ = [1, 2, 3, 4, 5, 6];    // 手算，不读实现
 const EXPECT_STEP_IDS = ['G1', 'G2', 'G3', 'G4', 'G5', 'G6'];           // 设计案第二章
 const EXPECT_STEP_COPY = [                       // 逐字抄设计案第二章
   ['掌柜手札 · 今夜', '一夜三客，一人是无相。六盏灯，问一句灭一盏，灯尽前认出他。'],
-  ['先相中一位', '三位客人都到了。灯下这扇窗一次只开一位，上方换人；第一位已替你相中。'],
+  ['三人一行，点谁问谁', '三客自上而下排开：立绘在左，信任 / 好感 / 张力 / 疑心 / 定力在右。点谁，下一句就问谁；第一位已替你点上。'],
   ['同一句，三种问法', '温问养信任，逼问要真话，示物压伪饰。语气随你，先不定也成。'],
   ['点话头，就是开口', '五张话头，点一张便是问一句、灭一盏灯。等下由你亲手点。'],
   ['话落在簿上', '他答的话记进左边证词簿；再拿去对柜上物证，破绽才现形。'],
   ['该你开口了', '灯在顶栏，「AI」摊开客人的心思，灯尽前点灯指认。现在，点张话头，问出第一句吧。']
 ];
-const EXPECT_ANCHORS = [null, '#guest-switch', '#tone-group', '#topic-row', '#clue-list', '.topbar'];
+const EXPECT_ANCHORS = [null, '#guest-row', '#tone-group', '#topic-row', '#clue-list', '.topbar'];
 const SEL = {
   root: '#guide-layer', bubble: '#guide-bubble', mask: '#guide-mask', hole: '.guide-hole',
   next: '#btn-guide-next', prev: '#btn-guide-prev', skip: '#btn-guide-skip',
