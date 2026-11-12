@@ -382,7 +382,7 @@
     var ok = game.cs.solvable && game.cs.logicSolvable !== false;
     var flaw = flawOfCase(game.cs);
     var rule = flaw ? flaw.label : '破绽';
-    return (ok ? '✓ ' : '! ') + '这一夜找的破绽：' + rule + ' · ' + game.cs.clues.length + ' 件物证 · ' + game.lamps + ' 盏灯';
+    return (ok ? '✓ ' : '! ') + '找破绽：' + rule + ' · ' + game.cs.clues.length + ' 件物证 · ' + game.lamps + ' 盏灯';
   }
 
   /* ---------------- 推演台（第三幕）----------------
@@ -396,14 +396,19 @@
     return (L && L.flawOf && cs && cs.difficulty) ? L.flawOf(cs.difficulty.tier) : null;
   }
 
-  /* 当夜残卷卡：只有一句话 + 破绽类型，没有式子 */
+  /* 当夜残卷卡：一句话说完「谁对不上，谁就是无相」，没有式子、也不再挂术语标签。
+     第三夜多一条行为破绽（改口），单独一行补在卡里。 */
   function scrollCardHtml(cs) {
     var flaw = flawOfCase(cs);
     if (!flaw) return '';
+    var dm = (SD.Logic && SD.Logic.flawMeta) ? SD.Logic.flawMeta('drift') : null;
+    var drift = (cs.drift && dm)
+      ? '<span class="lg-gloss">第三夜还多一条行为破绽：' + esc(dm.lead) + '</span>'
+      : '';
     return '<div class="lg-scroll">' +
       '<span class="lg-tag">当夜残卷</span>' +
-      '<span class="lg-kind">' + esc(flaw.label) + '</span>' +
       '<b class="lg-expr">' + esc(flaw.lead) + '</b>' +
+      drift +
       '</div>';
   }
 
@@ -436,9 +441,8 @@
           else { asked++; if (d) n++; }
         });
         var known = unknown < cs.clues.length;
-        var cell = known
-          ? '<b>' + n + '</b><span class="lg-dim"> / ' + asked + '</span>'
-          : '<span class="lg-dim">—</span>';
+        /* 一格都没问到时只留「N 格未问」，不要再挂一个空占位符 */
+        var cell = known ? '<b>' + n + '</b><span class="lg-dim"> / ' + asked + '</span>' : '';
         return '<td>' + cell + (unknown ? '<br /><span class="lg-dim">' + unknown + ' 格未问</span>' : '') + '</td>';
       }).join('') + '</tr>';
     return {
@@ -526,7 +530,7 @@
     var drift = j && j.drift && j.drift.length ? j.drift : [];
 
     return '<p>这一栏是「掌柜怎么想的」——点开才看见，不看也能玩。</p>' +
-      kv('这一夜找的破绽', '<b>' + esc(flaw ? flaw.label : '未知') + '</b>　' + esc(flaw ? flaw.lead : '')) +
+      kv('找破绽', '<b>' + esc(flaw ? flaw.lead : '未知') + '</b>') +
       kv('判据', '把「谁在哪件物证上说的对不上」摆成表，再用这条性质去筛。' +
         '若同一个人对同一件事前后说法不同，那条也算破绽。') +
       kv('已问到', got + ' / ' + need + ' 格　·　灯 ' + game.lampsLeft + ' / ' + game.lamps + ' 盏') +

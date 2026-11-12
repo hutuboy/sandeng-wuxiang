@@ -66,10 +66,10 @@ async function boardText(page) {
 /* 残卷文案里不许出现式子：算子符号与「(…)」结构都算泄漏 */
 const FORMULA_RE = /[∧∨¬⊕]/;
 const NATURE = {
-  novice: '必有一处与柜上物证相悖',
-  basic: '处处与物证相悖',
-  intermediate: '并非处处对不上',
-  advanced: '只错一处'
+  novice: '有一处对不上，就是「无相」',
+  basic: '处处都对不上，就是「无相」',
+  intermediate: '并非处处对不上，就是「无相」',
+  advanced: '恰好只错一处，就是「无相」'
 };
 
 (async () => {
@@ -93,6 +93,22 @@ const NATURE = {
     check(tier + ' · 结论文案可读', !!s && /收口|同时合|还判不了|没有人合/.test(s.verdict || ''), s && s.verdict);
     check(tier + ' · 无横向溢出', !!s && !s.overflowX);
   }
+
+  /* ---- ①b 第三夜：残卷多一条「改口」行为破绽 ---- */
+  await page.goto(URL + '?seed=P5-SHOT&guide=0', { waitUntil: 'load' });
+  await page.waitForTimeout(260);
+  await page.evaluate(() => window.SANDENG_API.newRun('P5-SHOT', 3, 'basic'));
+  await page.evaluate(() => window.SANDENG_API.setAct('deduce'));
+  await page.waitForTimeout(240);
+  const n3 = await page.evaluate(() => {
+    const b = document.querySelector('#logic-stage .logic-board');
+    const g = b && b.querySelector('.lg-gloss');
+    const e = b && b.querySelector('.lg-expr');
+    return { nature: e ? e.textContent.trim() : null, drift: g ? g.textContent.trim() : null };
+  });
+  await page.screenshot({ path: path.join(OUT, 'p5-night3-drift.png') });
+  check('第三夜 · 残卷多一条改口破绽', !!n3.drift && /说辞变了/.test(n3.drift), n3.drift);
+  check('第三夜 · 主句仍是档位性质', (n3.nature || '').indexOf(NATURE.basic) >= 0, n3.nature);
 
   /* ---- ② 对簿：一盏灯换至多三格 ---- */
   await startAt(page, 'basic');
@@ -130,7 +146,7 @@ const NATURE = {
     if (!m) return null;
     return {
       title: (m.querySelector('.modal-head h3') || {}).textContent || '',
-      hasNature: /这一夜找的破绽/.test(m.textContent),
+      hasNature: /找破绽/.test(m.textContent),
       hasPosterior: m.querySelectorAll('.au-row').length,
       leaksFormula: /[∧∨¬⊕]/.test(m.textContent)
     };
@@ -140,6 +156,28 @@ const NATURE = {
   check('审计 · 交代破绽性质', !!audit && audit.hasNature);
   check('审计 · 有后验条', !!audit && audit.posterior !== 0 && audit.hasPosterior > 0, audit && audit.hasPosterior);
   check('审计 · 不泄漏式子', !!audit && !audit.leaksFormula);
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(150);
+
+  /* ---- ③b 玩法说明：四档一律说判定句，不印算子（帮助菜单 → 玩法说明） ---- */
+  await page.click('#btn-help');
+  await page.waitForTimeout(220);
+  await page.click('.modal-mask button[data-modal="howto"]');
+  await page.waitForTimeout(320);
+  const howto = await page.evaluate(() => {
+    const mm = document.querySelector('.modal-mask');
+    if (!mm) return null;
+    const txt = mm.textContent;
+    return {
+      title: (mm.querySelector('.modal-head h3') || {}).textContent || '',
+      tiers: ['有一处对不上，就是「无相」', '处处都对不上，就是「无相」',
+        '并非处处对不上，就是「无相」', '恰好只错一处，就是「无相」'].filter(s => txt.indexOf(s) !== -1),
+      leaksFormula: /[∧∨¬⊕]/.test(txt)
+    };
+  });
+  await page.screenshot({ path: path.join(OUT, 'p5-howto.png') });
+  check('玩法说明 · 四档都说判定句', !!howto && howto.tiers.length === 4, howto && howto.tiers.length + '/4');
+  check('玩法说明 · 不印算子', !!howto && !howto.leaksFormula);
   await page.keyboard.press('Escape');
   await page.waitForTimeout(150);
 

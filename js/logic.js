@@ -37,22 +37,22 @@
   var PLANS = {
     novice: {
       group: 2, rest: false, op: 'OR', depth: 1,
-      lead: '此人话里必有一处与柜上物证相悖。',
+      lead: '有一处对不上，就是「无相」。',
       ask: '找那条对不上的'
     },
     basic: {
       group: 2, rest: false, op: 'AND', depth: 2,
-      lead: '此人处处与物证相悖——两处都对不上，才轮到他。',
+      lead: '处处都对不上，就是「无相」。',
       ask: '两处都得对不上'
     },
     intermediate: {
       group: 2, rest: false, op: 'NAND', depth: 3,
-      lead: '此人并非处处对不上——他至少有一处说得圆。',
+      lead: '并非处处对不上，就是「无相」。',
       ask: '至少一处说得圆'
     },
     advanced: {
       group: 2, rest: false, op: 'XOR', depth: 4,
-      lead: '此人只错一处；除那一处，其余滴水不漏。',
+      lead: '恰好只错一处，就是「无相」。',
       ask: '恰好一处'
     }
   };
@@ -61,24 +61,24 @@
    * drift 不占档位，是第三夜叠加的行为破绽（追问就改口）。 */
   var FLAWS = {
     substitute: {
-      kind: 'substitute', tier: 'novice', label: '换值', op: 'OR', depth: 1,
+      kind: 'substitute', tier: 'novice', label: '有一处对不上', op: 'OR', depth: 1,
       lead: PLANS.novice.lead, ask: PLANS.novice.ask, tell: '一句对不上便露底'
     },
     cumulative: {
-      kind: 'cumulative', tier: 'basic', label: '累积', op: 'AND', depth: 2,
+      kind: 'cumulative', tier: 'basic', label: '处处都对不上', op: 'AND', depth: 2,
       lead: PLANS.basic.lead, ask: PLANS.basic.ask, tell: '只错一条的人不是他'
     },
     negative: {
-      kind: 'negative', tier: 'intermediate', label: '否定', op: 'NAND', depth: 3,
+      kind: 'negative', tier: 'intermediate', label: '并非处处对不上', op: 'NAND', depth: 3,
       lead: PLANS.intermediate.lead, ask: PLANS.intermediate.ask, tell: '全错的人不是他'
     },
     quantify: {
-      kind: 'quantify', tier: 'advanced', label: '恰一', op: 'XOR', depth: 4,
+      kind: 'quantify', tier: 'advanced', label: '恰好只错一处', op: 'XOR', depth: 4,
       lead: PLANS.advanced.lead, ask: PLANS.advanced.ask, tell: '全错、全对都不是他'
     },
     drift: {
       kind: 'drift', tier: 'night3', label: '改口', op: null, depth: 5,
-      lead: '灯过三更，他的说辞会变；先前那句，且记着。',
+      lead: '同一个人对同一件事前后说辞变了，那条也算数。',
       ask: '追问同一处，比两次说法', tell: '两次说法不同'
     }
   };

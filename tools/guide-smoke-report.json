@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-12T14:07:29.196Z",
+  "generatedAt": "2026-11-12T14:43:48.529Z",
   "specStatus": "OK",
   "specFiles": [
     "docs/引导-设计案-v1.md",
@@ -393,7 +393,7 @@
       "expected": "灯 −1 / 回合 +1 / 证词至少 +1（至多 3 次问话内）",
       "actual": {
         "asked": 1,
-        "added": 1,
+        "added": 3,
         "before": [
           6,
           0,
@@ -401,7 +401,7 @@
         ],
         "after": [
           5,
-          1,
+          3,
           1
         ]
       },
@@ -418,12 +418,12 @@
         "before": {
           "turn": 1,
           "lamps": 5,
-          "stmts": 1
+          "stmts": 3
         },
         "after": {
           "turn": 2,
           "lamps": 4,
-          "stmts": 2
+          "stmts": 4
         },
         "statementsObserved": 1,
         "evidence": {
@@ -433,7 +433,7 @@
           "toastShown": false,
           "leftCards": 0,
           "lampText": "4 / 6 盏",
-          "stmtCount": "2 条",
+          "stmtCount": "4 条",
           "turnTag": "第 2 回",
           "phase": "playing"
         }
@@ -930,7 +930,7 @@
         "gate": {
           "wiredInto": "docs/交付清单.md 复跑命令：node tools/guide-smoke.cjs",
           "verified": true,
-          "lastRunAt": "2026-11-12T14:07:29.196Z",
+          "lastRunAt": "2026-11-12T14:43:48.529Z",
           "runBy": "tools/guide-smoke.cjs（playwright-core + 本机 Edge headless）"
         },
         "visualFrames": 19,
@@ -1080,13 +1080,13 @@
   "humanPath": {
     "recorded": true,
     "watchedBy": "制作人（AI 视觉复核，非真人玩家）",
-    "watchedAt": "2026-11-12T14:07:29.189Z",
+    "watchedAt": "2026-11-12T14:43:48.520Z",
     "hooksUsed": 0
   },
   "gate": {
     "wiredInto": "docs/交付清单.md 复跑命令：node tools/guide-smoke.cjs",
     "verified": true,
-    "lastRunAt": "2026-11-12T14:07:29.196Z",
+    "lastRunAt": "2026-11-12T14:43:48.529Z",
     "runBy": "tools/guide-smoke.cjs（playwright-core + 本机 Edge headless）",
     "exitCode": 0
   },
