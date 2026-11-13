@@ -133,16 +133,21 @@ node tools/selftest.cjs --seeds 200 --json tools/selftest-report.json
 | --- | --- | --- | --- |
 | L0 决策 | 浏览器本地 | **必选** | 五维状态 × 人格权重 → 效用 → softmax → 规则校验 → 状态回写；**永不上云** |
 | L1 措辞 | 浏览器本地 | **必选** | 人格词典 + 状态/记忆模板组合 |
-| L2 云端润色 | 自建端点（可选） | **关闭** | 只润色台词表层措辞，**不改决策与存档**；1.5s 超时或任何异常静默回退原文 |
+| L2 云端润色 | 独立代理（服务端持 Key） | **线上已启用 / 本地与门禁关闭** | 只润色台词表层措辞，**不改决策与存档**；5s 超时或任何异常静默回退原文；**每日 250 次调用上限，到额自动停**（次日 UTC+8 零点恢复） |
 | L3 DGX 本地大模型 | DGX Spark | **未启用** | 算力**已申请、待审批**；若获批仅用于离线演示 / 录屏 / 评审现场，不挂公开链接 |
 
-**怎么开 L2**（公开链接默认不带端点、不带密钥，不注入即完全零网络）：
+**怎么开 L2**（`js/llm-config.js` 只在 `https:` 下填端点；`file://` 本地开发与四道门禁留空 = 完全零网络）：
 
 ```js
-// 浏览器控制台手动注入即启用；删除即恢复纯端侧
-window.SANDENG_LLM = { endpoint: 'https://your-endpoint/polish', key: 'optional', timeout: 1500 };
-// 请求体 { persona, state, action, baseText } → 响应 { text }
+// 线上默认已指向自建润色代理；如需临时改端点，在浏览器控制台覆盖即可
+window.SANDENG_LLM.endpoint = 'https://your-endpoint/polish';
+window.SANDENG_LLM.timeout = 5000;   // 毫秒；代理实测 ~1.2s
+// 请求体 { persona, state, action, baseText } → 响应 { text, model, quota }
+// 到额时响应 { text: null, reason: 'daily_limit', quota: {...} }，前端静默回退原文
 ```
+
+代理是零依赖的独立 Docker 服务（`proxy/app.py`），浏览器不接触 API Key；`GET /health` 可查
+`daily_limit` 与 `quota:{day,limit,used,remaining,stopped}`。详见 `proxy/README.md`。
 
 适配器实现见 `js/llm.js`，只在 `js/main.js` 的 `afterDispatch` 单点挂钩，**不触碰 `game.js` 状态机**；
 开启与否不影响 `getState()` 与所有自检结果。设计取舍与计费规避见 `docs/AI架构-B方案-端侧+云端兜底-v1.md`。

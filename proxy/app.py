@@ -12,11 +12,19 @@ MODELSCOPE_API_KEY，接收前端一句 NPC 台词的润色请求，调用魔搭
 
 环境变量：
   MODELSCOPE_API_KEY  必填，魔搭访问令牌（需「大模型推理」权限）
+  POLISH_DAILY_LIMIT  可选，每日 LLM 调用上限（默认 250；设 0 = 手动急停，整天不调模型）
+  POLISH_QUOTA_FILE   可选，配额计数文件（默认自动挑可写的持久化目录）
   POLISH_MODELS       可选，逗号分隔的备份链（默认 Qwen 四档）
   ALLOW_ORIGINS       可选，CORS 允许来源（默认 *；上线建议设为游戏域名）
   PER_MODEL_TIMEOUT   可选，单模型超时秒（默认 2.4）
   TOTAL_DEADLINE      可选，整次请求总预算秒（默认 4.6）
+  POLISH_API          可选，上游端点覆盖（仅本地测试用；默认魔搭 API-Inference）
   PORT                可选，监听端口（默认 7860）
+
+每日限额：按「实际发往上游的 LLM 调用」计数（一次 _call = 1 次，超时/失败同样扣，
+因为平台照样消耗额度）。北京时间（UTC+8）自然日滚动，计数落盘、线程安全。
+达到上限后**自动停掉模型调用**：/api/polish 立刻回 {"text": null, "reason": "daily_limit"}，
+前端 (js/llm.js) 静默回退原文 —— 游戏照常玩，服务不下线。次日零点自动恢复。
 
 用法：
   MODELSCOPE_API_KEY=xxx python proxy/app.py
@@ -24,12 +32,14 @@ MODELSCOPE_API_KEY，接收前端一句 NPC 台词的润色请求，调用魔搭
 """
 import json
 import os
+import tempfile
+import threading
 import time
 import urllib.request
 import urllib.error
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-API = "https://api-inference.modelscope.cn/v1/chat/completions"
+API = os.environ.get("POLISH_API", "https://api-inference.modelscope.cn/v1/chat/completions").strip()
 KEY = os.environ.get("MODELSCOPE_API_KEY", "").strip()
 
 # 备份链：turbo 位 → plus 位 → max 位 → 兜底位（qwen-vl 无纯文本对话版，用 27B 补第④位）
@@ -41,6 +51,90 @@ PER_MODEL_TIMEOUT = float(os.environ.get("PER_MODEL_TIMEOUT", "2.4"))
 TOTAL_DEADLINE = float(os.environ.get("TOTAL_DEADLINE", "4.6"))
 MAX_INPUT = 300
 ALLOW = os.environ.get("ALLOW_ORIGINS", "*").strip()
+
+# ---- 每日 LLM 调用闸门（北京时间自然日）----
+def _env_int(name, default):
+    try:
+        return max(0, int(os.environ.get(name, str(default)).strip()))
+    except (TypeError, ValueError):
+        return default
+
+DAILY_LIMIT = _env_int("POLISH_DAILY_LIMIT", 250)
+TZ_OFFSET = 8 * 3600  # Asia/Shanghai，不依赖 zoneinfo / pytz
+
+def _today():
+    return time.strftime("%Y-%m-%d", time.gmtime(time.time() + TZ_OFFSET))
+
+def _quota_path():
+    forced = os.environ.get("POLISH_QUOTA_FILE", "").strip()
+    if forced:
+        return forced
+    # 创空间的持久化目录优先（容器重启时 /tmp 可能被清空），退化为临时目录
+    for d in ("/mnt/workspace", "/workspace"):
+        if os.path.isdir(d) and os.access(d, os.W_OK):
+            return os.path.join(d, ".sandeng_llm_quota.json")
+    return os.path.join(tempfile.gettempdir(), "sandeng_llm_quota.json")
+
+class DailyQuota:
+    """线程安全的每日计数：每次真实上游调用前 take()，超额即拒绝，不再发请求。"""
+    def __init__(self, limit, path):
+        self.limit = limit
+        self.path = path
+        self.lock = threading.Lock()
+        self.day = _today()
+        self.used = 0
+        self.persistent = True
+        self._load()
+
+    def _load(self):
+        try:
+            with open(self.path, "r", encoding="utf-8") as f:
+                j = json.load(f)
+            if (isinstance(j, dict) and j.get("day") == self.day
+                    and isinstance(j.get("used"), int) and j["used"] >= 0):
+                self.used = j["used"]
+        except Exception:
+            pass  # 文件不存在/损坏 → 从 0 起，不阻断服务
+
+    def _persist(self):
+        tmp = self.path + ".tmp"
+        try:
+            with open(tmp, "w", encoding="utf-8") as f:
+                json.dump({"day": self.day, "used": self.used, "limit": self.limit}, f)
+            os.replace(tmp, self.path)
+        except OSError:
+            # 只读文件系统：退化为纯内存计数（重启会清零），服务不受影响
+            self.persistent = False
+            try:
+                os.unlink(tmp)
+            except OSError:
+                pass
+
+    def _rollover(self):
+        day = _today()
+        if day != self.day:
+            self.day, self.used = day, 0
+            self._persist()
+
+    def snapshot(self):
+        with self.lock:
+            self._rollover()
+            return {"day": self.day, "limit": self.limit, "used": self.used,
+                    "remaining": max(0, self.limit - self.used),
+                    "stopped": self.used >= self.limit,
+                    "persistent": self.persistent}
+
+    def take(self, n=1):
+        """占一个名额；返回 False 表示今日额度已用尽，调用方必须立即放弃上游请求。"""
+        with self.lock:
+            self._rollover()
+            if self.limit <= 0 or self.used + n > self.limit:
+                return False
+            self.used += n
+            self._persist()
+            return True
+
+QUOTA = DailyQuota(DAILY_LIMIT, _quota_path())
 
 SYSTEM = (
     "你是中式古风客栈里的台词润色器。用户给你一句 NPC 的原话，你要在不改变任何事实的"
@@ -88,6 +182,9 @@ def _clean(txt):
 
 
 def _call(model, persona, state, action, base, timeout):
+    # 闸门在最前面：额度用尽时连 Request 都不构造，绝不产生上游流量
+    if not QUOTA.take():
+        return None
     data = json.dumps(_body(model, persona, state, action, base)).encode("utf-8")
     req = urllib.request.Request(API, data=data, method="POST")
     req.add_header("Authorization", "Bearer " + KEY)
@@ -105,6 +202,8 @@ def polish(base, persona, state, action):
     """返回 (text, model)；全链失败返回 (None, None)。"""
     t0 = time.monotonic()
     for m in CHAIN:
+        if QUOTA.snapshot()["stopped"]:
+            break  # 到额：把剩下的备份模型一并停掉，不做无谓循环
         left = TOTAL_DEADLINE - (time.monotonic() - t0)
         if left <= 0.15:
             break
@@ -141,8 +240,10 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         if self.path.startswith("/health"):
+            q = QUOTA.snapshot()
             self._json({"ok": True, "key": bool(KEY), "chain": CHAIN,
-                        "per_model_timeout": PER_MODEL_TIMEOUT, "total_deadline": TOTAL_DEADLINE})
+                        "per_model_timeout": PER_MODEL_TIMEOUT, "total_deadline": TOTAL_DEADLINE,
+                        "daily_limit": q["limit"], "quota": q})
         else:
             self._json({"ok": False, "reason": "not_found"}, 404)
 
@@ -160,10 +261,15 @@ class Handler(BaseHTTPRequestHandler):
         base = str(body.get("baseText") or "").strip()[:MAX_INPUT]
         if not base:
             return self._json({"text": None, "reason": "empty"})
+        q = QUOTA.snapshot()
+        if q["stopped"]:
+            # HTTP 200 + text:null：对前端仍是「静默回退原文」，不报错、不重试、不烧额度
+            return self._json({"text": None, "reason": "daily_limit", "quota": q})
         txt, m = polish(base, str(body.get("persona") or "").strip(), body.get("state"), body.get("action"))
+        q = QUOTA.snapshot()
         if txt:
-            return self._json({"text": txt, "model": m})
-        return self._json({"text": None, "reason": "all_failed"})
+            return self._json({"text": txt, "model": m, "quota": q})
+        return self._json({"text": None, "reason": "daily_limit" if q["stopped"] else "all_failed", "quota": q})
 
     def log_message(self, *a):
         pass  # 静默，避免刷屏
@@ -172,7 +278,8 @@ class Handler(BaseHTTPRequestHandler):
 def main():
     port = int(os.environ.get("PORT", "7860"))
     srv = ThreadingHTTPServer(("0.0.0.0", port), Handler)
-    print("sandeng llm-proxy on :%d  key=%s  chain=%s" % (port, bool(KEY), CHAIN), flush=True)
+    print("sandeng llm-proxy on :%d  key=%s  daily_limit=%d  chain=%s"
+          % (port, bool(KEY), DAILY_LIMIT, CHAIN), flush=True)
     srv.serve_forever()
 
 
