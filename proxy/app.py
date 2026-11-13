@@ -12,7 +12,7 @@ MODELSCOPE_API_KEY，接收前端一句 NPC 台词的润色请求，调用魔搭
 
 环境变量：
   MODELSCOPE_API_KEY  必填，魔搭访问令牌（需「大模型推理」权限）
-  POLISH_DAILY_LIMIT  可选，每日 LLM 调用上限（默认 250；设 0 = 手动急停，整天不调模型）
+  POLISH_DAILY_LIMIT  可选，每日 LLM 调用上限（默认 200；设 0 = 手动急停，整天不调模型）
   POLISH_QUOTA_FILE   可选，配额计数文件（默认自动挑可写的持久化目录）
   POLISH_MODELS       可选，逗号分隔的备份链（默认 Qwen 四档）
   ALLOW_ORIGINS       可选，CORS 允许来源（默认 *；上线建议设为游戏域名）
@@ -59,7 +59,7 @@ def _env_int(name, default):
     except (TypeError, ValueError):
         return default
 
-DAILY_LIMIT = _env_int("POLISH_DAILY_LIMIT", 250)
+DAILY_LIMIT = _env_int("POLISH_DAILY_LIMIT", 200)
 TZ_OFFSET = 8 * 3600  # Asia/Shanghai，不依赖 zoneinfo / pytz
 
 def _today():
