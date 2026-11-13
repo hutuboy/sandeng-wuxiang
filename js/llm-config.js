@@ -8,6 +8,9 @@
 (function (g) {
   'use strict';
   g.SANDENG_LLM = g.SANDENG_LLM || {};
-  if (typeof g.SANDENG_LLM.endpoint !== 'string') g.SANDENG_LLM.endpoint = '';
+  if (typeof g.SANDENG_LLM.endpoint !== 'string') {
+    // P6 已上线：独立润色代理（魔搭 Docker 创空间，服务端持 Key，前端不接触）
+    g.SANDENG_LLM.endpoint = 'https://hutuboy-sandeng-proxy.ms.show/api/polish';
+  }
   if (typeof g.SANDENG_LLM.timeout !== 'number') g.SANDENG_LLM.timeout = 5000;
 })(typeof window !== 'undefined' ? window : this);
