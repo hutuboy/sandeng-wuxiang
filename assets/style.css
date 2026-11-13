@@ -146,8 +146,6 @@ h1,h2,h3,p{margin:0}
 .col-center{gap:10px}
 .col-right{min-width:0}
 .col-right.hidden{display:none}
-.section-hint{display:flex;justify-content:space-between;gap:10px;font-size:11px;color:var(--muted);padding:0 4px;letter-spacing:.04em}
-.kbd-hint{color:var(--dim);font-family:ui-monospace,monospace}
 
 /* 柜上物证 · 精简条：一行一件，全文点开（压在「灯下对话」之上） */
 .clue-strip{flex:0 0 auto}
@@ -390,15 +388,9 @@ h1,h2,h3,p{margin:0}
 .lg-count td{background:rgba(155,143,216,.06);font-size:12px}
 
 /* AI 掌柜 · 审计（弹窗） */
-.au-block{margin-top:12px}
-.au-block h4{margin:0 0 7px;font-family:var(--serif);font-size:12px;font-weight:400;letter-spacing:.12em;color:var(--amber-lt)}
-.au-block h4 span{font-family:var(--sans);font-size:9.5px;letter-spacing:.06em;color:var(--dim);margin-left:6px}
 .au-row{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:11.5px}
 .au-nm{flex:0 0 56px;color:var(--label);font-family:var(--serif);letter-spacing:.06em}
-.au-bar{flex:1;height:7px;border-radius:2px;background:rgba(255,255,255,.07);overflow:hidden}
-.au-bar i{display:block;height:100%;background:linear-gradient(90deg,rgba(155,143,216,.55),rgba(155,143,216,.95))}
 .au-row.hot .au-nm{color:var(--amber-lt)}
-.au-row.hot .au-bar i{background:linear-gradient(90deg,rgba(232,164,92,.6),rgba(232,164,92,1))}
 .au-pct{flex:0 0 38px;text-align:right;color:var(--dim);font-size:10.5px}
 
 /* 第四幕 · 指认 */
@@ -527,8 +519,6 @@ h1,h2,h3,p{margin:0}
   .col-center{gap:9px}
   .guest-row.stack{gap:6px}
   .gcard{gap:7px;padding:5px 8px 5px 5px}
-  .kbd-hint{display:none}
-  #guest-hint{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .gc-p{flex:0 0 48px;width:48px;height:48px}
   .gc-name{font-size:13px}
   .gc-role{font-size:9.5px}
@@ -695,4 +685,3 @@ body.is-guiding #btn-help{border-color:var(--amber);color:var(--amber-lt)}
 .logic-table th:first-child,.logic-table td:first-child{text-align:left}
 .logic-table tbody tr:last-child td{border-top:1px solid rgba(232,164,92,.28);border-bottom:none;padding-top:9px}
 .mini-btn.on{color:var(--amber-lt)}
-#btn-logic{margin-top:6px}

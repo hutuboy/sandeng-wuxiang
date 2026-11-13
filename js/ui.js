@@ -387,7 +387,7 @@
       ((game.cs.drift && dm) ? '<p class="nf-drift">第三夜还多一条行为破绽：' + esc(dm.lead) + '</p>' : '') +
       '<div class="nf-sec"><h5>三 客</h5><ul class="nf-guests">' + guests + '</ul></div>' +
       '<div class="nf-sec"><h5>柜 上 物 证</h5><ul class="nf-clues">' + clues + '</ul></div>' +
-      '<p class="lg-dim nf-foot">问一句灭一盏；拿不准怎么筛，点左栏「AI 掌柜 · 审计」。</p>';
+      '<p class="lg-dim nf-foot">问一句灭一盏；问完了点「AI推演」，把表摊开再筛。</p>';
   }
 
   /* ---------------- 推演台（第三幕）----------------
@@ -507,49 +507,6 @@
   }
 
   /* AI 掌柜 · 审计（点开才显示）：把判定过程摊开，但仍不给式子 —— 给的是「凭什么这么说」 */
-  function auditHtml(game) {
-    var L = SD.Logic;
-    if (!game || !L) return '<p style="color:var(--dim)">暂无可以审计的一夜。</p>';
-    var cs = game.cs, statements = game.statements || [];
-    var flaw = flawOfCase(cs);
-    var expr = cs.logic && cs.logic.expr;
-    var j = (L.judge && expr) ? L.judge(cs, statements) : null;
-    var post = (L.posterior && expr) ? L.posterior(cs, statements, expr) : null;
-    var need = cs.clues.length * cs.guests.length;
-    var got = statements.filter(function (s, i, arr) {
-      return arr.findIndex(function (x) { return x.guestId === s.guestId && x.topic === s.topic; }) === i;
-    }).length;
-
-    function bar(name, pct, hot) {
-      return '<div class="au-row' + (hot ? ' hot' : '') + '"><span class="au-nm">' + esc(name) + '</span>' +
-        '<div class="au-bar"><i style="width:' + Math.max(2, Math.round(pct * 100)) + '%"></i></div>' +
-        '<span class="au-pct">' + Math.round(pct * 100) + '%</span></div>';
-    }
-
-    var shareHtml = post ? cs.guests.map(function (q) {
-      var p = post.share[q.id] || 0;
-      return bar(q.name, p, p === Math.max.apply(null, cs.guests.map(function (x) { return post.share[x.id] || 0; })));
-    }).join('') : '<p class="lg-dim">尚无证词，后验还没法算。</p>';
-
-    var kv = function (k, v) { return '<div class="kv"><span class="k">' + k + '</span><span>' + v + '</span></div>'; };
-    var drift = j && j.drift && j.drift.length ? j.drift : [];
-
-    return '<p>这一栏是「掌柜怎么想的」——点开才看见，不看也能玩。</p>' +
-      kv('找破绽', '<b>' + esc(flaw ? flaw.lead : '未知') + '</b>') +
-      kv('判据', '把「谁在哪件物证上说的对不上」摆成表，再用这条性质去筛。' +
-        '若同一个人对同一件事前后说法不同，那条也算破绽。') +
-      kv('已问到', got + ' / ' + need + ' 格　·　灯 ' + game.lampsLeft + ' / ' + game.lamps + ' 盏') +
-      kv('当前结论', j ? (j.unique ? '<b style="color:var(--jade)">收口：唯一</b>'
-        : (j.winners.length ? '命中 ' + j.winners.length + ' 人（未唯一）' : '还判不了')) : '—') +
-      (drift.length ? kv('改口', drift.map(function (id) {
-        var q = null; cs.guests.forEach(function (x) { if (x.id === id) q = x; }); return q ? q.name : id;
-      }).join('、') + ' 的说辞变过') : '') +
-      '<div class="au-block"><h4>后验：谁更像无相 <span>未问格按五五开枚举</span></h4>' + shareHtml + '</div>' +
-      '<p class="lg-dim lg-foot">「后验」不是答案，是「按已有证词，各人合这条性质的比例」；' +
-      '空格没问之前，它天然趋向平均。</p>';
-  }
-
-
   function aiHtml(ctx) {
     var d = ctx.lastDecision;
     if (!d) {
@@ -604,7 +561,7 @@
       '<button class="mini-btn" data-action="copy-decision" style="margin:0;flex:1">复制决策 JSON</button></div>';
   }
 
-  /* 两个入口：第三幕用 logicStageHtml，弹窗用 auditHtml（P5 起不再共用「带式子的板子」） */
+  /* 第三幕的板子（P5 起只给性质，不再印式子；开夜卡与证词簿置顶负责把判定句摆在眼前） */
   function logicStageHtml(game) { return logicCoreHtml(game.cs, game.statements, null, {}); }
   function logicBoardHtml(cs, statements, op) { return logicCoreHtml(cs, statements, op); }
 
@@ -657,11 +614,6 @@
     set('turn-tag', '第 ' + game.turn + ' 回');
     set('clue-count', game.cs.clues.length + ' 件');
     set('stmt-count', game.statements.length + ' 条');
-    var sel = ctx.selected ? Game.guest(game, ctx.selected) : null;
-    /* 三人同时在场，只能靠这一句说明「下一句是问给谁的」 */
-    set('guest-hint', sel
-      ? '正在问 <b>' + esc(sel.name) + '</b> · 点一张话头便开口'
-      : '先点一位客人，再点一张话头');
     var dlg = document.getElementById('dialogue'); if (dlg) dlg.scrollTop = dlg.scrollHeight;
   }
 
@@ -758,7 +710,7 @@
     esc: esc, markWords: markWords, portrait: portrait, initCanvas: initCanvas, audio: audio,
     showScreen: showScreen, openModal: openModal, closeModal: closeModal, toast: toast,
     paint: paint, paintResult: paintResult, resultHtml: resultHtml,
-    logicBoardHtml: logicBoardHtml, logicStageHtml: logicStageHtml, auditHtml: auditHtml, ACTS: ACTS,
+    logicBoardHtml: logicBoardHtml, logicStageHtml: logicStageHtml, ACTS: ACTS,
     nightFlawHtml: nightFlawHtml,
     toggleClue: toggleClue,
     /* 换夜/换局时一并清掉物证展开状态：物证 id 是 clue_<话题>，跨夜会重名 */

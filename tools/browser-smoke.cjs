@@ -43,11 +43,10 @@ const URL = 'file:///' + path.join(ROOT, 'index.html').replace(/\\/g, '/') + '?g
   await page.waitForTimeout(300);
   await page.screenshot({ path: path.join(OUT, '03-对局与AI决策面板.png') });
 
-  // 摊开比对
-  await page.click('#btn-compare');
-  await page.waitForTimeout(250);
+  // 证据比对（推演幕：物证 × 客人的相符/不符表；原「摊开比对」弹窗已并入这一幕）
+  await page.click('#btn-act-deduce');
+  await page.waitForTimeout(280);
   await page.screenshot({ path: path.join(OUT, '04-证据比对.png') });
-  await page.click('[data-action="close-modal"]');
 
   // 工程自检弹窗（回到封面后从入口打开）
   await page.click('#btn-home');

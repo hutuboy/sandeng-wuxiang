@@ -380,29 +380,6 @@
       '<p>美术、音效、字体（系统字体栈）均为代码生成或系统内置，未使用任何第三方图片、音频、字体或模型权重；' +
       '开发过程由 AI 编程助手协作完成，详见创作手记「工具与素材来源」。</p>');
   }
-  function modalCompare() {
-    var game = App.game;
-    var head = '<tr><th>物证 · 真值</th>' + game.guests.map(function (x) { return '<th>' + UI.esc(x.name) + '</th>'; }).join('') + '</tr>';
-    var rows = game.cs.clues.map(function (c) {
-      return '<tr><td><b style="color:var(--amber-lt)">' + UI.esc(c.title) + '</b><br />' + UI.esc(C.topic(c.topic).label) + ' = ' + UI.esc(c.expect) + '</td>' +
-        game.guests.map(function (x) {
-          var st = game.statements.filter(function (s) { return s.guestId === x.id && s.topic === c.topic; })[0];
-          if (!st) return '<td style="color:var(--dim)">未开口</td>';
-          var ok = st.value === c.expect;
-          return '<td class="' + (ok ? 'ok' : 'no') + '">' + UI.esc(st.value) + (ok ? ' ✓' : ' ✗') + '</td>';
-        }).join('') + '</tr>';
-    }).join('');
-    UI.openModal('摊开比对',
-      '<p>把物证的真值与已收录的证词摆在一起。判断仍由你来做——含糊的措辞未必是假话，' +
-      '说得最笃定的也未必是真。</p>' +
-      '<table class="finale-table"><thead>' + head + '</thead><tbody>' + rows + '</tbody></table>' +
-      '<p style="color:var(--dim);font-size:11px">「✓ / ✗」仅表示证词值与物证真值是否一致，不直接等于身份判定。</p>');
-  }
-  /* AI 掌柜 · 审计：点开才显示（不改玩法，只是把「凭什么这么说」摊开） */
-  function modalAudit() {
-    if (!App.game) return;
-    UI.openModal('AI 掌柜 · 审计', SD.UI.auditHtml(App.game));
-  }
   function modalAccuse() {
     var b = Game.belief(App.game);
     UI.openModal('点灯 · 指认无相',
@@ -534,8 +511,6 @@
         case 'btn-ai-toggle': App.aiShown = !App.aiShown; applyAIVis(); break;
         case 'btn-listen': doListen(); break;
         case 'btn-accuse': setAct('accuse'); break;
-        case 'btn-compare': modalCompare(); break;
-        case 'btn-logic': modalAudit(); break;
         /* ---- 五幕导航 ---- */
         case 'btn-act-deduce': UI.audio.sfx('click'); setAct('deduce'); break;
         case 'btn-act-back-ask': setAct('ask'); break;
@@ -564,7 +539,6 @@
       if (idx >= 0 && k.length === 1) { doAsk(C.TOPICS[idx].id); return; }
       if (k === 'l') { doListen(); return; }
       if (k === 'a') { setAct('accuse'); return; }
-      if (k === 'c') { modalCompare(); }
       if (k === 'd') { setAct('deduce'); }
     });
 

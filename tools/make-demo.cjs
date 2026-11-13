@@ -57,7 +57,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
     [178, async () => { await page.click(`[data-topic="${topic}"]`); }],
     [208, async () => { await page.click('[data-action="redecide"]').catch(() => {}); }],
     [248, async () => { await page.click('[data-action="close-modal"]').catch(() => {}); }],
-    [262, async () => { await page.click('#btn-compare'); }],
+    [262, async () => { await page.click('#btn-act-deduce'); }],
     [296, async () => { await page.click('[data-action="close-modal"]').catch(() => {}); }],
     [308, async () => { await page.click('#btn-accuse'); }],
     [320, async () => {

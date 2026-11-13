@@ -78,6 +78,15 @@ const NATURE = {
   const errs = [];
   page.on('pageerror', e => errs.push(String(e.message)));
 
+  /* ---- ①a 开局对话区不再写系统提示行 ---- */
+  await startAt(page, 'basic');
+  const opening = await page.evaluate(() => ({
+    text: (document.getElementById('dialogue') || {}).textContent || '',
+    systemLines: document.querySelectorAll('#dialogue .dline.sys').length
+  }));
+  check('开局对话区无系统提示行', opening.systemLines === 0 && opening.text.indexOf('三客投宿') < 0,
+    opening.text.trim().slice(0, 24));
+
   /* ---- ① 四档残卷：只有性质，没有式子 ---- */
   for (const tier of ['novice', 'basic', 'intermediate', 'advanced']) {
     await startAt(page, tier);
@@ -134,30 +143,21 @@ const NATURE = {
   check('对簿 · 证词簿有［对簿］标记', after.tags.indexOf('［对簿］') >= 0, after.tags);
   await page.screenshot({ path: path.join(OUT, 'p5-after-confront.png') });
 
-  /* ---- ③ AI 掌柜审计：点开才显示 ---- */
+  /* ---- ③ 入口收敛：两个左栏弹窗按钮与问话提示已撤（v1.7.8） ---- */
   await page.evaluate(() => window.SANDENG_API.setAct('deduce'));
   await page.waitForTimeout(200);
-  const noModal = await page.evaluate(() => !document.querySelector('.modal-mask'));
-  check('审计 · 推演幕本身不弹窗', noModal);
-  await page.click('#btn-logic');
-  await page.waitForTimeout(320);
-  const audit = await page.evaluate(() => {
-    const m = document.querySelector('.modal-mask');
-    if (!m) return null;
-    return {
-      title: (m.querySelector('.modal-head h3') || {}).textContent || '',
-      hasNature: /找破绽/.test(m.textContent),
-      hasPosterior: m.querySelectorAll('.au-row').length,
-      leaksFormula: /[∧∨¬⊕]/.test(m.textContent)
-    };
-  });
-  await page.screenshot({ path: path.join(OUT, 'p5-audit.png') });
-  check('审计 · 弹窗可打开', !!audit, audit && audit.title);
-  check('审计 · 交代破绽性质', !!audit && audit.hasNature);
-  check('审计 · 有后验条', !!audit && audit.posterior !== 0 && audit.hasPosterior > 0, audit && audit.hasPosterior);
-  check('审计 · 不泄漏式子', !!audit && !audit.leaksFormula);
-  await page.keyboard.press('Escape');
-  await page.waitForTimeout(150);
+  const gone = await page.evaluate(() => ({
+    compare: !!document.getElementById('btn-compare'),
+    logic: !!document.getElementById('btn-logic'),
+    hint: !!document.getElementById('guest-hint'),
+    kbd: !!document.querySelector('.kbd-hint'),
+    noModal: !document.querySelector('.modal-mask'),
+    deduceLabel: (document.getElementById('btn-act-deduce') || {}).textContent || ''
+  }));
+  check('旧入口已撤 · 摊开比对 / AI 掌柜审计', !gone.compare && !gone.logic);
+  check('旧提示已撤 · 正在问谁 / 1-2-3 与 QWERT 键位提示', !gone.hint && !gone.kbd);
+  check('进推演幕不弹任何窗', gone.noModal);
+  check('推演入口文案 = 「问完了 · AI推演」', gone.deduceLabel.trim() === '问完了 · AI推演', gone.deduceLabel.trim());
 
   /* ---- ③b 玩法说明：四档一律说判定句，不印算子（帮助菜单 → 玩法说明） ---- */
   await page.click('#btn-help');
