@@ -533,17 +533,24 @@
     return true;
   }
 
+  /** 首次点灯是否会自动起引导（只读判据；main.js 用它决定「开夜提示框」要不要让路）。
+   *  与 maybeAutoStart 共用同一份守卫，避免两处判据各自漂移。 */
+  function willAutoStart(app) {
+    var p = params();
+    if (p.guide === '0') return false;           // C-7：强制抑制
+    if (p.guide === '1') return false;           // C-7：由 boot 显式强制复跑，避免双启动
+    if (hasFlag()) return false;                 // 老用户
+    if (p.autopilot === '1' || (app && app.autopilot)) return false;
+    if (p.seed && p.night) return false;         // 可复现 seed 直开
+    if (!app || app.screen !== 'game' || !app.game) return false;
+    if (app.game.night !== 1 || app.game.phase !== 'playing') return false;
+    return true;
+  }
+
   /** main.js 在 startNight(1, true) 完成之后调用。 */
   function maybeAutoStart(app) {
     if (active || autoTimer) return;
-    var p = params();
-    if (p.guide === '0') return;                 // C-7：强制抑制
-    if (p.guide === '1') return;                 // C-7：由 boot 显式强制复跑，避免双启动
-    if (hasFlag()) return;                       // 老用户
-    if (p.autopilot === '1' || (app && app.autopilot)) return;
-    if (p.seed && p.night) return;               // 可复现 seed 直开
-    if (!app || app.screen !== 'game' || !app.game) return;
-    if (app.game.night !== 1 || app.game.phase !== 'playing') return;
+    if (!willAutoStart(app)) return;
     if (document.querySelector('.modal-mask')) return;
     autoTimer = setTimeout(function () {
       autoTimer = 0;
@@ -573,6 +580,7 @@
     },
     start: start,
     maybeAutoStart: maybeAutoStart,
+    willAutoStart: willAutoStart,
     forceCleanup: forceCleanup,
     finish: function (v) { finish(v === VAL_DONE ? VAL_DONE : VAL_SKIP); },
     /* 只读：供 QA 比对文案，不作为期望值来源 */

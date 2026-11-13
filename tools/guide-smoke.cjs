@@ -146,6 +146,14 @@ async function installDispatchProxies(page) {
 }
 
 let browser;
+/* 开夜提示框（v1.7.7）：真人流程点灯后会先弹「今夜无相的破绽」。
+   工具走的是脚本路径，点灯后先把它关掉再继续；用 locator 计数，不注入脚本（G-55 人路用例禁用 evaluate）。 */
+async function dismissNightFlaw(page) {
+  if (await page.locator('#modal-root .nf-rule').count().catch(() => 0)) {
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(140);
+  }
+}
 async function fresh(opts) {
   opts = opts || {};
   const cfg = {
@@ -220,6 +228,7 @@ async function gotoGuide(h, viaQuery) {
     await h.page.waitForSelector(SEL.root, { state: 'visible', timeout: 6000 });
   } else {
     await h.page.click('#btn-start');
+    await dismissNightFlaw(h.page);
     await h.page.waitForSelector(SEL.root, { state: 'visible', timeout: 6000 });
   }
   await h.page.waitForTimeout(280);
@@ -320,6 +329,7 @@ async function runNegative() {
   {
     const h = await fresh({ preset: DONE });
     await h.page.click('#btn-start');
+    await dismissNightFlaw(h.page);
     await h.page.waitForTimeout(900);
     const n = await h.page.evaluate(() => document.querySelectorAll('#guide-layer').length);
     check('G-02', 'AC-09', '阻断', n === 0, '0 个引导层', n,
@@ -532,6 +542,7 @@ async function runNegative() {
     counters.markerWriteCountOnSkip += skipWrites;
     await h.page.reload({ waitUntil: 'load' });
     await h.page.click('#btn-start');
+    await dismissNightFlaw(h.page);
     await h.page.waitForTimeout(900);
     const again = await h.page.evaluate(() => document.querySelectorAll('#guide-layer').length);
     check('G-05b', 'AC-04/09', '阻断', again === 0, '刷新后不再出现', again, '');
@@ -561,6 +572,7 @@ async function runReplayAndExtremes() {
   {
     const h2 = await fresh({ preset: DONE });
     await h2.page.click('#btn-start');
+    await dismissNightFlaw(h2.page);
     await h2.page.waitForTimeout(700);
     await h2.page.click('#btn-help');
     await h2.page.waitForTimeout(160);
@@ -766,6 +778,7 @@ async function runHumanPath() {
   await page.goto(URL, { waitUntil: 'load' });
   await shot(page, 'guide-human-path-01-cover.png');
   await page.click('#btn-start');
+  await dismissNightFlaw(page);
   /* 3.1 触发延迟 500ms：先纯 UI 等待（waitForSelector 会等），再判可见。
      直接用 locator.isVisible() 是不等待的，会得到假阴性。 */
   await page.waitForSelector(SEL.bubble, { state: 'visible', timeout: 6000 }).catch(() => {});

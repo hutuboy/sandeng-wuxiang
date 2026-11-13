@@ -1,7 +1,7 @@
 {
   "schema": "sandeng.selftest.v1",
   "seeds": 200,
-  "generatedAt": "2026-11-12T14:34:30.946Z",
+  "generatedAt": "2026-11-13T00:44:17.731Z",
   "cases": [
     {
       "name": "T1 AI 导演：案件唯一矛盾 + 行动点充足",
@@ -193,7 +193,7 @@
     "failed": 0,
     "allPass": true
   },
-  "elapsedMs": 541,
+  "elapsedMs": 481,
   "runtime": "node v22.22.2",
   "defectDemo": {
     "schema": "sandeng.defect.v1",

@@ -180,9 +180,31 @@ h1,h2,h3,p{margin:0}
   display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
 .clue.open{flex:1 1 100%}
 .clue.open .clue-txt{display:block;-webkit-line-clamp:unset;color:var(--label)}
-.solver-note{padding:6px 12px 8px;font-size:10px;color:var(--jade);letter-spacing:.02em;line-height:1.6}
-
 /* 证词簿 */
+/* 置顶那一行「✓ 找破绽：<判定句>」：整夜都压在证词簿顶上，随时能对一眼 */
+.flaw-pin{padding:8px 11px 9px;font-size:11px;color:var(--jade);letter-spacing:.02em;line-height:1.6;
+  border-bottom:1px solid rgba(95,209,178,.18);background:rgba(95,209,178,.045)}
+.flaw-pin:empty{display:none}
+/* 开夜提示框：一步到位交代题面（夜名 / 三客 / 物证真值 / 今夜破绽） */
+.nf-night{font-family:var(--serif);font-size:12.5px;letter-spacing:.14em;color:var(--label);margin:0 0 8px}
+.nf-rule{font-size:14px;color:var(--ink);line-height:1.7;margin:0 0 6px}
+.nf-rule b{color:var(--amber-lt);font-family:var(--serif);font-size:17px;letter-spacing:.02em;
+  text-shadow:0 0 18px rgba(255,201,135,.22)}
+.nf-drift{margin:4px 0 4px;font-size:11.5px;color:#e0a3a3;line-height:1.7}
+.nf-sec{margin-top:14px}
+.nf-sec>h5{margin:0 0 7px;font-size:9.5px;font-weight:600;letter-spacing:.22em;color:var(--dim)}
+.nf-guests{list-style:none;margin:0;padding:0;display:flex;gap:8px;flex-wrap:wrap}
+.nf-guests li{flex:1 1 0;min-width:88px;border:1px solid var(--line);border-radius:6px;
+  padding:7px 9px;background:rgba(255,255,255,.022);display:flex;flex-direction:column;gap:2px}
+.nf-guests b{font-family:var(--serif);font-size:13.5px;color:var(--amber-lt);letter-spacing:.06em}
+.nf-guests span{font-size:10px;color:var(--dim);letter-spacing:.06em}
+.nf-clues{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px}
+.nf-clues li{display:flex;gap:9px;align-items:baseline;border-left:2px solid rgba(232,164,92,.42);
+  padding:4px 9px;background:rgba(255,255,255,.022);font-size:11.5px}
+.nf-clues b{flex:0 0 auto;font-family:var(--serif);color:var(--amber-lt);letter-spacing:.04em}
+.nf-clues span{color:var(--muted)}
+.nf-clues em{font-style:normal;color:var(--jade);font-weight:600;letter-spacing:.02em}
+.nf-foot{margin:12px 0 0;font-size:10.5px;line-height:1.65}
 .statement-list{flex:1;min-height:0;overflow:auto;padding:9px 11px;display:flex;flex-direction:column;gap:7px}
 .stmt{border-left:2px solid rgba(155,143,216,.5);padding:5px 8px;background:rgba(255,255,255,.025);font-size:11.5px;color:var(--label);line-height:1.7}
 .stmt .who{color:var(--amber-lt);font-family:var(--serif);margin-right:5px}

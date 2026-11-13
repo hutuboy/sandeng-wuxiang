@@ -11,7 +11,7 @@
   var App = {
     screen: 'intro', game: null, selected: null, tone: 'warm',
     lastDecision: null, ended: false, autopilot: false, autoTrace: null,
-    act: 'lamp',
+    act: 'ask',
     session: { seed: '', night: 1, totalScore: 0, nights: [], difficultyTier: 'basic' },
     soundOn: true, aiShown: true
   };
@@ -68,16 +68,16 @@
   }
 
   /* ---------------- 会话 ---------------- */
-  function newRun(seed, night, tierId, opts) {
+  function newRun(seed, night, tierId) {
     var D = SD.Difficulty;
     var prevTier = App.session ? App.session.difficultyTier : null;
     var tier = D ? D.normalize(tierId == null ? prevTier : tierId) : 'basic';
     App.session = { seed: seed || randSeed(), night: night || 1, totalScore: 0, nights: [], difficultyTier: tier };
-    startNight(App.session.night, true, opts);
+    startNight(App.session.night, true);
   }
-  /* opts.skipLamp：从封面「点灯 · 开始守夜」进来时，点灯幕已由封面承担，直接入问询幕；
-     第二/三夜从结算屏「接着守下一夜」进来时走完整五幕，先看这一夜的客人。 */
-  function startNight(night, fresh, opts) {
+  /* 每一夜的开场都是：开夜卡交代题面（夜名 / 三客 / 物证真值 / 破绽）→ 关掉直接进问询。
+     第①幕「点灯」不再单独开窗，幕条上仍保留这一步（那一幕就是这张卡）。 */
+  function startNight(night, fresh) {
     App.session.night = night;
     var D = SD.Difficulty;
     App.game = Game.create(App.session.seed, night, {
@@ -86,7 +86,8 @@
     App.selected = App.game.guests[0].id;
     App.lastDecision = null;
     App.ended = false;
-    App.act = (opts && opts.skipLamp) ? 'ask' : 'lamp';
+    /* 第①幕「点灯」不再单独开窗：开夜卡（showNightFlaw）就是那一幕，关掉直接进问询。 */
+    App.act = 'ask';
     UI.resetCache();
     UI.showScreen('screen-game');
     App.screen = 'game';
@@ -96,6 +97,20 @@
     if (!fresh) UI.toast('续上第 ' + night + ' 夜');
     /* 新用户引导：仅「首次点灯」的第 1 夜全新局触发；其余守卫在 Guide 内 */
     if (fresh && night === 1 && SD.Guide) SD.Guide.maybeAutoStart(App);
+    showNightFlaw();
+  }
+
+  /* 开夜提示框：把本夜「无相的破绽」先摆到眼前，之后再常驻在证词簿置顶。
+     带 seed / guide / autopilot 参数时不弹 —— 那是复现与自动试玩的通道，
+     弹出层会盖住脚本要点的地方，也会遮住截图里的对局画面。 */
+  function showNightFlaw() {
+    if (!App.game || !SD.UI || !SD.UI.nightFlawHtml) return;
+    var q = String(location.search || '').replace(/^\?/, '');
+    if (/(^|&)(seed|guide|autopilot)=/.test(q)) return;
+    var G = SD.Guide;
+    if (G && G.willAutoStart && G.willAutoStart(App)) return;  /* 首次点灯交给引导讲 */
+    SD.UI.openModal('今夜 · 开灯之前', SD.UI.nightFlawHtml(App.game),
+      '<button class="btn" data-action="close-modal" style="width:100%">知道了</button>');
   }
   function continueRun() {
     var s = load();
@@ -103,7 +118,7 @@
       // localStorage 不可用时，直接恢复内存中的这一局
       UI.resetCache();
       if (App.ended || App.game.phase === 'ended') { UI.paintResult(App); UI.showScreen('screen-result'); App.screen = 'result'; }
-      else { if (App.act === 'lamp' && App.game.turn > 0) App.act = 'ask'; UI.paint(App); UI.showScreen('screen-game'); App.screen = 'game'; }
+      else { if (App.act === 'lamp') App.act = 'ask'; UI.paint(App); UI.showScreen('screen-game'); App.screen = 'game'; }
       UI.toast('已续上第 ' + App.game.night + ' 夜');
       return;
     }
@@ -112,7 +127,7 @@
     App.tone = s.tone || 'warm'; App.ended = !!s.ended; App.lastDecision = null;
     /* 五幕位置随存档恢复；已开过口的夜不再停在「点灯」幕 */
     var savedAct = ACT_ORDER.indexOf(s.act) >= 0 ? s.act : 'ask';
-    if (savedAct === 'lamp' && (App.game.turn > 0)) savedAct = 'ask';
+    if (savedAct === 'lamp') savedAct = 'ask';  /* 旧存档兼容：点灯幕已并入开夜卡 */
     App.act = savedAct;
     /* 老存档兼容：忽略 URL；缺字段一律按 basic 契约值在内存补齐，不改写存档 */
     var D = SD.Difficulty;
@@ -510,7 +525,7 @@
         var btn = e.target.closest('button'); id = btn ? btn.id : '';
       }
       switch (id) {
-        case 'btn-start': UI.audio.startAmbient(); newRun(params().seed || randSeed(), 1, null, { skipLamp: true }); break;
+        case 'btn-start': UI.audio.startAmbient(); newRun(params().seed || randSeed(), 1, null); break;
         case 'btn-continue': continueRun(); break;
         case 'btn-autopilot': UI.audio.startAmbient(); startAutopilot(); break;
         case 'btn-home': UI.showScreen('screen-intro'); App.screen = 'intro'; break;
@@ -522,7 +537,6 @@
         case 'btn-compare': modalCompare(); break;
         case 'btn-logic': modalAudit(); break;
         /* ---- 五幕导航 ---- */
-        case 'btn-act-start': UI.audio.sfx('click'); setAct('ask'); break;
         case 'btn-act-deduce': UI.audio.sfx('click'); setAct('deduce'); break;
         case 'btn-act-back-ask': setAct('ask'); break;
         case 'btn-act-to-accuse': setAct('accuse'); break;
@@ -554,13 +568,12 @@
       if (k === 'd') { setAct('deduce'); }
     });
 
-    /* 引导步进 → 切换五幕窗口：G1 停在「点灯」，G2 起进「问询」。
+    /* 引导步进 → 切窗口：G1 起都在「问询」（第①幕点灯已并入开夜卡，不再单独开窗）。
        引导层只广播步号，由应用侧决定切哪一幕（引导不改游戏状态、不清灯、不落证词）。 */
     document.addEventListener('guide:step', function (e) {
       var id = e.detail && e.detail.stepId;
       if (App.screen !== 'game' || !App.game) return;
-      if (id === 'G1') App.act = 'lamp';
-      else if (id) App.act = 'ask';
+      if (id) App.act = 'ask';
       UI.paint(App);
     });
   }
@@ -579,7 +592,7 @@
       getState: function () { return App.game ? Game.snapshot(App.game) : null; },
       listActions: function () { return App.game ? Game.listActions(App.game) : []; },
       dispatch: function (action) { var r = App.game ? Game.dispatch(App.game, action) : { ok: false, error: 'no game' }; afterDispatch(r); return r; },
-      newRun: function (seed, night, tierId) { newRun(seed || randSeed(), night || 1, tierId, { skipLamp: true }); return this.getState(); },
+      newRun: function (seed, night, tierId) { newRun(seed || randSeed(), night || 1, tierId); return this.getState(); },
       /* 裁决 K：13 项运行期参数的只读观测通道；返回深拷贝而非 cs.difficulty 引用，不缓存、不写全局 */
       getDifficulty: function () {
         var D = SD.Difficulty;
@@ -645,7 +658,7 @@
     }
 
     if (p.autopilot === '1') { setTimeout(startAutopilot, 260); }
-    else if (!guideForced && p.seed && p.night) { newRun(p.seed, parseInt(p.night, 10) || 1, bootTier, { skipLamp: true }); }
+    else if (!guideForced && p.seed && p.night) { newRun(p.seed, parseInt(p.night, 10) || 1, bootTier); }
     /* 可复跑验收入口：?guide=1 强制进入第 1 夜并从 G1 起播，全程不改写标记 */
     if (guideForced) {
       setTimeout(function () {

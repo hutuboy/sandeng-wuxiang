@@ -181,6 +181,90 @@ const NATURE = {
   await page.keyboard.press('Escape');
   await page.waitForTimeout(150);
 
+  /* ---- ③c 证词簿置顶 + 开夜提示框 ---- */
+  /* 置顶那一行：只剩「✓ 找破绽：<判定句>」，件数/灯数已删（它们本来就在顶栏与物证条上） */
+  const pin = await page.evaluate(() => {
+    const el = document.getElementById('flaw-pin');
+    if (!el) return null;
+    const list = document.getElementById('statement-list');
+    return {
+      text: (el.textContent || '').replace(/\s+/g, ''),
+      inLeft: !!el.closest('.col-left'),
+      aboveList: !!(list && (el.compareDocumentPosition(list) & Node.DOCUMENT_POSITION_FOLLOWING)),
+      visible: el.getBoundingClientRect().height > 4
+    };
+  });
+  const PIN_RE = /^✓找破绽：(有一处对不上|处处都对不上|并非处处对不上|恰好只错一处)$/;
+  check('证词簿置顶 = 「✓ 找破绽：判定句」', !!pin && PIN_RE.test(pin.text), pin && pin.text);
+  check('置顶挂在证词簿、压在证词之上', !!pin && pin.inLeft && pin.aboveList && pin.visible);
+  check('置顶不再印件数 / 灯数', !!pin && !/件物证|盏灯/.test(pin.text));
+
+  /* 开夜提示框：只有真人流程（无 seed / guide / autopilot 参数）才弹 */
+  const seeded = await page.evaluate(() => !!document.querySelector('.modal-mask'));
+  check('带 seed 参数不弹开夜框', !seeded);
+
+  const nf = await browser.newPage({ viewport: { width: 1280, height: 860 } });
+  nf.on('pageerror', e => errs.push(String(e.message)));
+  await nf.addInitScript(() => { try { localStorage.setItem('sandeng.guide.v1', 'skipped'); } catch (e) { } });
+  await nf.goto(URL, { waitUntil: 'load' });
+  await nf.waitForTimeout(260);
+  await nf.click('[data-action="set-tier"][data-tier="intermediate"]');
+  await nf.click('#btn-start');
+  await nf.waitForTimeout(360);
+  const nightModal = await nf.evaluate(() => {
+    const mm = document.querySelector('.modal-mask');
+    if (!mm) return null;
+    return {
+      title: (mm.querySelector('.modal-head h3') || {}).textContent || '',
+      rule: (mm.querySelector('.nf-rule') || {}).textContent || '',
+      body: mm.textContent,
+      hasClose: !!mm.querySelector('[data-action="close-modal"]')
+    };
+  });
+  await nf.screenshot({ path: path.join(OUT, 'p5-night-start.png') });
+  check('开夜提示框 · 弹出', !!nightModal, nightModal && nightModal.title);
+  check('开夜提示框 · 说今夜破绽（按档）',
+    !!nightModal && /今夜「无相」的破绽：\s*并非处处对不上/.test(nightModal.rule.replace(/\s+/g, ' ')),
+    nightModal && nightModal.rule.trim());
+  check('开夜提示框 · 不印算子', !!nightModal && !/[∧∨¬⊕]/.test(nightModal.body));
+  check('开夜提示框 · 可关闭', !!nightModal && nightModal.hasClose);
+  await nf.keyboard.press('Escape');
+  await nf.waitForTimeout(160);
+  const nfClosed = await nf.evaluate(() => !document.querySelector('.modal-mask'));
+  check('开夜提示框 · 关掉后不残留', nfClosed);
+  /* 关掉开夜卡后直接落在「问询」幕：第①幕点灯已由卡片接替，不再单独开窗；
+     幕条仍保留五步（① 显示为已过），所以这里只断言「窗口 data-act = ask」与五步条还在。 */
+  const afterClose = await nf.evaluate(() => ({
+    act: (document.getElementById('act-windows') || {}).dataset ? document.getElementById('act-windows').dataset.act : null,
+    lampSection: !!document.querySelector('section.act[data-act="lamp"]'),
+    steps: Array.from(document.querySelectorAll('#act-steps .act-step')).map(e => e.getAttribute('data-act-id')),
+    lampCurrent: !!document.querySelector('#act-steps .act-step.on[data-act-id="lamp"]')
+  }));
+  await nf.screenshot({ path: path.join(OUT, 'p5-night-start-after.png') });
+  check('关掉开夜卡 · 直接进问询幕', afterClose.act === 'ask' && !afterClose.lampSection, afterClose.act);
+  check('幕条仍是五步、① 不再作为当前步',
+    afterClose.steps.length === 5 && !afterClose.lampCurrent, afterClose.steps.join(','));
+  await nf.close();
+
+  /* 开夜框在 390 窄屏同样不横向溢出（新弹窗要跟别的一起过关） */
+  const nfm = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  nfm.on('pageerror', e => errs.push(String(e.message)));
+  await nfm.addInitScript(() => { try { localStorage.setItem('sandeng.guide.v1', 'skipped'); } catch (e) { } });
+  await nfm.goto(URL, { waitUntil: 'load' });
+  await nfm.waitForTimeout(240);
+  await nfm.click('#btn-start');
+  await nfm.waitForTimeout(340);
+  await nfm.screenshot({ path: path.join(OUT, 'p5-night-start-m.png') });
+  const nfmW = await nfm.evaluate(() => document.documentElement.scrollWidth);
+  const nfmBox = await nfm.evaluate(() => {
+    const el = document.querySelector('.modal-mask .modal');
+    if (!el) return null;
+    const r = el.getBoundingClientRect();
+    return { w: Math.round(r.width), right: Math.round(r.right), vw: window.innerWidth };
+  });
+  check('开夜框 · 390 窄屏不溢出', nfmW <= 390 && !!nfmBox && nfmBox.right <= nfmBox.vw, { nfmW, nfmBox });
+  await nfm.close();
+
   /* ---- ④ 窄屏 ---- */
   const m = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
   m.on('pageerror', e => errs.push(String(e.message)));

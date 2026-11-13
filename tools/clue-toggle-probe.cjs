@@ -21,7 +21,6 @@ const URL_BASE = 'file:///' + path.resolve(__dirname, '..', 'index.html').replac
   await page.waitForTimeout(200);
   // 保证在问询幕
   const act = await page.evaluate(() => document.querySelector('#act-windows').getAttribute('data-act'));
-  if (act === 'lamp') { await page.click('#btn-act-start'); await page.waitForTimeout(300); }
 
   const read = () => page.evaluate(() => {
     const c = document.querySelector('#clue-list .clue');

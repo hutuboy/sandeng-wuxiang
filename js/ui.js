@@ -289,23 +289,6 @@
     var cur = ACTS[at] || ACTS[0];
     return { steps: steps, tip: '第 ' + (at + 1) + ' / 5 步 · ' + cur.tip };
   }
-  function lampHtml(game, session) {
-    var D = SD.Difficulty;
-    var tier = D ? D.label(D.normalize(session && session.difficultyTier)) : '初级';
-    var roster = game.guests.map(function (q) {
-      return '<div class="lamp-guest"><div class="lg-p">' + portrait(q.portraitSeed) + '</div>' +
-        '<b>' + esc(q.name) + '</b><span>' + esc(q.role) + '</span></div>';
-    }).join('');
-    var brief = game.cs.clues.map(function (c) {
-      return '<li><b>' + esc(c.title) + '</b>　' + esc(C.topic(c.topic).label) + ' 应为「' + esc(c.expect) + '」</li>';
-    }).join('');
-    return {
-      title: '第 ' + ['一', '二', '三'][game.night - 1] + ' 夜 · 三客投宿',
-      lead: '灯只有 ' + game.lamps + ' 盏。问一句灭一盏，天亮前把「无相」认出来。',
-      roster: roster,
-      brief: '<li class="lb-head">柜上 ' + game.cs.clues.length + ' 件物证（真值已给出，等证词来对）· 难度 ' + esc(tier) + '</li>' + brief
-    };
-  }
   /* 指认幕：三位并列，点即点灯 */
   function accuseStageHtml(game) {
     var b = Game.belief(game);
@@ -377,12 +360,34 @@
         '<span class="glyph">' + TOPIC_GLYPH[t.id] + '</span><span class="name">' + t.label + '</span><span class="hint">' + t.hint + '</span></button>';
     }).join('');
   }
-  /* 问询幕下方那行小字：只说「这一夜找什么破绽」与物件数/灯数，不报算子（P5） */
+  /* 证词簿置顶那一行：只留「找破绽：<判定句>」。
+     物件数 / 灯数本来就在顶栏和物证条上，重复三遍只是噪音，已删（P5 文案收敛）。 */
   function solverHtml(game) {
     var ok = game.cs.solvable && game.cs.logicSolvable !== false;
     var flaw = flawOfCase(game.cs);
     var rule = flaw ? flaw.label : '破绽';
-    return (ok ? '✓ ' : '! ') + '找破绽：' + rule + ' · ' + game.cs.clues.length + ' 件物证 · ' + game.lamps + ' 盏灯';
+    return (ok ? '✓ ' : '! ') + '找破绽：' + rule;
+  }
+  /* 开夜提示框：把点灯那一幕的题面（夜名 / 三客 / 柜上物证的真值 / 今夜破绽）
+     一次摆进弹窗——判定句在最上面，物证真值用亮色标出来，之后常驻在证词簿置顶。
+     不印灯数与难度：顶栏一直报着，重复只是噪音。 */
+  function nightFlawHtml(game) {
+    var flaw = flawOfCase(game.cs);
+    if (!flaw) return '<p class="lg-dim">这一夜的残卷还没写。</p>';
+    var dm = (SD.Logic && SD.Logic.flawMeta) ? SD.Logic.flawMeta('drift') : null;
+    var guests = game.guests.map(function (q) {
+      return '<li><b>' + esc(q.name) + '</b><span>' + esc(q.role) + '</span></li>';
+    }).join('');
+    var clues = game.cs.clues.map(function (c) {
+      return '<li><b>' + esc(c.title) + '</b><span>' + esc(C.topic(c.topic).label) +
+        ' 应为<em>「' + esc(c.expect) + '」</em></span></li>';
+    }).join('');
+    return '<div class="nf-night">第 ' + ['一', '二', '三'][game.night - 1] + ' 夜 · 三客投宿</div>' +
+      '<div class="nf-rule">今夜「无相」的破绽：<b>' + esc(flaw.label) + '</b></div>' +
+      ((game.cs.drift && dm) ? '<p class="nf-drift">第三夜还多一条行为破绽：' + esc(dm.lead) + '</p>' : '') +
+      '<div class="nf-sec"><h5>三 客</h5><ul class="nf-guests">' + guests + '</ul></div>' +
+      '<div class="nf-sec"><h5>柜 上 物 证</h5><ul class="nf-clues">' + clues + '</ul></div>' +
+      '<p class="lg-dim nf-foot">问一句灭一盏；拿不准怎么筛，点左栏「AI 掌柜 · 审计」。</p>';
   }
 
   /* ---------------- 推演台（第三幕）----------------
@@ -634,13 +639,6 @@
     set('act-steps', bar.steps);
     set('act-tip', bar.tip);
 
-    /* 第一幕 */
-    var lp = lampHtml(game, ctx.session);
-    set('lamp-title', lp.title);
-    set('lamp-lead', lp.lead);
-    set('lamp-roster', lp.roster);
-    set('lamp-brief', lp.brief);
-
     /* 第二幕 */
     set('guest-row', guestStackHtml(game, ctx.selected));
     set('dialogue', dialogueHtml(game));
@@ -655,7 +653,7 @@
     set('clue-list', cluesHtml(game));
     set('statement-list', statementsHtml(game));
     set('ai-panel', aiHtml(ctx));
-    set('solver-note', solverHtml(game));
+    set('flaw-pin', solverHtml(game));
     set('turn-tag', '第 ' + game.turn + ' 回');
     set('clue-count', game.cs.clues.length + ' 件');
     set('stmt-count', game.statements.length + ' 条');
@@ -761,6 +759,7 @@
     showScreen: showScreen, openModal: openModal, closeModal: closeModal, toast: toast,
     paint: paint, paintResult: paintResult, resultHtml: resultHtml,
     logicBoardHtml: logicBoardHtml, logicStageHtml: logicStageHtml, auditHtml: auditHtml, ACTS: ACTS,
+    nightFlawHtml: nightFlawHtml,
     toggleClue: toggleClue,
     /* 换夜/换局时一并清掉物证展开状态：物证 id 是 clue_<话题>，跨夜会重名 */
     resetCache: function () { _cache = {}; openClues = {}; },

@@ -79,29 +79,17 @@
     <aside class="col col-left">
       <div class="panel grow">
         <div class="panel-head"><h2>证词簿</h2><span class="tag" id="stmt-count">0 条</span></div>
+        <div class="flaw-pin" id="flaw-pin"></div>
         <div id="statement-list" class="statement-list"></div>
         <button class="mini-btn" id="btn-compare">摊开比对</button>
         <button class="mini-btn" id="btn-logic">AI 掌柜 · 审计</button>
       </div>
     </aside>
 
-    <!-- 中：四扇窗，一次只开一扇 -->
-    <main class="col col-center" id="act-windows" data-act="lamp">
+    <!-- 中：三扇窗，一次只开一扇（第①幕「点灯」不再单独开窗：开夜卡就是那一幕） -->
+    <main class="col col-center" id="act-windows" data-act="ask">
 
-      <!-- 第一幕 · 点灯 -->
-      <section class="act" data-act="lamp">
-        <div class="act-card">
-          <div class="act-eyebrow">第 一 步 · 点 灯</div>
-          <h2 class="act-title" id="lamp-title">第一夜 · 三客投宿</h2>
-          <p class="act-lead" id="lamp-lead"></p>
-          <div class="lamp-roster" id="lamp-roster"></div>
-          <ul class="lamp-brief" id="lamp-brief"></ul>
-          <div class="act-actions">
-            <button class="btn btn-primary" id="btn-act-start">点灯 · 请第一位开口</button>
-          </div>
-          <p class="act-foot">问一句灭一盏，灯尽会自动结算；主动指认更稳。</p>
-        </div>
-      </section>
+      <!-- 第①幕 · 点灯 → 已并入开夜提示框（js/main.js showNightFlaw） -->
 
       <!-- 第二幕 · 逐客问询（三人自上而下排开，点谁问谁） -->
       <section class="act" data-act="ask">
@@ -112,7 +100,6 @@
         <div class="panel clue-strip">
           <div class="panel-head"><h2>柜上物证</h2><span class="tag" id="clue-count">1 件</span><span class="clue-hint">点看全文 · 「对簿」三人同答</span></div>
           <div id="clue-list" class="clue-list"></div>
-          <div class="solver-note" id="solver-note"></div>
         </div>
 
         <div class="dialogue-wrap panel">
