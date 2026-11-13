@@ -175,15 +175,20 @@
       if (!window.SANDENG_LLM || !window.SANDENG_LLM.enabled || !window.SANDENG_LLM.enabled()) return;
       if (!res.decision || !res.decision.text) return;
       if (App.game.phase === 'ended') return;
-      var log = App.game.log, entry = null;
+      /* 日志里的 NPC 条是「【名·动作】+ 台词」，台词只是后缀 —— 必须后缀匹配，不能整条相等，
+       * 否则永远找不到 entry、润色一次都不会发出去（v1.7.9 线上实测踩过）。 */
+      var log = App.game.log, entry = null, txt = res.decision.text;
       for (var i = log.length - 1; i >= 0; i--) {
-        if (log[i] && log[i].text === res.decision.text) { entry = log[i]; break; }
+        var row = log[i];
+        if (!row || row.type !== 'npc' || typeof row.text !== 'string') continue;
+        if (row.text.slice(-txt.length) === txt) { entry = row; break; }
       }
       if (!entry) return;
+      var prefix = entry.text.slice(0, entry.text.length - txt.length);   // 「【名·动作】」原样留住
       var gst = Game.guest(App.game, App.selected);
       window.SANDENG_LLM.polishLog(entry, {
         persona: gst ? gst.name : '', state: gst ? gst.state : null, action: res.decision.chosen
-      }, function () { UI.paint(App); });
+      }, function () { UI.paint(App); }, prefix);
     } catch (e) { /* 云端兜底任何异常都不得影响游戏 */ }
   }
   function doAsk(topic) {

@@ -42,13 +42,17 @@
     });
   }
 
-  /** 对一条日志做非阻塞润色：成功后替换 entry.text 并回调重绘；失败保持原文 */
-  function polishLog(entry, payload, rerender) {
+  /** 对一条日志做非阻塞润色：成功后替换 entry.text 并回调重绘；失败保持原文
+   *  prefix（可选）：entry.text 里不参与润色的固定前缀（如「【名·动作】」），润色只吃台词部分 */
+  function polishLog(entry, payload, rerender, prefix) {
     if (!enabled() || !entry || entry.l2polished) return;
     entry.l2polished = true;
-    polish(payload, entry.text).then(function (txt) {
-      if (txt && txt !== entry.text) {
-        entry.text = txt;
+    var pre = typeof prefix === 'string' ? prefix : '';
+    var text = typeof entry.text === 'string' ? entry.text : '';
+    var base = (pre && text.slice(0, pre.length) === pre) ? text.slice(pre.length) : text;
+    polish(payload, base).then(function (txt) {
+      if (txt && txt !== base) {
+        entry.text = pre + txt;
         if (typeof rerender === 'function') rerender();
       }
     });
