@@ -23,6 +23,7 @@
     if (ACT_ORDER.indexOf(act) < 0) return;
     if (App.act === act) return;
     App.act = act;
+    UI.audio.sfx('page');              // P1：幕切换翻页声（幂等，重复点同幕不响）
     UI.paint(App);
     save();
   }
@@ -163,7 +164,19 @@
     var opened = App.lastDecisions
       ? App.lastDecisions.some(function (d) { return !!d.revealed; })
       : !!(res.decision && res.decision.revealed);
-    UI.audio.sfx(opened ? 'reveal' : 'lantern');
+    /* P1：语气音按 NPC 实际动作细分（只编码语气/信息量，不编码真伪身份）。
+       离店 / 遁走是玩家可见的剧情事件，用专属音；其余沿用 reveal / lantern。 */
+    var acts = App.lastDecisions || (res.decision ? [res.decision] : []);
+    var hasLeave = false;
+    for (var di = 0; di < acts.length; di++) {
+      var ch = acts[di] && acts[di].chosen;
+      if (ch === 'LEAVE') { hasLeave = true; break; }
+    }
+    /* FLEE 不在这里播空盏音：它必然触发 phase=ended → endNight() 统一播结局音，避免叠音。
+       离店（LEAVE）不结束本夜，属过程事件，在这里播。 */
+    if (hasLeave) UI.audio.sfx('leave');
+    else if (opened) UI.audio.sfx('reveal');
+    else UI.audio.sfx('lantern');
     UI.paint(App);
     save();
     l2Polish(res);
@@ -199,13 +212,13 @@
     if (!guest || guest.flags.left) { UI.toast('这位客人已不在座'); return; }
     /* 快捷键可能在「点灯 / 推演 / 指认」幕里按下 —— 先落回问询幕，别让灯灭了却看不见对话 */
     if (App.act !== 'ask') App.act = 'ask';
-    UI.audio.sfx('click');
+    UI.audio.sfx(App.tone === 'press' ? 'ask-press' : App.tone === 'show' ? 'ask-show' : 'ask-warm');
     afterDispatch(Game.dispatch(App.game, { type: 'ASK', guestId: App.selected, topic: topic, tone: App.tone }));
   }
   function doListen() {
     if (App.autopilot) return;
     if (App.act !== 'ask') App.act = 'ask';
-    UI.audio.sfx('click');
+    UI.audio.sfx('listen');
     afterDispatch(Game.dispatch(App.game, { type: 'LISTEN' }));
   }
   /* 对簿：一盏灯，三人同时就这一件物证开口（不必先点客人 —— 这正是它和「问一句」的区别） */
@@ -214,7 +227,7 @@
     if (!topic) { UI.toast('先挑一件物证'); return; }
     if (App.game.phase !== 'playing') return;
     if (App.act !== 'ask') App.act = 'ask';
-    UI.audio.sfx('lantern');
+    UI.audio.sfx('confront');
     afterDispatch(Game.dispatch(App.game, { type: 'CONFRONT', topic: topic }));
   }
   function doAccuse(guestId) {
@@ -229,7 +242,9 @@
     App.session.totalScore += (r.score || 0);
     App.session.nights.push({ night: App.game.night, ending: r.ending, correct: r.correct, score: r.score, chain: r.chain, lampsLeft: r.lampsLeft, seed: App.game.seed });
     save();
-    UI.audio.sfx(r.correct ? 'win' : 'bad');
+    /* P2：五种结局各有专属短句；答案在此刻已揭晓，不构成泄密。
+       用 UI.endingKey 映射，缺省（老存档无 ending 字段）回落到 win/bad。 */
+    UI.audio.sfx(r.ending ? UI.endingKey(r.ending) : (r.correct ? 'win' : 'bad'));
     UI.paintResult(App);
     UI.showScreen('screen-result'); App.screen = 'result';
   }
@@ -245,6 +260,7 @@
     q('finale-desc').textContent = '三夜过去，你认出了 ' + correct + ' 位无相。' +
       (correct === 3 ? '灯一直没灭，簿上每个名字都对得上。' : '有些灯灭得早，但天总会亮。') +
       '　累计 ' + App.session.totalScore + ' 分。';
+    UI.audio.sfx(UI.rankKey(correct));   // P2：三夜评级动机，按命中数递减配器层数
     q('finale-table').innerHTML = '<table class="finale-table"><thead><tr><th>夜</th><th>结局</th><th>指认</th><th>证据链</th><th>余灯</th><th>得分</th></tr></thead><tbody>' +
       ns.map(function (n) {
         return '<tr><td>第 ' + ['一', '二', '三'][n.night - 1] + ' 夜</td><td>' + UI.esc(n.ending) + '</td><td class="' + (n.correct ? 'ok' : 'no') + '">' + (n.correct ? '命中' : '失手') + '</td><td>' + n.chain + '</td><td>' + n.lampsLeft + '</td><td class="' + (n.score > 0 ? 'ok' : 'no') + '">' + (n.score > 0 ? '+' : '') + n.score + '</td></tr>';
@@ -472,7 +488,7 @@
         }
         if (a === 'ask') { doAsk(el.getAttribute('data-topic')); return; }
         if (a === 'confront') { doConfront(el.getAttribute('data-topic')); return; }
-        if (a === 'close-modal') { UI.closeModal(); return; }
+        if (a === 'close-modal') { UI.audio.sfx('modal-close'); UI.closeModal(); return; }
         if (a === 'guide-replay') {
           /* 设计案 3.3：先关菜单，下一帧再从 G1 起播，禁止两层遮罩并存 */
           UI.closeModal();
@@ -497,6 +513,7 @@
       var md = e.target.closest('[data-modal]');
       if (md) {
         var m = md.getAttribute('data-modal');
+        UI.audio.sfx('modal-open');
         if (m === 'howto') modalHowto();
         if (m === 'selftest') modalSelftest();
         if (m === 'about') modalAbout();
@@ -508,12 +525,12 @@
       }
       switch (id) {
         case 'btn-start': UI.audio.startAmbient(); newRun(params().seed || randSeed(), 1, null); break;
-        case 'btn-continue': continueRun(); break;
+        case 'btn-continue': UI.audio.sfx('load'); continueRun(); break;
         case 'btn-autopilot': UI.audio.startAmbient(); startAutopilot(); break;
-        case 'btn-home': UI.showScreen('screen-intro'); App.screen = 'intro'; break;
+        case 'btn-home': UI.audio.sfx('page'); UI.showScreen('screen-intro'); App.screen = 'intro'; break;
         case 'btn-sound': App.soundOn = UI.audio.toggle(); q('btn-sound').classList.toggle('on', !App.soundOn); q('btn-sound').textContent = App.soundOn ? '♪' : '♪̸'; break;
-        case 'btn-help': modalHelpMenu(); break;
-        case 'btn-ai-toggle': App.aiShown = !App.aiShown; applyAIVis(); break;
+        case 'btn-help': UI.audio.sfx('modal-open'); modalHelpMenu(); break;
+        case 'btn-ai-toggle': UI.audio.sfx('click'); App.aiShown = !App.aiShown; applyAIVis(); break;
         case 'btn-listen': doListen(); break;
         case 'btn-accuse': setAct('accuse'); break;
         /* ---- 五幕导航 ---- */
@@ -521,12 +538,12 @@
         case 'btn-act-back-ask': setAct('ask'); break;
         case 'btn-act-to-accuse': setAct('accuse'); break;
         case 'btn-act-back-deduce': setAct('deduce'); break;
-        case 'btn-next-night': nextNight(); break;
-        case 'btn-retry-night': startNight(App.game.night, false); break;
-        case 'btn-copy-share': copy(shareText()); break;
-        case 'btn-new-run': newRun(randSeed(), 1); break;
-        case 'btn-finale-agent': modalDefect(); break;
-        case 'btn-finale-copy': copy(shareText()); break;
+        case 'btn-next-night': UI.audio.sfx('page'); nextNight(); break;
+        case 'btn-retry-night': UI.audio.sfx('page'); startNight(App.game.night, false); break;
+        case 'btn-copy-share': UI.audio.sfx('click'); copy(shareText()); break;
+        case 'btn-new-run': UI.audio.sfx('lantern'); newRun(randSeed(), 1); break;
+        case 'btn-finale-agent': UI.audio.sfx('modal-open'); modalDefect(); break;
+        case 'btn-finale-copy': UI.audio.sfx('click'); copy(shareText()); break;
       }
     });
     document.addEventListener('keydown', function (e) {
@@ -537,7 +554,8 @@
       var k = e.key.toLowerCase();
       if ('123'.indexOf(k) >= 0 && k.length === 1) {
         var gi = parseInt(k, 10) - 1;
-        if (App.game.guests[gi]) { App.selected = App.game.guests[gi].id; UI.paint(App); }
+        /* P1：与鼠标选人同一声，键盘操作不再静音 */
+        if (App.game.guests[gi]) { App.selected = App.game.guests[gi].id; UI.audio.sfx('click'); UI.paint(App); }
         return;
       }
       var idx = 'qwert'.indexOf(k);
@@ -545,6 +563,16 @@
       if (k === 'l') { doListen(); return; }
       if (k === 'a') { setAct('accuse'); return; }
       if (k === 'd') { setAct('deduce'); }
+    });
+
+    /* P1：按钮 hover 轻响。用事件委托 + audio.hover() 内的 ctx.currentTime 节流（60ms），
+       只覆盖可点击控件；弹窗打开 / 引导期间 / 自动试玩时不响，避免涂满一层噪音。 */
+    document.addEventListener('mouseover', function (e) {
+      if (App.autopilot || !App.game || document.querySelector('.modal-mask')) return;
+      if (SD.Guide && SD.Guide.status && SD.Guide.status().active) return;
+      var el = e.target && e.target.closest ? e.target.closest('button, [data-action], [data-modal]') : null;
+      if (!el || el.disabled) return;
+      UI.audio.hover();
     });
 
     /* 引导步进 → 切窗口：G1 起都在「问询」（第①幕点灯已并入开夜卡，不再单独开窗）。

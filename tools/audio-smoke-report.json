@@ -1,0 +1,410 @@
+{
+  "generatedAt": "2026-11-16T11:05:10.579Z",
+  "url": "file:///D:/Projects/games/AI造游戏/index.html?guide=0",
+  "presets": [
+    {
+      "k": "click",
+      "osc": 1,
+      "noise": 0,
+      "waves": [
+        "triangle"
+      ],
+      "freqs": [
+        520
+      ]
+    },
+    {
+      "k": "lantern",
+      "osc": 1,
+      "noise": 0,
+      "waves": [
+        "sine"
+      ],
+      "freqs": [
+        330
+      ]
+    },
+    {
+      "k": "reveal",
+      "osc": 1,
+      "noise": 0,
+      "waves": [
+        "sine"
+      ],
+      "freqs": [
+        1110
+      ]
+    },
+    {
+      "k": "bad",
+      "osc": 1,
+      "noise": 0,
+      "waves": [
+        "sawtooth"
+      ],
+      "freqs": [
+        90
+      ]
+    },
+    {
+      "k": "win",
+      "osc": 1,
+      "noise": 0,
+      "waves": [
+        "sine"
+      ],
+      "freqs": [
+        1320
+      ]
+    },
+    {
+      "k": "type",
+      "osc": 1,
+      "noise": 0,
+      "waves": [
+        "square"
+      ],
+      "freqs": [
+        900
+      ]
+    },
+    {
+      "k": "hover",
+      "osc": 1,
+      "noise": 0,
+      "waves": [
+        "sine"
+      ],
+      "freqs": [
+        1400
+      ]
+    },
+    {
+      "k": "modal-open",
+      "osc": 1,
+      "noise": 0,
+      "waves": [
+        "sine"
+      ],
+      "freqs": [
+        440
+      ]
+    },
+    {
+      "k": "modal-close",
+      "osc": 1,
+      "noise": 0,
+      "waves": [
+        "sine"
+      ],
+      "freqs": [
+        660
+      ]
+    },
+    {
+      "k": "page",
+      "osc": 2,
+      "noise": 0,
+      "waves": [
+        "triangle",
+        "triangle"
+      ],
+      "freqs": [
+        494,
+        659
+      ]
+    },
+    {
+      "k": "load",
+      "osc": 1,
+      "noise": 0,
+      "waves": [
+        "sine"
+      ],
+      "freqs": [
+        523
+      ]
+    },
+    {
+      "k": "lantern-out",
+      "osc": 1,
+      "noise": 0,
+      "waves": [
+        "sawtooth"
+      ],
+      "freqs": [
+        90
+      ]
+    },
+    {
+      "k": "wind-gust",
+      "osc": 0,
+      "noise": 1,
+      "waves": [],
+      "freqs": []
+    },
+    {
+      "k": "ask-warm",
+      "osc": 1,
+      "noise": 0,
+      "waves": [
+        "sine"
+      ],
+      "freqs": [
+        554
+      ]
+    },
+    {
+      "k": "ask-press",
+      "osc": 1,
+      "noise": 0,
+      "waves": [
+        "sawtooth"
+      ],
+      "freqs": [
+        220
+      ]
+    },
+    {
+      "k": "ask-show",
+      "osc": 2,
+      "noise": 0,
+      "waves": [
+        "triangle",
+        "triangle"
+      ],
+      "freqs": [
+        660,
+        990
+      ]
+    },
+    {
+      "k": "listen",
+      "osc": 1,
+      "noise": 0,
+      "waves": [
+        "sine"
+      ],
+      "freqs": [
+        294
+      ]
+    },
+    {
+      "k": "confront",
+      "osc": 3,
+      "noise": 0,
+      "waves": [
+        "triangle",
+        "triangle",
+        "triangle"
+      ],
+      "freqs": [
+        330,
+        415,
+        494
+      ]
+    },
+    {
+      "k": "leave",
+      "osc": 1,
+      "noise": 1,
+      "waves": [
+        "triangle"
+      ],
+      "freqs": [
+        311
+      ]
+    },
+    {
+      "k": "ending-灯灭",
+      "osc": 3,
+      "noise": 0,
+      "waves": [
+        "sawtooth",
+        "sawtooth",
+        "sawtooth"
+      ],
+      "freqs": [
+        440,
+        392,
+        330
+      ]
+    },
+    {
+      "k": "ending-一灯独明",
+      "osc": 2,
+      "noise": 0,
+      "waves": [
+        "sine",
+        "sine"
+      ],
+      "freqs": [
+        523,
+        1046
+      ]
+    },
+    {
+      "k": "ending-灯下留名",
+      "osc": 5,
+      "noise": 0,
+      "waves": [
+        "sine",
+        "sine",
+        "sine",
+        "sine",
+        "sine"
+      ],
+      "freqs": [
+        523,
+        587,
+        659,
+        784,
+        880
+      ]
+    },
+    {
+      "k": "ending-破晓",
+      "osc": 3,
+      "noise": 0,
+      "waves": [
+        "triangle",
+        "triangle",
+        "triangle"
+      ],
+      "freqs": [
+        392,
+        440,
+        523
+      ]
+    },
+    {
+      "k": "ending-空盏",
+      "osc": 1,
+      "noise": 1,
+      "waves": [
+        "sine"
+      ],
+      "freqs": [
+        110
+      ]
+    },
+    {
+      "k": "rank-3",
+      "osc": 4,
+      "noise": 0,
+      "waves": [
+        "sine",
+        "sine",
+        "sine",
+        "sine"
+      ],
+      "freqs": [
+        523,
+        659,
+        784,
+        1046
+      ]
+    },
+    {
+      "k": "rank-2",
+      "osc": 3,
+      "noise": 0,
+      "waves": [
+        "sine",
+        "sine",
+        "sine"
+      ],
+      "freqs": [
+        523,
+        659,
+        784
+      ]
+    },
+    {
+      "k": "rank-1",
+      "osc": 2,
+      "noise": 0,
+      "waves": [
+        "sine",
+        "sine"
+      ],
+      "freqs": [
+        523,
+        659
+      ]
+    },
+    {
+      "k": "rank-0",
+      "osc": 1,
+      "noise": 0,
+      "waves": [
+        "sine"
+      ],
+      "freqs": [
+        262
+      ]
+    }
+  ],
+  "results": [
+    {
+      "name": "28 种预设全部能合成出声",
+      "pass": true,
+      "detail": "28/28"
+    },
+    {
+      "name": "wind-gust 使用程序噪声源",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "name": "reveal 为升频音色（不泄密的通用揭示音）",
+      "pass": true,
+      "detail": "1110"
+    },
+    {
+      "name": "五种结局音色彼此不同",
+      "pass": true,
+      "detail": "440,392,330|0 / 523,1046|0 / 523,587,659,784,880|0 / 392,440,523|0 / 110|1"
+    },
+    {
+      "name": "hover 60ms 节流：连调 10 次只响 1 次",
+      "pass": true,
+      "detail": "osc=1"
+    },
+    {
+      "name": "关闭音效后零合成调用",
+      "pass": true,
+      "detail": "off=0"
+    },
+    {
+      "name": "重新开启后恢复合成",
+      "pass": true,
+      "detail": "on=1"
+    },
+    {
+      "name": "三种语气分别触发 ask-warm/press/show",
+      "pass": true,
+      "detail": "ask-warm,ask-press,ask-show"
+    },
+    {
+      "name": "无 AudioContext 时不抛异常（全站静默降级）",
+      "pass": true,
+      "detail": "threw=false"
+    },
+    {
+      "name": "无外部音频/网络请求",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "无页面运行时错误",
+      "pass": true,
+      "detail": ""
+    }
+  ],
+  "errors": [],
+  "nonfile": [],
+  "pass": true,
+  "passed": 11,
+  "total": 11
+}

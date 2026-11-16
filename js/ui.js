@@ -157,9 +157,53 @@
     resize(); requestAnimationFrame(draw);
   }
 
-  /* ---------------- WebAudio 程序化音效 ---------------- */
+  /* ---------------- WebAudio 程序化音效 ----------------
+   * P1：表驱动预设（约 20 种），全部振荡器 / 程序噪声合成，零外部素材、file:// 零网络。
+   * 前 6 种与历史行为等价；新增音色只编码「信息量 / 情绪 / 仪式感」，
+   * 绝不编码证词真伪或无相身份 —— 推理必须留给玩家。
+   */
+  var SFX = {
+    /* 历史 6 种（保留原参数与原包络） */
+    click:   { f: 520, dur: .045, w: 'triangle', peak: .12 },
+    lantern: { f: 330, dur: .16,  w: 'sine',     peak: .16 },
+    reveal:  { f: 740, to: 1110, dur: .30, w: 'sine', peak: .16 },
+    bad:     { f: 160, to: 90,   dur: .28, w: 'sawtooth', peak: .10 },
+    win:     { f: 880, to: 1320, dur: .55, w: 'sine', peak: .18 },
+    type:    { f: 900, dur: .02,  w: 'square',  peak: .025 },
+    /* 界面 */
+    hover:       { f: 1200, to: 1400, dur: .02, w: 'sine', peak: .02 },
+    'modal-open':  { f: 660, to: 440, dur: .12, w: 'sine', peak: .08 },
+    'modal-close': { f: 440, to: 660, dur: .12, w: 'sine', peak: .08 },
+    page:        { seq: [{ f: 494, dur: .06, w: 'triangle', peak: .07 }, { f: 659, dur: .09, w: 'triangle', peak: .07, at: .05 }] },
+    load:        { f: 392, to: 523, dur: .22, w: 'sine', peak: .10 },
+    /* 灯火 / 环境 */
+    'lantern-out': { f: 240, to: 90, dur: .50, w: 'sawtooth', peak: .12, filter: 800, filterTo: 160 },
+    'wind-gust':   { noise: true, dur: .80, peak: .09, filter: 400, filterTo: 180 },
+    /* 问询语气（只区分语气，不区分真话假话） */
+    'ask-warm':  { f: 440, to: 554, dur: .22, w: 'sine', peak: .10 },
+    'ask-press': { f: 220, dur: .18, w: 'sawtooth', peak: .10, filter: 600, filterTo: 1200 },
+    'ask-show':  { seq: [{ f: 660, dur: .20, w: 'triangle', peak: .07 }, { f: 990, dur: .20, w: 'triangle', peak: .07, at: 0 }] },
+    listen:      { f: 392, to: 294, dur: .30, w: 'sine', peak: .08 },
+    confront:    { seq: [{ f: 330, dur: .12, w: 'triangle', peak: .09 }, { f: 415, dur: .12, w: 'triangle', peak: .09, at: .09 }, { f: 494, dur: .12, w: 'triangle', peak: .09, at: .18 }] },
+    /* 剧情：客人离店是玩家可见行为，播衣料短噪 + 下行小二度；遁走音并进「空盏」结局 */
+    leave: { seq: [{ noise: true, dur: .14, peak: .06, filter: 1800, filterTo: 700 }, { f: 330, to: 311, dur: .24, w: 'triangle', peak: .08, at: .05 }] },
+    /* P2 五种结局：五声音阶短句。此时答案已揭晓，不构成泄漏。 */
+    'ending-灯灭':     { seq: [{ f: 440, dur: .20, w: 'sawtooth', peak: .09, filter: 900 }, { f: 392, dur: .22, w: 'sawtooth', peak: .09, at: .16, filter: 800 }, { f: 330, dur: .40, w: 'sawtooth', peak: .10, at: .34, filter: 700 }] },
+    'ending-一灯独明': { seq: [{ f: 523, dur: .50, w: 'sine', peak: .12 }, { f: 1046, dur: .40, w: 'sine', peak: .04, at: .06 }] },
+    'ending-灯下留名': { seq: [{ f: 523, dur: .16, w: 'sine', peak: .10 }, { f: 587, dur: .16, w: 'sine', peak: .10, at: .14 }, { f: 659, dur: .16, w: 'sine', peak: .10, at: .28 }, { f: 784, dur: .30, w: 'sine', peak: .12, at: .42 }, { f: 880, dur: .50, w: 'sine', peak: .06, at: .56 }] },
+    'ending-破晓':     { seq: [{ f: 392, dur: .18, w: 'triangle', peak: .10 }, { f: 440, dur: .18, w: 'triangle', peak: .10, at: .15 }, { f: 523, dur: .40, w: 'triangle', peak: .12, at: .30 }] },
+    'ending-空盏':     { seq: [{ noise: true, dur: .90, peak: .08, filter: 500, filterTo: 120 }, { f: 220, to: 110, dur: .70, w: 'sine', peak: .07, at: .10 }] },
+    /* P2 三夜评级：同一动机 C-E-G，按层数递减（守夜人 4 层 → 夜行人 1 层） */
+    'rank-3': { seq: [{ f: 523, dur: .30, w: 'sine', peak: .11 }, { f: 659, dur: .30, w: 'sine', peak: .09, at: .14 }, { f: 784, dur: .30, w: 'sine', peak: .09, at: .28 }, { f: 1046, dur: .70, w: 'sine', peak: .08, at: .42 }] },
+    'rank-2': { seq: [{ f: 523, dur: .30, w: 'sine', peak: .11 }, { f: 659, dur: .30, w: 'sine', peak: .09, at: .14 }, { f: 784, dur: .55, w: 'sine', peak: .09, at: .28 }] },
+    'rank-1': { seq: [{ f: 523, dur: .30, w: 'sine', peak: .11 }, { f: 659, dur: .50, w: 'sine', peak: .09, at: .14 }] },
+    'rank-0': { seq: [{ f: 262, dur: .60, w: 'sine', peak: .10 }] }
+  };
+  function endingKey(name) { return 'ending-' + (name || ''); }
+  function rankKey(correct) { return 'rank-' + Math.max(0, Math.min(3, correct | 0)); }
+
   var audio = {
-    on: true, ctx: null, master: null, ambient: null,
+    on: true, ctx: null, master: null, ambient: null, noiseBuf: null, lastHover: -1,
     ensure: function () {
       if (this.ctx) return this.ctx;
       var AC = window.AudioContext || window.webkitAudioContext;
@@ -167,6 +211,36 @@
       this.ctx = new AC();
       this.master = this.ctx.createGain(); this.master.gain.value = 0.30; this.master.connect(this.ctx.destination);
       return this.ctx;
+    },
+    noise: function (c) {
+      if (this.noiseBuf) return this.noiseBuf;
+      var n = Math.floor((c.sampleRate || 44100) * 1), b = c.createBuffer(1, n, c.sampleRate || 44100), d = b.getChannelData(0);
+      for (var i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+      this.noiseBuf = b; return b;
+    },
+    /* 单声部：振荡器或程序噪声 → 可选 lowpass 扫描 → ADSR(12ms 起音 + 指数衰减) → master */
+    voice: function (c, at, s) {
+      var dur = s.dur || .1, src, gn = c.createGain();
+      if (s.noise) {
+        src = c.createBufferSource(); src.buffer = this.noise(c);
+        if (s.filter) {
+          var fn = c.createBiquadFilter(); fn.type = 'lowpass';
+          fn.frequency.setValueAtTime(s.filter, at);
+          if (s.filterTo) fn.frequency.exponentialRampToValueAtTime(s.filterTo, at + dur);
+          src.connect(fn); fn.connect(gn);
+        } else src.connect(gn);
+      } else {
+        src = c.createOscillator(); src.type = s.w || 'sine';
+        src.frequency.setValueAtTime(s.f || 440, at);
+        if (s.to) src.frequency.exponentialRampToValueAtTime(s.to, at + dur);
+        src.connect(gn);
+      }
+      var peak = s.peak == null ? .10 : s.peak;
+      gn.gain.setValueAtTime(0.0001, at);
+      gn.gain.exponentialRampToValueAtTime(peak, at + Math.min(.012, dur / 3));
+      gn.gain.exponentialRampToValueAtTime(0.0001, at + dur);
+      gn.connect(this.master);
+      src.start(at); src.stop(at + dur + .02);
     },
     startAmbient: function () {
       var c = this.ensure(); if (!c || this.ambient) return;
@@ -193,17 +267,18 @@
       if (!this.on) return;
       var c = this.ensure(); if (!c) return;
       if (c.state === 'suspended') c.resume();
-      var now = c.currentTime;
-      var map = { click: [520, .045, 'triangle', .12], lantern: [330, .16, 'sine', .16], reveal: [740, .30, 'sine', .16], bad: [160, .28, 'sawtooth', .10], win: [880, .55, 'sine', .18], type: [900, .02, 'square', .025] };
-      var m = map[kind] || map.click;
-      var o = c.createOscillator(), gn = c.createGain();
-      o.type = m[2]; o.frequency.setValueAtTime(m[0], now);
-      if (kind === 'reveal' || kind === 'win') o.frequency.exponentialRampToValueAtTime(m[0] * 1.5, now + m[1]);
-      if (kind === 'bad') o.frequency.exponentialRampToValueAtTime(90, now + m[1]);
-      gn.gain.setValueAtTime(0.0001, now);
-      gn.gain.exponentialRampToValueAtTime(m[3], now + .012);
-      gn.gain.exponentialRampToValueAtTime(.0001, now + m[1]);
-      o.connect(gn); gn.connect(this.master); o.start(now); o.stop(now + m[1] + .02);
+      var now = c.currentTime, s = SFX[kind] || SFX.click, self = this;
+      if (s.seq) s.seq.forEach(function (n) { self.voice(c, now + (n.at || 0), n); });
+      else this.voice(c, now, s);
+    },
+    /* hover 专用：用 ctx.currentTime 节流（不引入 Date / performance.now / setTimeout） */
+    hover: function () {
+      if (!this.on) return;
+      var c = this.ensure(); if (!c) return;
+      var t = c.currentTime;
+      if (this.lastHover >= 0 && t - this.lastHover < .06) return;
+      this.lastHover = t;
+      this.sfx('hover');
     }
   };
 
@@ -708,6 +783,7 @@
 
   SD.UI = {
     esc: esc, markWords: markWords, portrait: portrait, initCanvas: initCanvas, audio: audio,
+    endingKey: endingKey, rankKey: rankKey,
     showScreen: showScreen, openModal: openModal, closeModal: closeModal, toast: toast,
     paint: paint, paintResult: paintResult, resultHtml: resultHtml,
     logicBoardHtml: logicBoardHtml, logicStageHtml: logicStageHtml, ACTS: ACTS,
