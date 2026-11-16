@@ -94,6 +94,7 @@
     App.screen = 'game';
     UI.paint(App);
     UI.audio.startAmbient();
+    UI.audio.setMood(App.game);       // P3：开夜即按初始状态定环境音
     save();
     if (!fresh) UI.toast('续上第 ' + night + ' 夜');
     /* 新用户引导：仅「首次点灯」的第 1 夜全新局触发；其余守卫在 Guide 内 */
@@ -148,6 +149,7 @@
       UI.paint(App); UI.showScreen('screen-game'); App.screen = 'game';
     }
     UI.audio.startAmbient();
+    UI.audio.setMood(App.game);       // P3：读档恢复的局面也要驱动环境音
   }
 
   /* ---------------- 动作 ---------------- */
@@ -177,6 +179,7 @@
     if (hasLeave) UI.audio.sfx('leave');
     else if (opened) UI.audio.sfx('reveal');
     else UI.audio.sfx('lantern');
+    UI.audio.setMood(App.game);       // P3：每次落子后按新的余灯/张力/疑心平滑环境音
     UI.paint(App);
     save();
     l2Polish(res);
@@ -578,11 +581,19 @@
     /* 引导步进 → 切窗口：G1 起都在「问询」（第①幕点灯已并入开夜卡，不再单独开窗）。
        引导层只广播步号，由应用侧决定切哪一幕（引导不改游戏状态、不清灯、不落证词）。 */
     document.addEventListener('guide:step', function (e) {
-      var id = e.detail && e.detail.stepId;
+      var d = e.detail || {}, id = d.stepId;
+      /* P4：引导期音效开关不可达，步进音完全由事件驱动；尊重 App.soundOn（audio.on 内部已判）。 */
+      UI.audio.sfx('guidance');
       if (App.screen !== 'game' || !App.game) return;
       if (id) App.act = 'ask';
       UI.paint(App);
     });
+    /* P4：引导完成 / 跳过各给一个收束音；不改引导 60 项契约、不动门禁期望值。 */
+    document.addEventListener('guide:done', function (e) {
+      var v = e.detail && e.detail.value;
+      UI.audio.sfx(v === 'skipped' ? 'guide-skip' : 'guide-done');
+    });
+    document.addEventListener('guide:skip', function () { UI.audio.sfx('guide-skip'); });
   }
 
   function applyAIVis() {

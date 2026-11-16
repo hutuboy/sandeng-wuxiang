@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-16T11:05:10.579Z",
+  "generatedAt": "2026-11-16T11:16:47.825Z",
   "url": "file:///D:/Projects/games/AI造游戏/index.html?guide=0",
   "presets": [
     {
@@ -343,13 +343,50 @@
       "freqs": [
         262
       ]
+    },
+    {
+      "k": "guidance",
+      "osc": 1,
+      "noise": 0,
+      "waves": [
+        "sine"
+      ],
+      "freqs": [
+        587
+      ]
+    },
+    {
+      "k": "guide-done",
+      "osc": 3,
+      "noise": 0,
+      "waves": [
+        "sine",
+        "sine",
+        "sine"
+      ],
+      "freqs": [
+        523,
+        659,
+        784
+      ]
+    },
+    {
+      "k": "guide-skip",
+      "osc": 1,
+      "noise": 0,
+      "waves": [
+        "sine"
+      ],
+      "freqs": [
+        330
+      ]
     }
   ],
   "results": [
     {
-      "name": "28 种预设全部能合成出声",
+      "name": "31 种预设全部能合成出声",
       "pass": true,
-      "detail": "28/28"
+      "detail": "31/31"
     },
     {
       "name": "wind-gust 使用程序噪声源",
@@ -387,6 +424,46 @@
       "detail": "ask-warm,ask-press,ask-show"
     },
     {
+      "name": "P3 环境层已建且状态驱动有效",
+      "pass": true,
+      "detail": "OK"
+    },
+    {
+      "name": "P3 余灯越少 → 低通越闷（截止下降）",
+      "pass": true,
+      "detail": "320 → 203.33333333333334"
+    },
+    {
+      "name": "P3 张力越高 → 呼吸 LFO 越快",
+      "pass": true,
+      "detail": "0.10285714285714287 → 0.30000000000000004"
+    },
+    {
+      "name": "P3 疑心越高 → 不谐和层越强",
+      "pass": true,
+      "detail": "0.0001 → 0.0101"
+    },
+    {
+      "name": "P3 夜数递进 → 基音轻微升调",
+      "pass": true,
+      "detail": "55 → 56.65"
+    },
+    {
+      "name": "P4 引导步进触发 guidance",
+      "pass": true,
+      "detail": "guidance,guide-done,guide-skip,guide-skip"
+    },
+    {
+      "name": "P4 引导完成触发 guide-done",
+      "pass": true,
+      "detail": "guidance,guide-done,guide-skip,guide-skip"
+    },
+    {
+      "name": "P4 引导跳过触发 guide-skip",
+      "pass": true,
+      "detail": "guidance,guide-done,guide-skip,guide-skip"
+    },
+    {
       "name": "无 AudioContext 时不抛异常（全站静默降级）",
       "pass": true,
       "detail": "threw=false"
@@ -405,6 +482,6 @@
   "errors": [],
   "nonfile": [],
   "pass": true,
-  "passed": 11,
-  "total": 11
+  "passed": 19,
+  "total": 19
 }

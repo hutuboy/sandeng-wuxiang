@@ -20,10 +20,11 @@ function stubScript() {
   window.__AC = { osc: [], noise: [], gains: [], filters: [], started: [], resumed: 0, suspended: 0 };
   function param(v) {
     return {
-      value: v == null ? 0 : v,
+      value: v == null ? 0 : v, targets: [],
       setValueAtTime(x) { this.value = x; },
       exponentialRampToValueAtTime(x) { this.value = x; },
-      linearRampToValueAtTime(x) { this.value = x; }
+      linearRampToValueAtTime(x) { this.value = x; },
+      setTargetAtTime(x) { this.value = x; this.targets.push(x); }
     };
   }
   function node(extra) {
@@ -87,7 +88,8 @@ function check(name, pass, detail) {
     'hover', 'modal-open', 'modal-close', 'page', 'load',
     'lantern-out', 'wind-gust', 'ask-warm', 'ask-press', 'ask-show', 'listen', 'confront', 'leave',
     'ending-灯灭', 'ending-一灯独明', 'ending-灯下留名', 'ending-破晓', 'ending-空盏',
-    'rank-3', 'rank-2', 'rank-1', 'rank-0'
+    'rank-3', 'rank-2', 'rank-1', 'rank-0',
+    'guidance', 'guide-done', 'guide-skip'
   ];
   const presetReport = await page.evaluate((kinds) => {
     const a = window.SD.UI.audio;
@@ -100,7 +102,7 @@ function check(name, pass, detail) {
     });
   }, presets);
   const silent = presetReport.filter(r => r.osc + r.noise === 0);
-  check('28 种预设全部能合成出声', silent.length === 0, silent.length ? silent.map(r => r.k).join(',') : '28/28');
+  check('31 种预设全部能合成出声', silent.length === 0, silent.length ? silent.map(r => r.k).join(',') : presets.length + '/' + presets.length);
   const noisyPreset = presetReport.find(r => r.k === 'wind-gust');
   check('wind-gust 使用程序噪声源', noisyPreset && noisyPreset.noise >= 1, noisyPreset && noisyPreset.noise);
   const revealPreset = presetReport.find(r => r.k === 'reveal');
@@ -157,6 +159,42 @@ function check(name, pass, detail) {
   check('三种语气分别触发 ask-warm/press/show',
     ['ask-warm', 'ask-press', 'ask-show'].every(k => seenTones.includes(k)),
     seenTones.filter(k => k.indexOf('ask-') === 0).join(','));
+
+  /* --- 4b. P3 自适应环境层：状态驱动 + 方向正确 + 不泄漏身份 --- */
+  const mood = await page.evaluate(() => {
+    const a = window.SD.UI.audio;
+    a.startAmbient();
+    const n = a.ambNodes;
+    if (!n) return { ok: false, why: 'no ambNodes' };
+    const mk = (lampsLeft, tension, suspicion, night) => ({
+      lamps: 6, lampsLeft, night,
+      guests: [{ state: { tension, suspicion } }, { state: { tension, suspicion } }]
+    });
+    const read = () => ({ f: n.filter.frequency.targets.slice(-1)[0], l: n.lfo.frequency.targets.slice(-1)[0], d: n.disGain.gain.targets.slice(-1)[0], base: n.bases[0].frequency.targets.slice(-1)[0] });
+    a.setMood(mk(6, 10, 0, 1));   const calm = read();      // 灯满 / 低压 / 无疑 / 第1夜
+    a.setMood(mk(1, 90, 60, 3));  const tense = read();     // 将灭 / 高压 / 凝心 / 第3夜
+    return { ok: true, calm, tense };
+  });
+  check('P3 环境层已建且状态驱动有效', mood.ok === true, mood.why || 'OK');
+  check('P3 余灯越少 → 低通越闷（截止下降）', mood.ok && mood.tense.f < mood.calm.f, mood.ok ? `${mood.calm.f} → ${mood.tense.f}` : '');
+  check('P3 张力越高 → 呼吸 LFO 越快', mood.ok && mood.tense.l > mood.calm.l, mood.ok ? `${mood.calm.l} → ${mood.tense.l}` : '');
+  check('P3 疑心越高 → 不谐和层越强', mood.ok && mood.tense.d > mood.calm.d, mood.ok ? `${mood.calm.d} → ${mood.tense.d}` : '');
+  check('P3 夜数递进 → 基音轻微升调', mood.ok && mood.tense.base > mood.calm.base, mood.ok ? `${mood.calm.base} → ${mood.tense.base}` : '');
+
+  /* --- 4c. P4 引导事件音效：步进 / 完成 / 跳过 --- */
+  const guideFx = await page.evaluate(() => {
+    const seen = [], a = window.SD.UI.audio, orig = a.sfx.bind(a);
+    a.sfx = function (k) { seen.push(k); return orig(k); };
+    document.dispatchEvent(new CustomEvent('guide:step', { detail: { stepNo: 1, stepId: 'G1' } }));
+    document.dispatchEvent(new CustomEvent('guide:done', { detail: { value: 'done', replay: false } }));
+    document.dispatchEvent(new CustomEvent('guide:done', { detail: { value: 'skipped', replay: false } }));
+    document.dispatchEvent(new CustomEvent('guide:skip', { detail: { forced: true } }));
+    a.sfx = orig;
+    return seen;
+  });
+  check('P4 引导步进触发 guidance', guideFx.includes('guidance'), guideFx.join(','));
+  check('P4 引导完成触发 guide-done', guideFx.includes('guide-done'), guideFx.join(','));
+  check('P4 引导跳过触发 guide-skip', guideFx.filter(k => k === 'guide-skip').length >= 2, guideFx.join(','));
 
   /* --- 5. 无 AudioContext 环境静默降级 --- */
   const noAC = await page.evaluate(() => {

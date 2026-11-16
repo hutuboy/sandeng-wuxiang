@@ -187,6 +187,11 @@
     confront:    { seq: [{ f: 330, dur: .12, w: 'triangle', peak: .09 }, { f: 415, dur: .12, w: 'triangle', peak: .09, at: .09 }, { f: 494, dur: .12, w: 'triangle', peak: .09, at: .18 }] },
     /* 剧情：客人离店是玩家可见行为，播衣料短噪 + 下行小二度；遁走音并进「空盏」结局 */
     leave: { seq: [{ noise: true, dur: .14, peak: .06, filter: 1800, filterTo: 700 }, { f: 330, to: 311, dur: .24, w: 'triangle', peak: .08, at: .05 }] },
+    /* P4 引导：极轻的木鱼式点音，G1–G6 步进用 guidance，完成三音上行，跳过中性短音。
+       引导是脚本化教学，音色克制、不与台词抢注意力；不触发 startAmbient。 */
+    guidance: { f: 587, dur: .07, w: 'sine', peak: .035 },
+    'guide-done': { seq: [{ f: 523, dur: .12, w: 'sine', peak: .05 }, { f: 659, dur: .12, w: 'sine', peak: .05, at: .10 }, { f: 784, dur: .22, w: 'sine', peak: .06, at: .20 }] },
+    'guide-skip': { f: 392, to: 330, dur: .10, w: 'sine', peak: .03 },
     /* P2 五种结局：五声音阶短句。此时答案已揭晓，不构成泄漏。 */
     'ending-灯灭':     { seq: [{ f: 440, dur: .20, w: 'sawtooth', peak: .09, filter: 900 }, { f: 392, dur: .22, w: 'sawtooth', peak: .09, at: .16, filter: 800 }, { f: 330, dur: .40, w: 'sawtooth', peak: .10, at: .34, filter: 700 }] },
     'ending-一灯独明': { seq: [{ f: 523, dur: .50, w: 'sine', peak: .12 }, { f: 1046, dur: .40, w: 'sine', peak: .04, at: .06 }] },
@@ -247,15 +252,52 @@
       var gain = c.createGain(); gain.gain.value = 0.035;
       var filt = c.createBiquadFilter(); filt.type = 'lowpass'; filt.frequency.value = 320;
       gain.connect(filt); filt.connect(this.master);
+      var bases = [];
       [55, 82.4, 110.3].forEach(function (f, i) {
         var o = c.createOscillator(); o.type = i === 2 ? 'triangle' : 'sine'; o.frequency.value = f;
         var og = c.createGain(); og.gain.value = i === 2 ? .18 : .4;
         o.connect(og); og.connect(gain); o.start();
+        bases.push(o);
       });
       var lfo = c.createOscillator(); lfo.frequency.value = .07;
       var lg = c.createGain(); lg.gain.value = .018;
       lfo.connect(lg); lg.connect(gain.gain); lfo.start();
+
+      /* P3：叠一层三全音不谐和音（音量初始 0，由疑心驱动），不辨识身份 */
+      var disOsc = c.createOscillator(); disOsc.type = 'sine'; disOsc.frequency.value = 77.8; // 55Hz 的三全音
+      var disGain = c.createGain(); disGain.gain.value = 0.0001;
+      disOsc.connect(disGain); disGain.connect(filt); disOsc.start();
+
       this.ambient = gain;
+      this.ambNodes = { filter: filt, lfo: lfo, bases: bases, disGain: disGain };
+    },
+    /* P3：状态驱动环境音。只读全场平均（张力/疑心）与余灯比，不做任何身份判断。
+       过渡全用 setTargetAtTime(ctx.currentTime)，不引入任何新定时器。 */
+    setMood: function (game) {
+      var n = this.ambNodes;
+      if (!n || !this.ctx || !this.on) return;
+      var g = game || {};
+      var left = (g.lampsLeft == null ? 6 : g.lampsLeft), total = (g.lamps == null ? 6 : g.lamps);
+      var lampRatio = total > 0 ? Math.max(0, Math.min(1, left / total)) : 1;
+      var guests = g.guests || [], cnt = 0, tension = 0, suspicion = 0;
+      for (var i = 0; i < guests.length; i++) {
+        if (!guests[i] || !guests[i].state) continue;
+        tension += guests[i].state.tension || 0;
+        suspicion += guests[i].state.suspicion || 0;
+        cnt++;
+      }
+      tension = cnt ? tension / cnt : 0;
+      suspicion = cnt ? suspicion / cnt : 0;
+      var t = this.ctx.currentTime, tau = 0.6;
+      /* 余灯越少 → 低通截止越低（320→180Hz），夜色越闷 */
+      n.filter.frequency.setTargetAtTime(180 + 140 * lampRatio, t, tau);
+      /* 平均张力越高 → 呼吸 LFO 越快（0.07→0.30Hz） */
+      n.lfo.frequency.setTargetAtTime(0.07 + 0.23 * Math.min(1, tension / 70), t, tau);
+      /* 平均疑心越高 → 三全音越显（0.0001→0.010），逼近遁走的不安；不指向任何一人 */
+      n.disGain.gain.setTargetAtTime(0.0001 + 0.010 * Math.min(1, suspicion / 55), t, tau);
+      /* 夜数递进 → 基音整体轻微升调（每夜 +1.5%，三夜约 +3%） */
+      var mul = 1 + 0.015 * Math.max(0, Math.min(2, (g.night || 1) - 1));
+      [55, 82.4, 110.3].forEach(function (f, i) { n.bases[i].frequency.setTargetAtTime(f * mul, t, tau); });
     },
     toggle: function () {
       this.on = !this.on;

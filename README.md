@@ -199,7 +199,7 @@ node tools/guide-smoke.cjs            # 新用户引导 60 项门禁（含几何
 QA_DIFFICULTY_RUN=1 node tools/difficulty-smoke.cjs   # 四档难度 44 项
 node tools/clue-toggle-probe.cjs      # 物证条展开态：问话重绘后不丢、换局复位
 node tools/logic-v2-shot.cjs       # 推演幕探针（P5）：残卷无式子 / 算子按钮为 0 / 对簿换格 / 审计弹窗 / 证词簿置顶 / 开夜提示框 / 窄屏 390（开发期，49 条）
-node tools/audio-smoke.cjs            # 音效专项（P1+P2）：28 种预设合成 / 语气与结局触发 / hover 节流 / 静默降级（开发期，11 项）
+node tools/audio-smoke.cjs            # 音效专项（P1–P4）：31 种预设 / 语气与结局触发 / hover 节流 / 状态驱动环境音 / 引导音 / 静默降级（开发期，19 项）
 node tools/g5-geom.cjs                # 引导 G5 气泡与两处高亮洞的重叠面积应为 0
 node tools/make-demo.cjs              # 重新录制演示视频（需要 ffmpeg）
 ```
