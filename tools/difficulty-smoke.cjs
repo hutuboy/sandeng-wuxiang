@@ -504,7 +504,12 @@ async function runCases() {
     const f = await fresh(DESKTOP);
     let actual = null, snap = null;
     try {
-      await f.page.goto(BASE, { waitUntil: 'load' });
+      /* ?guide=0 只为「不让首次引导气泡落进截图」：引导自动启动延迟 500ms，而 shot() 排在
+         readChannels()（多次 evaluate 往返）之后，实际正好压在边界上，同一份代码会时中时不中
+         （novice 是第一档、浏览器最慢，只有它翻面）。与 tools/browser-smoke.cjs 同一做法；
+         不涉及任何期望值，档位断言仍走三通道。该参数也让开夜卡不弹（showNightFlaw 见 guide= 即 return），
+         帧内容因此与本套件已入库的 difficulty-novice.png 一致。 */
+      await f.page.goto(BASE + '?guide=0', { waitUntil: 'load' });
       const clicked = await realClick(f.page, '[data-action="set-tier"][data-tier="' + tier + '"]');
       await realClick(f.page, '#btn-start');
       await f.page.waitForTimeout(250);
