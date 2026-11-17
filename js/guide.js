@@ -540,7 +540,6 @@
     if (p.guide === '0') return false;           // C-7：强制抑制
     if (p.guide === '1') return false;           // C-7：由 boot 显式强制复跑，避免双启动
     if (hasFlag()) return false;                 // 老用户
-    if (p.autopilot === '1' || (app && app.autopilot)) return false;
     if (p.seed && p.night) return false;         // 可复现 seed 直开
     if (!app || app.screen !== 'game' || !app.game) return false;
     if (app.game.night !== 1 || app.game.phase !== 'playing') return false;

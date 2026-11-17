@@ -10,7 +10,7 @@
 
   var App = {
     screen: 'intro', game: null, selected: null, tone: 'warm',
-    lastDecision: null, ended: false, autopilot: false, autoTrace: null,
+    lastDecision: null, ended: false,
     act: 'ask',
     session: { seed: '', night: 1, totalScore: 0, nights: [], difficultyTier: 'basic' },
     soundOn: true, aiShown: true
@@ -103,12 +103,12 @@
   }
 
   /* 开夜提示框：把本夜「无相的破绽」先摆到眼前，之后再常驻在证词簿置顶。
-     带 seed / guide / autopilot 参数时不弹 —— 那是复现与自动试玩的通道，
+     带 seed / guide 参数时不弹 —— 那是复现与引导脚本的通道，
      弹出层会盖住脚本要点的地方，也会遮住截图里的对局画面。 */
   function showNightFlaw() {
     if (!App.game || !SD.UI || !SD.UI.nightFlawHtml) return;
     var q = String(location.search || '').replace(/^\?/, '');
-    if (/(^|&)(seed|guide|autopilot)=/.test(q)) return;
+    if (/(^|&)(seed|guide)=/.test(q)) return;
     var G = SD.Guide;
     if (G && G.willAutoStart && G.willAutoStart(App)) return;  /* 首次点灯交给引导讲 */
     SD.UI.openModal('今夜 · 开灯之前', SD.UI.nightFlawHtml(App.game),
@@ -208,7 +208,6 @@
     } catch (e) { /* 云端兜底任何异常都不得影响游戏 */ }
   }
   function doAsk(topic) {
-    if (App.autopilot) { UI.toast('影子掌柜正在试玩，稍等一下'); return; }
     if (!App.selected) { UI.toast('先点一位客人'); return; }
     if (App.game.phase !== 'playing') return;
     var guest = Game.guest(App.game, App.selected);
@@ -219,14 +218,12 @@
     afterDispatch(Game.dispatch(App.game, { type: 'ASK', guestId: App.selected, topic: topic, tone: App.tone }));
   }
   function doListen() {
-    if (App.autopilot) return;
     if (App.act !== 'ask') App.act = 'ask';
     UI.audio.sfx('listen');
     afterDispatch(Game.dispatch(App.game, { type: 'LISTEN' }));
   }
   /* 对簿：一盏灯，三人同时就这一件物证开口（不必先点客人 —— 这正是它和「问一句」的区别） */
   function doConfront(topic) {
-    if (App.autopilot) { UI.toast('影子掌柜正在试玩，稍等一下'); return; }
     if (!topic) { UI.toast('先挑一件物证'); return; }
     if (App.game.phase !== 'playing') return;
     if (App.act !== 'ask') App.act = 'ask';
@@ -281,43 +278,6 @@
       'AI+∞ 开发者创作大赛 · 第三期「AI 造游戏」参赛作品';
   }
 
-  /* ---------------- 影子掌柜：可视化自动试玩 ---------------- */
-  function startAutopilot() {
-    if (App.autopilot) return;
-    if (!App.game || App.game.phase !== 'playing' || App.screen !== 'game') {
-      newRun('AUTO-' + Date.now().toString(36).toUpperCase(), 1);
-    }
-    App.autopilot = true;
-    App.act = 'ask';   /* 影子掌柜不需要「点灯」幕，直接进问询 */
-    App.autoTrace = { seed: App.game.seed, night: App.game.night, initial: Game.snapshot(App.game), actions: [] };
-    UI.toast('影子掌柜接手 · 只通过结构化状态与动作接口决策');
-    UI.audio.sfx('click');
-    step();
-    function step() {
-      if (!App.autopilot) return;
-      if (App.game.phase !== 'playing') { finish(); return; }
-      var action = Agent.choose(App.game);
-      if (!action) { finish(); return; }
-      var before = Game.belief(App.game);
-      var res = Game.dispatch(App.game, action);
-      App.autoTrace.actions.push({
-        turn: App.game.turn, action: action,
-        npcAction: res.decision ? res.decision.chosen : action.type,
-        npcText: res.decision ? res.decision.text : '',
-        beliefBefore: before, beliefAfter: Game.belief(App.game)
-      });
-      App.selected = action.guestId || App.selected;
-      afterDispatch(res);
-      if (App.game.phase === 'playing') setTimeout(step, 720); else finish();
-    }
-    function finish() {
-      App.autopilot = false;
-      App.autoTrace.final = Game.snapshot(App.game);
-      App.autoTrace.correct = !!(App.game.result && App.game.result.correct);
-      setTimeout(function () { openAgentTrace(); }, 500);
-    }
-  }
-
   /* ---------------- 弹窗内容 ---------------- */
   /* 顶栏「?」→ 帮助菜单：两项顺序固定（设计案 3.3）。
      玩法说明沿用 modalHowto()，内容一字不改；第二项为主动重看引导。 */
@@ -357,7 +317,7 @@
       '右侧「AI 决策轨迹」把每一步打分与校验全部摊开给你看。</p>' +
       '<h4>可复现</h4>' +
       '<p>每一夜由 <code>seed</code> 决定，地址栏加 <code>?seed=你的种子&amp;night=2</code> 可重开同一局；' +
-      '<code>?autopilot=1</code> 直接看影子掌柜试玩。工程自检会跨 200 组种子验证案件可解性、逻辑标准解唯一、记忆一致性与规则闭环。</p>' +
+      '工程自检会跨 200 组种子验证案件可解性、逻辑标准解唯一、记忆一致性与规则闭环。</p>' +
       '<h4>快捷键</h4>' +
       '<p><code>1/2/3</code> 选人 · <code>Q W E R T</code> 五个话头 · <code>L</code> 添茶 · <code>A</code> 指认 · <code>D</code> 推演 · <code>C</code> 摊开比对 · <code>Esc</code> 关闭弹窗</p>');
   }
@@ -433,25 +393,6 @@
       '<span class="k">判定</span><span style="color:var(--jade)">' + (rd.changed ? '已发生重新决策' : '未变化') + '</span></div>' +
       '<p style="color:var(--dim);font-size:11px">这是评奖硬指标「状态变化后的重新决策」的可视化证据；' +
       '规则层例：信任低于阈值时锁定「交心/交付」分支，张力高于阈值才开放「离店」。</p>');
-  }
-  function openAgentTrace() {
-    var t = App.autoTrace;
-    if (!t) return;
-    var rows = t.actions.map(function (a, i) {
-      var ac = a.action;
-      var desc = ac.type === 'ASK' ? ('问 ' + ac.guestId + ' · ' + C.topic(ac.topic).label + ' · ' + C.tone(ac.tone).label) :
-        ac.type === 'ACCUSE' ? ('指认 ' + ac.guestId) : '添茶';
-      return '<div class="test-row"><span class="ok">#' + (i + 1) + '</span><span style="flex:1">' + UI.esc(desc) +
-        '<br /><span class="d">NPC → ' + UI.esc(a.npcAction) + '　|　信念 ' + UI.esc(JSON.stringify(a.beliefAfter)) + '</span></span></div>';
-    }).join('');
-    UI.openModal('影子掌柜 · 自动试玩轨迹',
-      '<p>Agent 只读取 <code>getState()</code> 的结构化快照，只通过 <code>listActions() / dispatch()</code> 操作游戏，与人走同一套规则。</p>' +
-      '<div class="kv"><span class="k">随机种子</span><span>' + UI.esc(t.seed) + '</span>' +
-      '<span class="k">夜次 / 步数</span><span>第 ' + t.night + ' 夜 / ' + t.actions.length + ' 步</span>' +
-      '<span class="k">初始状态</span><span><code>sandeng.state.v1</code>，' + t.initial.guests.length + ' 位客人，' + t.initial.clues.length + ' 条物证</span>' +
-      '<span class="k">结果</span><span style="color:' + (t.correct ? 'var(--jade)' : 'var(--crimson)') + '">' + (t.correct ? '指认正确' : '指认失手') + '</span></div>' +
-      '<h4>完整动作序列</h4>' + rows +
-      '<h4>终局快照</h4><pre>' + UI.esc(JSON.stringify(t.final, null, 1)).slice(0, 1800) + '</pre>');
   }
   function modalDefect() {
     var d = Agent.defectDemo('DEFECT_F01');
@@ -529,7 +470,6 @@
       switch (id) {
         case 'btn-start': UI.audio.startAmbient(); newRun(params().seed || randSeed(), 1, null); break;
         case 'btn-continue': UI.audio.sfx('load'); continueRun(); break;
-        case 'btn-autopilot': UI.audio.startAmbient(); startAutopilot(); break;
         case 'btn-home': UI.audio.sfx('page'); UI.showScreen('screen-intro'); App.screen = 'intro'; break;
         case 'btn-sound': App.soundOn = UI.audio.toggle(); q('btn-sound').classList.toggle('on', !App.soundOn); q('btn-sound').textContent = App.soundOn ? '♪' : '♪̸'; break;
         case 'btn-help': UI.audio.sfx('modal-open'); modalHelpMenu(); break;
@@ -553,7 +493,7 @@
       if (e.key === 'Escape') { UI.closeModal(); return; }
       if (e.target && /INPUT|TEXTAREA/.test(e.target.tagName)) return;
       if (document.querySelector('.modal-mask')) return;
-      if (App.screen !== 'game' || App.autopilot) return;
+      if (App.screen !== 'game') return;
       var k = e.key.toLowerCase();
       if ('123'.indexOf(k) >= 0 && k.length === 1) {
         var gi = parseInt(k, 10) - 1;
@@ -569,9 +509,9 @@
     });
 
     /* P1：按钮 hover 轻响。用事件委托 + audio.hover() 内的 ctx.currentTime 节流（60ms），
-       只覆盖可点击控件；弹窗打开 / 引导期间 / 自动试玩时不响，避免涂满一层噪音。 */
+       只覆盖可点击控件；弹窗打开 / 引导期间不响，避免涂满一层噪音。 */
     document.addEventListener('mouseover', function (e) {
-      if (App.autopilot || !App.game || document.querySelector('.modal-mask')) return;
+      if (!App.game || document.querySelector('.modal-mask')) return;
       if (SD.Guide && SD.Guide.status && SD.Guide.status().active) return;
       var el = e.target && e.target.closest ? e.target.closest('button, [data-action], [data-modal]') : null;
       if (!el || el.disabled) return;
@@ -658,7 +598,7 @@
     /* 难度入口：?difficulty=<id> 精确匹配；非法值拒绝回落 basic 且只提示一次，缺失不提示。
        ?guide=1 一律忽略 URL 难度、固定 basic + 第 1 夜（引导 6/6 盏基线不可动）。 */
     var D = SD.Difficulty;
-    var guideForced = p.guide === '1' && p.autopilot !== '1';
+    var guideForced = p.guide === '1';
     var hasTierParam = !guideForced && Object.prototype.hasOwnProperty.call(p, 'difficulty');
     var rawTier = hasTierParam ? p.difficulty : null;
     var bootTier = D ? D.normalize(rawTier) : 'basic';
@@ -675,8 +615,7 @@
       tierBtns[ti].classList.toggle('is-on', on);
     }
 
-    if (p.autopilot === '1') { setTimeout(startAutopilot, 260); }
-    else if (!guideForced && p.seed && p.night) { newRun(p.seed, parseInt(p.night, 10) || 1, bootTier); }
+    if (!guideForced && p.seed && p.night) { newRun(p.seed, parseInt(p.night, 10) || 1, bootTier); }
     /* 可复跑验收入口：?guide=1 强制进入第 1 夜并从 G1 起播，全程不改写标记 */
     if (guideForced) {
       setTimeout(function () {

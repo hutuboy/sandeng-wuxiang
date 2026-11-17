@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-16T12:49:42.020Z",
+  "generatedAt": "2026-11-17T06:53:10.161Z",
   "version": "difficulty-smoke.v1",
   "specStatus": "OK",
   "implStatus": "WIRED",
@@ -1423,7 +1423,7 @@
         "selftest": {
           "pass": true,
           "exit": 0,
-          "tail": "  {\"checked\":480,\"bad\":0,\"firstBad\":null}\n  PASS  T10 对簿：1 灯换至多三格、不造假证词、平均换回 ≥2 格\n         {\"checked\":288,\"bad\":0,\"firstBad\":null,\"avgOpenedPerConfront\":{\"novice\":2.47,\"basic\":2.39,\"intermediate\":2.43,\"advanced\":2.35},\"thinTiers\":[]}\n---\n汇总: {\"total\":10,\"passed\":10,\"failed\":0,\"allPass\":true}\n缺陷复现 F-01 reproduced = true\n已写出: C:\\Users\\lll\\AppData\\Local\\Temp\\qa-difficulty-selftest-1794833443190.json\n"
+          "tail": "  {\"checked\":480,\"bad\":0,\"firstBad\":null}\n  PASS  T10 对簿：1 灯换至多三格、不造假证词、平均换回 ≥2 格\n         {\"checked\":288,\"bad\":0,\"firstBad\":null,\"avgOpenedPerConfront\":{\"novice\":2.47,\"basic\":2.39,\"intermediate\":2.43,\"advanced\":2.35},\"thinTiers\":[]}\n---\n汇总: {\"total\":10,\"passed\":10,\"failed\":0,\"allPass\":true}\n缺陷复现 F-01 reproduced = true\n已写出: C:\\Users\\lll\\AppData\\Local\\Temp\\qa-difficulty-selftest-1794898464664.json\n"
         },
         "browserSmoke": {
           "pass": true,
@@ -1433,7 +1433,7 @@
         "guideSmoke": {
           "pass": true,
           "exit": 0,
-          "tail": "\"listenDispatchCount\":0,\"accuseDispatchCount\":0,\"gameplayModalOpenCount\":0,\"residualMaskCount\":0,\"lampsDelta\":0,\"statementsDelta\":0,\"turnDelta\":0,\"nonFileRequestCount\":0,\"requestfailedCount\":0,\"pageerrorCount\":0,\"consoleErrorCount\":0,\"markerWriteCountOnComplete\":1,\"markerWriteCountOnSkip\":1,\"markerWriteCountOnReplay\":0}\nscreenshots 19 | report D:\\Projects\\games\\AI造游戏\\tools\\guide-smoke-report.json\n"
+          "tail": "\"listenDispatchCount\":0,\"accuseDispatchCount\":0,\"gameplayModalOpenCount\":0,\"residualMaskCount\":0,\"lampsDelta\":0,\"statementsDelta\":0,\"turnDelta\":0,\"nonFileRequestCount\":0,\"requestfailedCount\":0,\"pageerrorCount\":0,\"consoleErrorCount\":0,\"markerWriteCountOnComplete\":1,\"markerWriteCountOnSkip\":1,\"markerWriteCountOnReplay\":0}\nscreenshots 19 | report d:\\Projects\\games\\AI造游戏\\tools\\guide-smoke-report.json\n"
         }
       },
       "evidence": "核退出码 + 核报告字段 + 核引导域 9 项负向计数的实测值 + 核门禁在交付清单执行链中的位置",
@@ -1501,265 +1501,265 @@
       "id": "D-10-novice",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-16T12:50:02.356Z"
+      "at": "2026-11-17T06:53:33.354Z"
     },
     {
       "id": "D-44-novice",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-16T12:50:02.728Z"
+      "at": "2026-11-17T06:53:34.047Z"
     },
     {
       "id": "D-10-basic",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-16T12:50:03.570Z"
+      "at": "2026-11-17T06:53:35.226Z"
     },
     {
       "id": "D-44-basic",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-16T12:50:03.936Z"
+      "at": "2026-11-17T06:53:35.925Z"
     },
     {
       "id": "D-10-intermediate",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-16T12:50:04.728Z"
+      "at": "2026-11-17T06:53:36.991Z"
     },
     {
       "id": "D-44-intermediate",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-16T12:50:05.124Z"
+      "at": "2026-11-17T06:53:37.513Z"
     },
     {
       "id": "D-10-advanced",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-16T12:50:06.045Z"
+      "at": "2026-11-17T06:53:38.617Z"
     },
     {
       "id": "D-44-advanced",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-16T12:50:06.397Z"
+      "at": "2026-11-17T06:53:39.290Z"
     },
     {
       "id": "D-20",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-16T12:50:07.171Z"
+      "at": "2026-11-17T06:53:40.372Z"
     },
     {
       "id": "D-21",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-16T12:50:07.846Z"
+      "at": "2026-11-17T06:53:41.390Z"
     },
     {
       "id": "D-22",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-16T12:50:08.656Z"
+      "at": "2026-11-17T06:53:42.285Z"
     },
     {
       "id": "D-23-大小写不符",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-16T12:50:09.520Z"
+      "at": "2026-11-17T06:53:43.310Z"
     },
     {
       "id": "D-23-首尾空格",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-16T12:50:10.377Z"
+      "at": "2026-11-17T06:53:44.148Z"
     },
     {
       "id": "D-23-空串",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-16T12:50:11.116Z"
+      "at": "2026-11-17T06:53:45.229Z"
     },
     {
       "id": "D-23-数字",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-16T12:50:11.899Z"
+      "at": "2026-11-17T06:53:46.263Z"
     },
     {
       "id": "D-23-中文档名",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-16T12:50:12.633Z"
+      "at": "2026-11-17T06:53:47.143Z"
     },
     {
       "id": "D-23-null/undefined",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-16T12:50:13.379Z"
+      "at": "2026-11-17T06:53:48.124Z"
     },
     {
       "id": "D-23-URL 编码残留",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-16T12:50:14.047Z"
+      "at": "2026-11-17T06:53:49.060Z"
     },
     {
       "id": "D-23-原型链键",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-16T12:50:14.711Z"
+      "at": "2026-11-17T06:53:49.921Z"
     },
     {
       "id": "D-23-汇总",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-16T12:50:14.729Z"
+      "at": "2026-11-17T06:53:49.955Z"
     },
     {
       "id": "D-23-toast-提示恰好一次",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-16T12:50:14.729Z"
+      "at": "2026-11-17T06:53:49.955Z"
     },
     {
       "id": "D-24",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-16T12:50:15.804Z"
+      "at": "2026-11-17T06:53:51.384Z"
     },
     {
       "id": "D-25",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-16T12:50:16.793Z"
+      "at": "2026-11-17T06:53:52.546Z"
     },
     {
       "id": "D-30",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-16T12:50:20.949Z"
+      "at": "2026-11-17T06:53:57.130Z"
     },
     {
       "id": "D-31b",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-16T12:50:22.233Z"
+      "at": "2026-11-17T06:53:58.703Z"
     },
     {
       "id": "D-32-novice|1",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-16T12:50:22.986Z"
+      "at": "2026-11-17T06:53:59.597Z"
     },
     {
       "id": "D-32-novice|2",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-16T12:50:23.641Z"
+      "at": "2026-11-17T06:54:00.538Z"
     },
     {
       "id": "D-32-novice|3",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-16T12:50:24.386Z"
+      "at": "2026-11-17T06:54:01.578Z"
     },
     {
       "id": "D-32-basic|1",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-16T12:50:25.037Z"
+      "at": "2026-11-17T06:54:02.467Z"
     },
     {
       "id": "D-32-basic|2",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-16T12:50:25.677Z"
+      "at": "2026-11-17T06:54:03.427Z"
     },
     {
       "id": "D-32-basic|3",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-16T12:50:26.308Z"
+      "at": "2026-11-17T06:54:04.337Z"
     },
     {
       "id": "D-32-intermediate|1",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-16T12:50:27.052Z"
+      "at": "2026-11-17T06:54:05.279Z"
     },
     {
       "id": "D-32-intermediate|2",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-16T12:50:27.879Z"
+      "at": "2026-11-17T06:54:06.238Z"
     },
     {
       "id": "D-32-intermediate|3",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-16T12:50:28.665Z"
+      "at": "2026-11-17T06:54:07.070Z"
     },
     {
       "id": "D-32-advanced|1",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-16T12:50:29.534Z"
+      "at": "2026-11-17T06:54:08.033Z"
     },
     {
       "id": "D-32-advanced|2",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-16T12:50:30.491Z"
+      "at": "2026-11-17T06:54:08.822Z"
     },
     {
       "id": "D-32-advanced|3",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-16T12:50:31.413Z"
+      "at": "2026-11-17T06:54:09.863Z"
     },
     {
       "id": "D-44-极值",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-16T12:50:32.884Z"
+      "at": "2026-11-17T06:54:11.462Z"
     },
     {
       "id": "D-34",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-16T12:50:34.166Z"
+      "at": "2026-11-17T06:54:12.772Z"
     },
     {
       "id": "D-35",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-16T12:50:35.401Z"
+      "at": "2026-11-17T06:54:14.200Z"
     },
     {
       "id": "D-45",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-16T12:50:36.065Z"
+      "at": "2026-11-17T06:54:15.239Z"
     },
     {
       "id": "D-46",
       "pass": false,
       "status": "UNCOVERED",
-      "at": "2026-11-16T12:50:41.154Z"
+      "at": "2026-11-17T06:54:21.386Z"
     },
     {
       "id": "D-55",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-16T12:50:43.155Z"
+      "at": "2026-11-17T06:54:24.618Z"
     },
     {
       "id": "D-40/41/42",
       "pass": true,
       "status": "PASS",
-      "at": "2026-11-16T12:51:41.101Z"
+      "at": "2026-11-17T06:55:28.075Z"
     }
   ],
   "tierMatrix": [
@@ -1899,7 +1899,7 @@
   "screenshots": [
     {
       "file": "docs/screenshots/difficulty-novice.png",
-      "bytes": 589610,
+      "bytes": 589816,
       "ok": true,
       "sig": {
         "screen": "screen-game",
@@ -1911,7 +1911,7 @@
     },
     {
       "file": "docs/screenshots/difficulty-basic.png",
-      "bytes": 589487,
+      "bytes": 589662,
       "ok": true,
       "sig": {
         "screen": "screen-game",
@@ -1923,7 +1923,7 @@
     },
     {
       "file": "docs/screenshots/difficulty-intermediate.png",
-      "bytes": 593082,
+      "bytes": 591098,
       "ok": true,
       "sig": {
         "screen": "screen-game",
@@ -1935,7 +1935,7 @@
     },
     {
       "file": "docs/screenshots/difficulty-advanced.png",
-      "bytes": 591826,
+      "bytes": 591770,
       "ok": true,
       "sig": {
         "screen": "screen-game",
@@ -1947,7 +1947,7 @@
     },
     {
       "file": "docs/screenshots/difficulty-advanced-night3.png",
-      "bytes": 591836,
+      "bytes": 591579,
       "ok": true,
       "sig": {
         "screen": "screen-game",
@@ -1959,7 +1959,7 @@
     },
     {
       "file": "docs/screenshots/difficulty-human-path-01-cover.png",
-      "bytes": 766548,
+      "bytes": 762732,
       "ok": true,
       "sig": {
         "screen": "screen-intro",
@@ -1971,7 +1971,7 @@
     },
     {
       "file": "docs/screenshots/difficulty-human-path-02-select.png",
-      "bytes": 763782,
+      "bytes": 760219,
       "ok": true,
       "sig": {
         "screen": "screen-intro",
@@ -1983,7 +1983,7 @@
     },
     {
       "file": "docs/screenshots/difficulty-human-path-03-game.png",
-      "bytes": 589506,
+      "bytes": 589909,
       "ok": true,
       "sig": {
         "screen": "screen-game",
@@ -2042,7 +2042,7 @@
       "reviewer": "team-lead",
       "note": "第 1 夜·中级；5 / 5 盏；「2 条物证 · 至少 3 次问话 / 共 5 盏灯 seed SD-PVSLYR8In1」；物证框出现 2 张、对话区 2 条物证文本，与 clueCount+1 一致；版面未因多一条物证而挤压。",
       "sigMatched": true,
-      "bytesRatio": 0.902,
+      "bytesRatio": 0.899,
       "bytesInBand": true,
       "pixelHashMatched": false,
       "sig": {
@@ -2096,7 +2096,7 @@
       "reviewer": "team-lead",
       "note": "冷启动封面（未注入任何探针）：封面出现「难度 ｜ 新手级 ｜ 初级 ｜ 中级 ｜ 高级」五段控件，默认选中「初级」为琥珀描边；控件位于主按钮与底部链接之间，不与「点亮·开始守灯」等按钮重叠，右下水印 seed 正常显示。",
       "sigMatched": true,
-      "bytesRatio": 1.002,
+      "bytesRatio": 0.997,
       "bytesInBand": true,
       "pixelHashMatched": false,
       "sig": {
@@ -2114,7 +2114,7 @@
       "reviewer": "team-lead",
       "note": "真实指针点「初级」后：选中态保持在「初级」，未出现双选或选中丢失；四档文案完整、字距均匀，无换行溢出。",
       "sigMatched": true,
-      "bytesRatio": 1.001,
+      "bytesRatio": 0.996,
       "bytesInBand": true,
       "pixelHashMatched": false,
       "sig": {
@@ -2156,7 +2156,7 @@
     "selftest": {
       "pass": true,
       "exit": 0,
-      "tail": "  {\"checked\":480,\"bad\":0,\"firstBad\":null}\n  PASS  T10 对簿：1 灯换至多三格、不造假证词、平均换回 ≥2 格\n         {\"checked\":288,\"bad\":0,\"firstBad\":null,\"avgOpenedPerConfront\":{\"novice\":2.47,\"basic\":2.39,\"intermediate\":2.43,\"advanced\":2.35},\"thinTiers\":[]}\n---\n汇总: {\"total\":10,\"passed\":10,\"failed\":0,\"allPass\":true}\n缺陷复现 F-01 reproduced = true\n已写出: C:\\Users\\lll\\AppData\\Local\\Temp\\qa-difficulty-selftest-1794833443190.json\n"
+      "tail": "  {\"checked\":480,\"bad\":0,\"firstBad\":null}\n  PASS  T10 对簿：1 灯换至多三格、不造假证词、平均换回 ≥2 格\n         {\"checked\":288,\"bad\":0,\"firstBad\":null,\"avgOpenedPerConfront\":{\"novice\":2.47,\"basic\":2.39,\"intermediate\":2.43,\"advanced\":2.35},\"thinTiers\":[]}\n---\n汇总: {\"total\":10,\"passed\":10,\"failed\":0,\"allPass\":true}\n缺陷复现 F-01 reproduced = true\n已写出: C:\\Users\\lll\\AppData\\Local\\Temp\\qa-difficulty-selftest-1794898464664.json\n"
     },
     "browserSmoke": {
       "pass": true,
@@ -2166,7 +2166,7 @@
     "guideSmoke": {
       "pass": true,
       "exit": 0,
-      "tail": "\"listenDispatchCount\":0,\"accuseDispatchCount\":0,\"gameplayModalOpenCount\":0,\"residualMaskCount\":0,\"lampsDelta\":0,\"statementsDelta\":0,\"turnDelta\":0,\"nonFileRequestCount\":0,\"requestfailedCount\":0,\"pageerrorCount\":0,\"consoleErrorCount\":0,\"markerWriteCountOnComplete\":1,\"markerWriteCountOnSkip\":1,\"markerWriteCountOnReplay\":0}\nscreenshots 19 | report D:\\Projects\\games\\AI造游戏\\tools\\guide-smoke-report.json\n"
+      "tail": "\"listenDispatchCount\":0,\"accuseDispatchCount\":0,\"gameplayModalOpenCount\":0,\"residualMaskCount\":0,\"lampsDelta\":0,\"statementsDelta\":0,\"turnDelta\":0,\"nonFileRequestCount\":0,\"requestfailedCount\":0,\"pageerrorCount\":0,\"consoleErrorCount\":0,\"markerWriteCountOnComplete\":1,\"markerWriteCountOnSkip\":1,\"markerWriteCountOnReplay\":0}\nscreenshots 19 | report d:\\Projects\\games\\AI造游戏\\tools\\guide-smoke-report.json\n"
     }
   },
   "coverageGaps": [
