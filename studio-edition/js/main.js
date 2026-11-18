@@ -241,6 +241,12 @@
     var r = App.game.result;
     App.session.totalScore += (r.score || 0);
     App.session.nights.push({ night: App.game.night, ending: r.ending, correct: r.correct, score: r.score, chain: r.chain, lampsLeft: r.lampsLeft, seed: App.game.seed });
+    /* v1.8.2：第三夜结算出现时就上传，不等玩家再点「接着守下一夜」进通关页。
+       showFinale() 仍保留同名调用，靠 session 去重标记避免重复上报。 */
+    if (App.game.night >= 3 && App.session.nights.length >= 3 &&
+        g.SANDENG_CLOUD && g.SANDENG_CLOUD.autoSubmit) {
+      g.SANDENG_CLOUD.autoSubmit(App.session);
+    }
     save();
     /* P2：五种结局各有专属短句；答案在此刻已揭晓，不构成泄密。
        用 UI.endingKey 映射，缺省（老存档无 ending 字段）回落到 win/bad。 */
