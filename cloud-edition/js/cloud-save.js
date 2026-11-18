@@ -7,6 +7,9 @@
   'use strict';
   var CFG = g.SD_CLOUD_CONFIG || {};
   var SDK_URL = 'https://cdn.jsdelivr.net/npm/@tencent-ai/workbuddy-cloud-sdk@dev/lib/index.global.js';
+  /* 官方 @dev 构建的 IIFE 已 vendor 到 js/vendor/：浏览器到 jsdelivr 的网络常被重置，
+     本地优先可去掉这个运行时单点；CDN 只作兜底。两者是同一份 SDK、同一个全局名。 */
+  var SDK_LOCAL = 'js/vendor/workbuddy-cloud-sdk.global.js';
   var COOKIE = 'sd_cid';
   var SAVE_KEY = 'sandeng.save.v2';
   var client = null, sdkPromise = null;
@@ -51,6 +54,16 @@
   }
 
   /* ---------- 云服务（只初始化一次） ---------- */
+  function inject(src, ok, no) {
+    var s = document.createElement('script');
+    s.src = src; s.async = true;
+    s.onload = function () {
+      if (g.WorkBuddyCloud && g.WorkBuddyCloud.createWorkBuddyCloud) ok(g.WorkBuddyCloud);
+      else no();
+    };
+    s.onerror = no;
+    document.head.appendChild(s);
+  }
   function loadSdk() {
     if (sdkPromise) return sdkPromise;
     sdkPromise = new Promise(function (resolve, reject) {
@@ -58,14 +71,10 @@
       if (location.protocol !== 'https:') {
         return reject(new Error('云档需要在线版（https）；本地双击打开仍可离线玩'));
       }
-      var s = document.createElement('script');
-      s.src = SDK_URL; s.async = true;
-      s.onload = function () {
-        if (g.WorkBuddyCloud && g.WorkBuddyCloud.createWorkBuddyCloud) resolve(g.WorkBuddyCloud);
-        else reject(new Error('云组件加载失败'));
-      };
-      s.onerror = function () { reject(new Error('云组件加载失败，请检查网络')); };
-      document.head.appendChild(s);
+      var local = new URL(SDK_LOCAL, document.baseURI).href;
+      inject(local, resolve, function () {
+        inject(SDK_URL, resolve, function () { reject(new Error('云组件加载失败，请检查网络')); });
+      });
     });
     return sdkPromise;
   }
