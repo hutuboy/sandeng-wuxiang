@@ -200,7 +200,7 @@
   document.addEventListener('click', function (e) {
     var t = e.target && e.target.closest ? e.target : null;
     if (!t) return;
-    if (t.closest('#btn-cloud') || t.closest('#btn-cloud-finale')) panel();
+    if (t.closest('#btn-cloud') || t.closest('#btn-cloud-game') || t.closest('#btn-cloud-finale')) panel();
   });
 
   g.SANDENG_CLOUD = {
