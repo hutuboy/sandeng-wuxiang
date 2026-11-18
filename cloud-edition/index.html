@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0a0910" />
+<title>三更灯 · 无相客栈｜AI 原生推理游戏</title>
+<meta name="description" content="《三更灯 · 无相客栈》—— 一夜三客，一人为「无相」。AI NPC 带着记忆与脾气自主决策，你只有六盏灯。" />
+<link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+<canvas id="bg-canvas" aria-hidden="true"></canvas>
+<div id="grain" aria-hidden="true"></div>
+
+<!-- ======================= 封面 ======================= -->
+<section id="screen-intro" class="screen active">
+  <div class="intro-wrap">
+    <div class="intro-badge">AI+∞ 开发者创作大赛 · 第三期「AI 造游戏」参赛作品</div>
+    <div class="intro-lantern" aria-hidden="true"><span></span></div>
+    <h1 class="game-title">三更灯</h1>
+    <div class="title-rule"><i></i><span>无 相 客 栈</span><i></i></div>
+    <p class="intro-lead">一夜三客，一人为<strong>「无相」</strong>。<br />灯不认人，只认破绽。</p>
+    <!-- 先选难度，再点灯；两行「怎么玩」的描述放到按钮下面 -->
+    <div class="tier-pick" id="tier-pick" role="radiogroup" aria-label="难度">
+      <span class="tier-pick__label">难度</span>
+      <button type="button" class="btn btn-small tier-opt" data-action="set-tier" data-tier="novice" role="radio" aria-checked="false">新手级</button>
+      <button type="button" class="btn btn-small tier-opt is-on" data-action="set-tier" data-tier="basic" role="radio" aria-checked="true">初级</button>
+      <button type="button" class="btn btn-small tier-opt" data-action="set-tier" data-tier="intermediate" role="radio" aria-checked="false">中级</button>
+      <button type="button" class="btn btn-small tier-opt" data-action="set-tier" data-tier="advanced" role="radio" aria-checked="false">高级</button>
+    </div>
+    <div class="intro-actions">
+      <button class="btn btn-primary" id="btn-start">点灯 · 开始守夜</button>
+      <button class="btn" id="btn-continue">续上昨夜</button>
+    </div>
+    <div class="cloud-bar">
+      <button type="button" class="btn btn-ghost btn-small" id="btn-cloud">云档 · 排行榜</button>
+      <span>免注册 · 浏览器身份自动取名</span>
+    </div>
+    <p class="intro-sub">你说一句话，他们会记住、会掂量、会翻脸，也可能转身就走。<br />三位客人由 AI 决策引擎驱动：量化状态、持久记忆、规则校验，全部在本地实时推演。</p>
+    <div class="intro-links">
+      <button class="linkbtn" data-modal="howto">玩法说明</button>
+      <span>·</span>
+      <button class="linkbtn" data-modal="selftest">工程自检报告</button>
+      <span>·</span>
+      <button class="linkbtn" data-modal="about">关于与开源</button>
+    </div>
+    <div class="intro-foot">
+      <span>纯前端 · 离线可玩 · 零外部素材</span>
+      <span id="intro-seed"></span>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= 游戏主屏 · 五幕分步 ======================= -->
+<section id="screen-game" class="screen">
+  <header class="topbar">
+    <div class="tb-left">
+      <button class="icon-btn" id="btn-home" title="回到封面">⌂</button>
+      <div class="tb-title"><strong id="tb-night">第一夜</strong><span id="tb-phase">掌柜，客人都到齐了</span></div>
+    </div>
+    <div class="tb-center">
+      <div class="lamps" id="tb-lamps" aria-label="剩余灯数"></div>
+      <div class="tb-lamp-label"><span id="tb-lamp-text">6 / 6 盏</span></div>
+    </div>
+    <div class="tb-right">
+      <div class="tb-score">累计 <b id="tb-score">0</b></div>
+      <span class="tb-tier" id="tb-tier" data-difficulty-tier="basic">初级</span>
+      <button class="icon-btn" id="btn-sound" title="音效开关">♪</button>
+      <button class="icon-btn" id="btn-ai-toggle" title="AI 决策面板">AI</button>
+      <button class="icon-btn" id="btn-help" title="玩法">?</button>
+    </div>
+  </header>
+
+  <!-- 步骤条：五幕导航（点灯 → 问询 → 推演 → 指认 → 结案） -->
+  <nav class="act-bar" id="act-bar" aria-label="守夜步骤">
+    <ol class="act-steps" id="act-steps"></ol>
+    <div class="act-bar__tip" id="act-tip"></div>
+  </nav>
+
+  <div class="game-grid" id="act-stage" data-act="lamp">
+    <!-- 左：证词簿（五幕常驻，随时可对） -->
+    <aside class="col col-left">
+      <div class="panel grow">
+        <div class="panel-head"><h2>证词簿</h2><span class="tag" id="stmt-count">0 条</span></div>
+        <div class="flaw-pin" id="flaw-pin"></div>
+        <div id="statement-list" class="statement-list"></div>
+      </div>
+    </aside>
+
+    <!-- 中：三扇窗，一次只开一扇（第①幕「点灯」不再单独开窗：开夜卡就是那一幕） -->
+    <main class="col col-center" id="act-windows" data-act="ask">
+
+      <!-- 第①幕 · 点灯 → 已并入开夜提示框（js/main.js showNightFlaw） -->
+
+      <!-- 第二幕 · 逐客问询（三人自上而下排开，点谁问谁） -->
+      <section class="act" data-act="ask">
+        <div id="guest-row" class="guest-row stack"></div>
+
+        <!-- 柜上物证：精简一行一件，压在对话之上（全文点开看） -->
+        <div class="panel clue-strip">
+          <div class="panel-head"><h2>柜上物证</h2><span class="tag" id="clue-count">1 件</span><span class="clue-hint">点看全文 · 「对簿」三人同答</span></div>
+          <div id="clue-list" class="clue-list"></div>
+        </div>
+
+        <div class="dialogue-wrap panel">
+          <div class="panel-head"><h2>灯下对话</h2><span class="tag" id="turn-tag">第 0 回</span></div>
+          <div id="dialogue" class="dialogue" aria-live="polite"></div>
+        </div>
+
+        <div class="action-dock panel">
+          <div class="dock-head">
+            <span class="dock-label">话头</span>
+            <div class="tone-group" id="tone-group"></div>
+          </div>
+          <div id="topic-row" class="topic-row"></div>
+          <div class="dock-foot">
+            <button class="btn btn-small" id="btn-listen">添茶 · 缓一口气 <em>耗 1 灯</em></button>
+            <button class="btn btn-small" id="btn-act-deduce">问完了 · AI推演</button>
+            <button class="btn btn-small btn-danger" id="btn-accuse">点灯 · 指认无相</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 第三幕 · 推演 -->
+      <section class="act" data-act="deduce">
+        <div class="act-card wide">
+          <div class="act-eyebrow">第 三 步 · 推 演</div>
+          <h2 class="act-title">把物证与证词摊开</h2>
+          <div id="logic-stage" class="logic-stage"></div>
+          <div class="act-actions">
+            <button class="btn" id="btn-act-back-ask">回去再问两句</button>
+            <button class="btn btn-primary" id="btn-act-to-accuse">锁定了 · 去指认</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 第四幕 · 指认 -->
+      <section class="act" data-act="accuse">
+        <div class="act-card wide">
+          <div class="act-eyebrow">第 四 步 · 指 认</div>
+          <h2 class="act-title">灯一亮，就收不回来了</h2>
+          <p class="act-lead">选一位。选错，灯灭人走。</p>
+          <div id="accuse-stage" class="accuse-stage"></div>
+          <div class="act-actions">
+            <button class="btn" id="btn-act-back-deduce">再想想</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- 右：AI 决策透明面板 -->
+    <aside class="col col-right" id="col-right">
+      <div class="panel ai-panel">
+        <div class="panel-head"><h2>AI 决策轨迹</h2><span class="tag live">实时</span></div>
+        <div id="ai-panel" class="ai-panel-body"></div>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<!-- ======================= 单夜结算 ======================= -->
+<section id="screen-result" class="screen">
+  <div class="result-wrap">
+    <div class="result-ornament" id="result-ornament">◈</div>
+    <div class="result-eyebrow" id="result-eyebrow">第 一 夜 · 结 局</div>
+    <h2 class="result-title" id="result-title">破晓</h2>
+    <p class="result-desc" id="result-desc"></p>
+    <div class="result-score"><span>本夜得分</span><b id="result-score">0</b></div>
+    <div class="result-reveal" id="result-reveal"></div>
+    <div class="result-belief" id="result-belief"></div>
+    <div class="result-review" id="result-review"></div>
+    <div class="result-actions">
+      <button class="btn btn-primary" id="btn-next-night">接着守下一夜</button>
+      <button class="btn" id="btn-retry-night">重来这一夜</button>
+      <button class="btn btn-ghost" id="btn-copy-share">复制分享卡</button>
+    </div>
+    <div class="result-foot" id="result-foot"></div>
+  </div>
+</section>
+
+<!-- ======================= 三夜通关 ======================= -->
+<section id="screen-finale" class="screen">
+  <div class="result-wrap">
+    <div class="result-ornament">✦</div>
+    <div class="result-eyebrow">三 夜 已 尽</div>
+    <h2 class="result-title" id="finale-title">守夜人</h2>
+    <p class="result-desc" id="finale-desc"></p>
+    <div class="finale-table" id="finale-table"></div>
+    <div class="result-actions">
+      <button class="btn btn-primary" id="btn-new-run">换一批客人，再守三夜</button>
+      <button class="btn" id="btn-finale-agent">看影子掌柜复盘</button>
+      <button class="btn btn-ghost" id="btn-finale-copy">复制通关文案</button>
+      <button class="btn btn-ghost" id="btn-cloud-finale">上传成绩 · 排行榜</button>
+    </div>
+    <div class="result-foot">感谢试玩 · 作品与完整源码见「关于与开源」</div>
+  </div>
+</section>
+
+<div id="modal-root"></div>
+<div id="toast" role="status"></div>
+
+<script src="js/core.js"></script>
+<script src="js/difficulty.js"></script>
+<script src="js/logic.js"></script>
+<script src="js/director.js"></script>
+<script src="js/npc.js"></script>
+<script src="js/llm.js"></script>
+<script src="js/llm-config.js"></script>
+<script src="js/game.js"></script>
+<script src="js/agent.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/guide.js"></script>
+<script src="js/main.js"></script>
+<script src="js/cloud-config.js"></script>
+<script src="js/cloud-save.js"></script>
+</body>
+</html>
