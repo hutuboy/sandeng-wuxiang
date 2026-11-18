@@ -8,7 +8,7 @@
   var ENABLED = g.__SANDENG_CLOUD_ENABLED__ === true;
   var BASE = g.__SANDENG_CLOUD_BASE__ || '/api/cloud';
   var SAVE_KEY = 'sandeng.save.v2';
-  var meCache = null, mePromise = null;
+  var meCache = null, mePromise = null, autoInFlight = null;
 
   if (!ENABLED) {
     g.SANDENG_CLOUD = { enabled: false };
@@ -89,7 +89,7 @@
         '<button type="button" class="btn" id="cloud-do-submit">上传三夜成绩</button>' +
         '<button type="button" class="btn btn-ghost" id="cloud-do-board">查看排行榜</button>' +
         '</div><div id="cloud-out" class="cloud-out"></div>' +
-        '<p class="cloud-note">存档按浏览器身份隔离；排行榜只保留每名玩家的最高总分，属于趣味榜。</p>');
+        '<p class="cloud-note">三夜通关后会自动上传成绩；这里可手动同步。存档按浏览器身份隔离，排行榜只保留每名玩家的最高总分，属于趣味榜。</p>');
       bindActions();
       out('<p>已就绪。可中途存档，也可守满三夜后上传成绩。</p>');
     }).catch(fail);
@@ -118,6 +118,23 @@
     }).catch(fail);
   }
 
+  function payloadFor(session) {
+    var s = session || {};
+    var nights = (s.nights || []).slice(0, 3);
+    var last = nights[nights.length - 1] || {};
+    return {
+      correct: nights.filter(function (n) { return n && n.correct; }).length,
+      total_score: (s.totalScore || 0),
+      lamps_left: last.lampsLeft || 0,
+      seed: s.seed || '',
+      difficulty: s.difficultyTier || 'basic',
+      chain_count: last.chain || 0,
+      nights: nights
+    };
+  }
+  function submitPayload(payload) {
+    return api('/submit', { method: 'POST', body: payload });
+  }
   function submitScore() {
     var A = g.SANDENG_APP;
     var nights = (A && A.session && A.session.nights) || [];
@@ -125,22 +142,36 @@
       out('<p>守满三夜才能上榜；当前只走了 ' + nights.length + ' 夜。</p>');
       return;
     }
-    var last = nights[nights.length - 1] || {};
-    var payload = {
-      correct: nights.filter(function (n) { return n && n.correct; }).length,
-      total_score: (A.session.totalScore || 0),
-      lamps_left: last.lampsLeft || 0,
-      seed: A.session.seed || '',
-      difficulty: A.session.difficultyTier || 'basic',
-      chain_count: last.chain || 0,
-      nights: nights
-    };
     out('<p>正在上传成绩…</p>');
-    api('/submit', { method: 'POST', body: payload }).then(function (j) {
+    submitPayload(payloadFor(A.session)).then(function (j) {
       out('<p class="cloud-ok">已上榜：<b>' + esc(j.name) + '</b>，累计 ' + esc(j.total_score) +
         ' 分。若再次上传更低分，榜单会保留你的最高分。</p>');
       toast('成绩已上榜');
     }).catch(fail);
+  }
+
+  /* 三夜通关后自动上传：同一局只自动上报一次；失败后允许再次进入结算页重试。
+     去重标记写在 session 上并随主流程 save() 落盘，避免刷新页面重复上报。 */
+  function autoSubmit(session) {
+    var s = session || {};
+    var nights = s.nights || [];
+    if (nights.length < 3) return Promise.resolve(null);
+    var last = nights[nights.length - 1] || {};
+    var sig = [s.seed || '', s.totalScore || 0, nights.length,
+               last.night || 0, last.score || 0, last.correct ? 1 : 0].join('|');
+    if (s.__sdAutoSubmittedFor === sig) return Promise.resolve(null);
+    if (autoInFlight && autoInFlight.sig === sig) return autoInFlight.promise;
+    s.__sdAutoSubmittedFor = sig;
+    var promise = submitPayload(payloadFor(s)).then(function (j) {
+      toast('三夜成绩已自动上传 · ' + (j.name || '侠名'));
+      return j;
+    }).catch(function (e) {
+      s.__sdAutoSubmittedFor = '';
+      toast('自动上传未成功，可点「同步成绩」重试');
+      return null;
+    });
+    autoInFlight = { sig: sig, promise: promise };
+    return promise;
   }
 
   function showBoard() {
@@ -166,6 +197,6 @@
 
   g.SANDENG_CLOUD = {
     enabled: true, panel: panel, save: saveCloud, load: loadCloud,
-    submit: submitScore, board: showBoard, me: me
+    submit: submitScore, autoSubmit: autoSubmit, board: showBoard, me: me
   };
 })(typeof globalThis !== 'undefined' ? globalThis : this);

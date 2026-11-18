@@ -266,6 +266,9 @@
         return '<tr><td>第 ' + ['一', '二', '三'][n.night - 1] + ' 夜</td><td>' + UI.esc(n.ending) + '</td><td class="' + (n.correct ? 'ok' : 'no') + '">' + (n.correct ? '命中' : '失手') + '</td><td>' + n.chain + '</td><td>' + n.lampsLeft + '</td><td class="' + (n.score > 0 ? 'ok' : 'no') + '">' + (n.score > 0 ? '+' : '') + n.score + '</td></tr>';
       }).join('') + '</tbody></table>';
     UI.showScreen('screen-finale'); App.screen = 'finale';
+    /* v1.8.1：三夜走完即自动上传成绩；本地版没有云模块，调用自然跳过。
+       放在 save() 前，让去重标记随存档一起持久化，重复进入结算页不会重复上报。 */
+    if (g.SANDENG_CLOUD && g.SANDENG_CLOUD.autoSubmit) g.SANDENG_CLOUD.autoSubmit(App.session);
     save();
   }
   function shareText() {
