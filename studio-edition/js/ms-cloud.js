@@ -28,6 +28,12 @@
   function toast(msg) {
     if (g.SD && g.SD.UI && g.SD.UI.toast) g.SD.UI.toast(msg);
   }
+  function markResult(msg) {
+    if (!g.SANDENG_APP || g.SANDENG_APP.screen !== 'result') return;
+    var foot = document.getElementById('result-foot');
+    if (!foot || /成绩已自动上传|自动上传未成功/.test(foot.textContent)) return;
+    foot.textContent += '　|　' + msg;
+  }
   function api(path, options) {
     var opt = options || {};
     opt.credentials = 'same-origin';
@@ -163,10 +169,12 @@
     if (autoInFlight && autoInFlight.sig === sig) return autoInFlight.promise;
     s.__sdAutoSubmittedFor = sig;
     var promise = submitPayload(payloadFor(s)).then(function (j) {
+      markResult('成绩已自动上传 · ' + (j.name || '侠名'));
       toast('三夜成绩已自动上传 · ' + (j.name || '侠名'));
       return j;
     }).catch(function (e) {
       s.__sdAutoSubmittedFor = '';
+      markResult('自动上传未成功，可点右上角云档重试');
       toast('自动上传未成功，可点「同步成绩」重试');
       return null;
     });

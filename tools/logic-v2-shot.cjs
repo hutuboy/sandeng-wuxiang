@@ -68,7 +68,7 @@ const FORMULA_RE = /[∧∨¬⊕]/;
 const NATURE = {
   novice: '有一处对不上，就是「无相」',
   basic: '处处都对不上，就是「无相」',
-  intermediate: '并非处处对不上，就是「无相」',
+  intermediate: '多数对得上，就是「无相」',
   advanced: '恰好只错一处，就是「无相」'
 };
 
@@ -171,7 +171,7 @@ const NATURE = {
     return {
       title: (mm.querySelector('.modal-head h3') || {}).textContent || '',
       tiers: ['有一处对不上，就是「无相」', '处处都对不上，就是「无相」',
-        '并非处处对不上，就是「无相」', '恰好只错一处，就是「无相」'].filter(s => txt.indexOf(s) !== -1),
+        '多数对得上，就是「无相」', '恰好只错一处，就是「无相」'].filter(s => txt.indexOf(s) !== -1),
       leaksFormula: /[∧∨¬⊕]/.test(txt)
     };
   });
@@ -194,7 +194,7 @@ const NATURE = {
       visible: el.getBoundingClientRect().height > 4
     };
   });
-  const PIN_RE = /^✓找破绽：(有一处对不上|处处都对不上|并非处处对不上|恰好只错一处)$/;
+  const PIN_RE = /^✓找破绽：(有一处对不上|处处都对不上|多数对得上|恰好只错一处)$/;
   check('证词簿置顶 = 「✓ 找破绽：判定句」', !!pin && PIN_RE.test(pin.text), pin && pin.text);
   check('置顶挂在证词簿、压在证词之上', !!pin && pin.inLeft && pin.aboveList && pin.visible);
   check('置顶不再印件数 / 灯数', !!pin && !/件物证|盏灯/.test(pin.text));
@@ -224,7 +224,7 @@ const NATURE = {
   await nf.screenshot({ path: path.join(OUT, 'p5-night-start.png') });
   check('开夜提示框 · 弹出', !!nightModal, nightModal && nightModal.title);
   check('开夜提示框 · 说今夜破绽（按档）',
-    !!nightModal && /今夜「无相」的破绽：\s*并非处处对不上/.test(nightModal.rule.replace(/\s+/g, ' ')),
+    !!nightModal && /今夜「无相」的破绽：\s*多数对得上/.test(nightModal.rule.replace(/\s+/g, ' ')),
     nightModal && nightModal.rule.trim());
   check('开夜提示框 · 不印算子', !!nightModal && !/[∧∨¬⊕]/.test(nightModal.body));
   check('开夜提示框 · 可关闭', !!nightModal && nightModal.hasClose);

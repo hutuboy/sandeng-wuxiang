@@ -47,7 +47,7 @@
     },
     intermediate: {
       group: 2, rest: false, op: 'NAND', depth: 3,
-      lead: '并非处处对不上，就是「无相」。',
+      lead: '多数对得上，就是「无相」。',
       ask: '至少一处说得圆'
     },
     advanced: {
@@ -69,7 +69,7 @@
       lead: PLANS.basic.lead, ask: PLANS.basic.ask, tell: '只错一条的人不是他'
     },
     negative: {
-      kind: 'negative', tier: 'intermediate', label: '并非处处对不上', op: 'NAND', depth: 3,
+      kind: 'negative', tier: 'intermediate', label: '多数对得上', op: 'NAND', depth: 3,
       lead: PLANS.intermediate.lead, ask: PLANS.intermediate.ask, tell: '全错的人不是他'
     },
     quantify: {
