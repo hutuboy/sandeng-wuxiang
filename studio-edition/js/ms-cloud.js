@@ -8,7 +8,7 @@
   var ENABLED = g.__SANDENG_CLOUD_ENABLED__ === true;
   var BASE = g.__SANDENG_CLOUD_BASE__ || '/api/cloud';
   var SAVE_KEY = 'sandeng.save.v2';
-  var meCache = null, mePromise = null, autoInFlight = null;
+  var meCache = null, mePromise = null, autoInFlight = null, backupInFlight = null;
 
   if (!ENABLED) {
     g.SANDENG_CLOUD = { enabled: false };
@@ -28,10 +28,11 @@
   function toast(msg) {
     if (g.SD && g.SD.UI && g.SD.UI.toast) g.SD.UI.toast(msg);
   }
-  function markResult(msg) {
+  function markResult(msg, kind) {
     if (!g.SANDENG_APP || g.SANDENG_APP.screen !== 'result') return;
     var foot = document.getElementById('result-foot');
-    if (!foot || /成绩已自动上传|自动上传未成功/.test(foot.textContent)) return;
+    if (!foot || foot.getAttribute('data-auto-' + kind) === '1') return;
+    foot.setAttribute('data-auto-' + kind, '1');
     foot.textContent += '　|　' + msg;
   }
   function api(path, options) {
@@ -90,14 +91,14 @@
         '<p class="cloud-id">侠名 <b>' + esc(j.name) + '</b><br />' +
         '<span>身份由服务端匿名 Cookie 自动生成，无需注册。清除 Cookie 会换一个新侠名。</span></p>' +
         '<div class="cloud-actions">' +
-        '<button type="button" class="btn" id="cloud-do-save">上传云存档</button>' +
-        '<button type="button" class="btn" id="cloud-do-load">取回云存档</button>' +
-        '<button type="button" class="btn" id="cloud-do-submit">上传三夜成绩</button>' +
+        '<button type="button" class="btn" id="cloud-do-save">备份当前进度</button>' +
+        '<button type="button" class="btn" id="cloud-do-load">取回云端备份</button>' +
+        '<button type="button" class="btn" id="cloud-do-submit">同步三夜成绩</button>' +
         '<button type="button" class="btn btn-ghost" id="cloud-do-board">查看排行榜</button>' +
         '</div><div id="cloud-out" class="cloud-out"></div>' +
-        '<p class="cloud-note">三夜通关后会自动上传成绩；这里可手动同步。存档按浏览器身份隔离，排行榜只保留每名玩家的最高总分，属于趣味榜。</p>');
+        '<p class="cloud-note">每夜结算会自动备份云档；第三夜结算还会自动上传成绩。这里可手动覆盖备份或重传成绩。存档按浏览器身份隔离，排行榜只保留最高总分，属于趣味榜。</p>');
       bindActions();
-      out('<p>已就绪。可中途存档，也可守满三夜后上传成绩。</p>');
+      out('<p>已就绪。云档每夜自动备份，成绩第三夜自动上传。</p>');
     }).catch(fail);
   }
 
@@ -107,20 +108,20 @@
     out('<p>正在上传存档…</p>');
     api('/save', { method: 'POST', body: { state: snap } }).then(function (j) {
       out('<p class="cloud-ok">已存档第 ' + esc(snap.game.night) + ' 夜。<br />侠名：' + esc(j.name) +
-        '<br /><span>同一浏览器再点「取回云存档」即可续上。</span></p>');
-      toast('云存档已上传');
+        '<br /><span>同一浏览器再点「取回云端备份」即可续上。</span></p>');
+      toast('云档已备份');
     }).catch(fail);
   }
 
   function loadCloud() {
     out('<p>正在取回存档…</p>');
     api('/load').then(function (j) {
-      if (!j.state) { out('<p>云端还没有你的存档，先上传一次。</p>'); return; }
+      if (!j.state) { out('<p>云端还没有你的备份，可先备份一次。</p>'); return; }
       try { localStorage.setItem(SAVE_KEY, JSON.stringify(j.state)); } catch (e) { /* 隐私模式忽略 */ }
       var b = document.getElementById('btn-continue');
       if (b) { b.disabled = false; b.click(); }
       if (g.SD && g.SD.UI && g.SD.UI.closeModal) g.SD.UI.closeModal();
-      toast('已取回云端存档 · ' + (j.name || '守夜人'));
+      toast('已取回云端备份 · ' + (j.name || '守夜人'));
     }).catch(fail);
   }
 
@@ -169,16 +170,42 @@
     if (autoInFlight && autoInFlight.sig === sig) return autoInFlight.promise;
     s.__sdAutoSubmittedFor = sig;
     var promise = submitPayload(payloadFor(s)).then(function (j) {
-      markResult('成绩已自动上传 · ' + (j.name || '侠名'));
+      markResult('成绩已自动上传 · ' + (j.name || '侠名'), 'score');
       toast('三夜成绩已自动上传 · ' + (j.name || '侠名'));
       return j;
     }).catch(function (e) {
       s.__sdAutoSubmittedFor = '';
-      markResult('自动上传未成功，可点右上角云档重试');
+      markResult('自动上传未成功，可点右上角云档重试', 'score');
       toast('自动上传未成功，可点「同步成绩」重试');
       return null;
     });
     autoInFlight = { sig: sig, promise: promise };
+    return promise;
+  }
+
+  /* 每夜结算自动备份云档：与成绩上传分开走 /save，失败后允许下次结算重试。
+     signature 含夜数与本夜结算分，刷新/重复进入同一结算页不会反复备份。 */
+  function autoBackup(session, night) {
+    var s = session || {};
+    var snap = snapshot();
+    if (!snap) return Promise.resolve(null);
+    var n = night || (snap.game && snap.game.night) || 0;
+    var nights = s.nights || [];
+    var last = nights[nights.length - 1] || {};
+    var sig = [s.seed || '', n, s.totalScore || 0, nights.length,
+               last.score || 0, last.correct ? 1 : 0].join('|');
+    if (s.__sdAutoBackupFor === sig) return Promise.resolve(null);
+    if (backupInFlight && backupInFlight.sig === sig) return backupInFlight.promise;
+    s.__sdAutoBackupFor = sig;
+    var promise = api('/save', { method: 'POST', body: { state: snap } }).then(function (j) {
+      markResult('云档已自动备份 · 第 ' + n + ' 夜', 'backup');
+      return j;
+    }).catch(function (e) {
+      s.__sdAutoBackupFor = '';
+      markResult('云档备份失败，可点云档手动备份', 'backup');
+      return null;
+    });
+    backupInFlight = { sig: sig, promise: promise };
     return promise;
   }
 
@@ -205,6 +232,7 @@
 
   g.SANDENG_CLOUD = {
     enabled: true, panel: panel, save: saveCloud, load: loadCloud,
-    submit: submitScore, autoSubmit: autoSubmit, board: showBoard, me: me
+    submit: submitScore, autoSubmit: autoSubmit, autoBackup: autoBackup,
+    board: showBoard, me: me
   };
 })(typeof globalThis !== 'undefined' ? globalThis : this);

@@ -818,7 +818,11 @@
     document.getElementById('result-belief').innerHTML = r.belief;
     var rv = document.getElementById('result-review');
     if (rv) rv.innerHTML = reviewHtml(r);
-    document.getElementById('result-foot').textContent = r.foot;
+    var foot = document.getElementById('result-foot');
+    foot.textContent = r.foot;
+    /* 每夜重绘结算屏时清掉上一夜的云同步提示标记，让自动备份/上传反馈能逐夜显示 */
+    foot.removeAttribute('data-auto-backup');
+    foot.removeAttribute('data-auto-score');
     var next = document.getElementById('btn-next-night');
     next.textContent = game.night >= 3 ? '看完这三夜' : '接着守下一夜';
   }
