@@ -11,16 +11,18 @@ license: mit
 一款 **AI 原生网页推理游戏**。三位客人不是写好的剧本，而是由本地 AI 决策引擎驱动的 NPC：
 带量化状态、持久记忆、规则校验，会记住你说过的每句话，会因为你逼得太紧而拂袖离店。
 
-**AI+∞ 开发者创作大赛 · 第三期「AI 造游戏」参赛作品**　|　纯静态 · 离线可玩 · 零外部素材 · MIT 开源
+**AI+∞ 开发者创作大赛 · 第三期「AI 造游戏」参赛作品**　|　本地纯静态 · 离线可玩 · 线上可选云增强 · 零外部素材 · MIT 开源
 
 **开源仓库**：https://github.com/hutuboy/sandeng-wuxiang
+
+> **版本口径（v1.8.4，2026-11-19）**：本地双击 `index.html` 始终是纯静态、零云请求、判定全端侧；魔搭创空间自 **v1.8.0 起由 Static 改为 Docker**（仅托管静态游戏 + 注入云开关，不搬判定/密钥进后端），提供免注册云档、排行榜、第三夜结算自动上传成绩、每夜结算自动备份。上方 `sdk: static` YAML 头与根目录静态版说明保留作历史与本地版用途；Docker 部署源见 [`studio-edition/`](studio-edition/README.md)。
 
 ---
 
 ## 直接试玩
 
 **在线试玩（魔搭创空间）**：https://modelscope.cn/studios/hutuboy/sandeng-wuxiang
-（Static 类型 · 公开访问 · 免费 CPU；直连应用地址 `https://hutuboy-sandeng-wuxiang.ms.show/`）
+（**Docker 类型**（v1.8.0 起）· 公开访问 · 免费 CPU；直连应用地址 `https://hutuboy-sandeng-wuxiang.ms.show/`）；云档 / 排行榜免注册，由浏览器 Cookie `sd_uid` 自动生成侠名，每夜结算自动备份进度、第三夜结算自动上传成绩。
 
 本地试玩：双击根目录 `index.html` 即可（无需安装、无需构建、无需联网）。
 也可起一个静态服务器：
@@ -215,5 +217,10 @@ node tools/make-demo.cjs              # 重新录制演示视频（需要 ffmpeg
 
 ## 部署到魔搭创空间
 
-见 [docs/部署到魔搭创空间.md](docs/部署到魔搭创空间.md)。要点：选择 **Static** SDK，
+**当前线上（v1.8.0 起）为 Docker 创空间**，部署源是 [`studio-edition/`](studio-edition/README.md)，
+脚本 `.tooling/ms_studio_docker_deploy.py`（需 `MODELSCOPE_API_KEY`，显式传 `MS_VER=vX.Y.Z`）：
+`app.py` 纯标准库托管静态游戏 + 注入云开关 + 云档/榜单 API，数据落 `/mnt/workspace/sandeng-cloud/cloud.json`。
+本地 `file://` 零云请求，判定逻辑一行未进后端。
+
+**历史 Static 版**部署见 [docs/部署到魔搭创空间.md](docs/部署到魔搭创空间.md)：选择 **Static** SDK，
 `index.html` 必须位于仓库根目录，本仓库已满足。
